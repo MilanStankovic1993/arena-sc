@@ -1,14 +1,17 @@
 <nav x-data="{ open: false }" class="border-b border-slate-200 bg-white/90 backdrop-blur">
     <div class="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
         <div class="flex items-center gap-8">
-            <a href="{{ route('home') }}" class="text-lg font-black tracking-[0.2em] text-slate-900">ARENA SC</a>
+                    <a href="{{ route('home') }}" class="text-lg font-black tracking-[0.2em] text-[var(--arena-blue)]">ARENA SC</a>
 
-            <div class="hidden items-center gap-6 sm:flex">
-                <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">Moje rezervacije</x-nav-link>
-                <x-nav-link :href="route('sports.index')" :active="request()->routeIs('sports.*')">Sportovi</x-nav-link>
-                <x-nav-link :href="route('equipment.index')" :active="request()->routeIs('equipment.*')">Oprema</x-nav-link>
-            </div>
-        </div>
+                    <div class="hidden items-center gap-6 sm:flex">
+                        <x-nav-link :href="route('home')" :active="request()->routeIs('home')">Home</x-nav-link>
+                        <x-nav-link :href="route('about')" :active="request()->routeIs('about')">O nama</x-nav-link>
+                        <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">Moje rezervacije</x-nav-link>
+                        <x-nav-link :href="route('sports.index')" :active="request()->routeIs('sports.*') || request()->routeIs('courts.*')">Tereni</x-nav-link>
+                        <x-nav-link :href="route('equipment.index')" :active="request()->routeIs('equipment.*')">Oprema</x-nav-link>
+                        <x-nav-link :href="route('events.index')" :active="request()->routeIs('events.*')">Dogadjaji</x-nav-link>
+                    </div>
+                </div>
 
         <div class="hidden sm:flex sm:items-center sm:gap-4">
             @if(auth()->user()?->canAccessPanel(app(\Filament\PanelRegistry::class)->get('admin')))
@@ -55,8 +58,11 @@
     <div :class="{'block': open, 'hidden': ! open}" class="hidden border-t border-slate-200 bg-white sm:hidden">
         <div class="space-y-1 px-4 py-3">
             <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">Moje rezervacije</x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('home')" :active="request()->routeIs('home')">Home</x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('about')" :active="request()->routeIs('about')">O nama</x-responsive-nav-link>
             <x-responsive-nav-link :href="route('sports.index')" :active="request()->routeIs('sports.*')">Sportovi</x-responsive-nav-link>
             <x-responsive-nav-link :href="route('equipment.index')" :active="request()->routeIs('equipment.*')">Oprema</x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('events.index')" :active="request()->routeIs('events.*')">Dogadjaji</x-responsive-nav-link>
             <x-responsive-nav-link :href="route('profile.edit')">Profil</x-responsive-nav-link>
         </div>
     </div>

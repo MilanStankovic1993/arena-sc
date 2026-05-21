@@ -1,7 +1,9 @@
 <?php
 
+use App\Http\Controllers\AboutController;
 use App\Http\Controllers\CourtController;
 use App\Http\Controllers\EquipmentController;
+use App\Http\Controllers\EventController;
 use App\Http\Controllers\LandingPageController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ReservationController;
@@ -9,9 +11,12 @@ use App\Http\Controllers\SportController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', LandingPageController::class)->name('home');
+Route::get('/o-nama', AboutController::class)->name('about');
 Route::get('/sportovi', [SportController::class, 'index'])->name('sports.index');
 Route::get('/tereni/{court:slug}', [CourtController::class, 'show'])->name('courts.show');
 Route::get('/oprema', [EquipmentController::class, 'index'])->name('equipment.index');
+Route::get('/dogadjaji', [EventController::class, 'index'])->name('events.index');
+Route::get('/dogadjaji/{event:slug}', [EventController::class, 'show'])->name('events.show');
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/dashboard', [ReservationController::class, 'index'])->name('dashboard');

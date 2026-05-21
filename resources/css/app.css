@@ -1,3 +1,52 @@
+@import url('https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800;900&family=Space+Grotesk:wght@400;500;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+    :root {
+        --arena-red: #d7263d;
+        --arena-blue: #0d3b66;
+        --arena-blue-soft: #1f5f9b;
+        --arena-cream: #f7f4ef;
+        --arena-slate: #102033;
+    }
+
+    body {
+        font-family: 'Archivo', sans-serif;
+        background: var(--arena-cream);
+        color: var(--arena-slate);
+    }
+
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6 {
+        font-family: 'Space Grotesk', sans-serif;
+    }
+}
+
+@layer components {
+    .site-link {
+        @apply text-sm font-semibold tracking-[0.18em] uppercase text-slate-600 transition hover:text-[var(--arena-red)];
+    }
+
+    .site-pill {
+        @apply inline-flex items-center rounded-full border border-slate-300/80 bg-white/80 px-4 py-2 text-xs font-bold uppercase tracking-[0.28em] text-slate-700 backdrop-blur;
+    }
+
+    .site-card {
+        @apply rounded-[2rem] border border-white/60 bg-white/85 shadow-[0_20px_50px_rgba(13,59,102,0.08)] backdrop-blur;
+    }
+
+    .arena-button-primary {
+        @apply inline-flex items-center justify-center rounded-full bg-[var(--arena-blue)] px-6 py-3 text-sm font-bold uppercase tracking-[0.18em] text-white transition hover:bg-[var(--arena-red)];
+    }
+
+    .arena-button-secondary {
+        @apply inline-flex items-center justify-center rounded-full border border-slate-300 bg-white px-6 py-3 text-sm font-bold uppercase tracking-[0.18em] text-slate-800 transition hover:border-[var(--arena-blue)] hover:text-[var(--arena-blue)];
+    }
+}

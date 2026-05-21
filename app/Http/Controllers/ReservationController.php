@@ -21,9 +21,6 @@ class ReservationController extends Controller
     public function index(): View
     {
         return view('dashboard', [
-            'sports' => Sport::query()->where('is_active', true)->orderBy('sort_order')->get(),
-            'courts' => Court::query()->where('is_active', true)->with('sport')->get(),
-            'equipment' => Equipment::query()->where('is_active', true)->where('is_rentable', true)->with('sport')->get(),
             'reservations' => Auth::user()->reservations()->with(['sport', 'court', 'equipmentItems.equipment'])->latest('starts_at')->get(),
         ]);
     }

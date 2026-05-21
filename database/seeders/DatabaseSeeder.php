@@ -2,10 +2,15 @@
 
 namespace Database\Seeders;
 
+use App\Enums\EventStatus;
+use App\Enums\EventType;
 use App\Enums\UserRole;
 use App\Models\Court;
 use App\Models\CourtClosure;
 use App\Models\Equipment;
+use App\Models\Event;
+use App\Models\EventEntry;
+use App\Models\EventMatch;
 use App\Models\PricingRule;
 use App\Models\Reservation;
 use App\Models\Sport;
@@ -230,6 +235,67 @@ class DatabaseSeeder extends Seeder
                 'quantity' => 2,
                 'unit_price' => 400,
                 'line_total' => 800,
+            ],
+        );
+
+        $league = Event::query()->updateOrCreate(
+            ['slug' => 'padel-prolecna-liga'],
+            [
+                'title' => 'Padel prolecna liga',
+                'type' => EventType::League,
+                'status' => EventStatus::Ongoing,
+                'location' => 'Arena SC / Padel zona',
+                'cta_label' => 'Prijavi tim',
+                'summary' => 'Ligaški format sa tabelom, rezultatima i punim pregledom učesnika.',
+                'description' => 'Početna demo verzija događaja za prikaz lige i buduće statistike.',
+                'rules' => 'Timovi igraju svako sa svakim. Pobeda donosi 3 poena.',
+                'start_date' => now()->startOfMonth()->toDateString(),
+                'end_date' => now()->addMonth()->endOfMonth()->toDateString(),
+                'is_featured' => true,
+            ],
+        );
+
+        $pairOne = EventEntry::query()->updateOrCreate(
+            ['event_id' => $league->id, 'team_name' => 'Arena Smash'],
+            [
+                'contact_name' => 'Marko Petrovic',
+                'contact_phone' => '+38160111001',
+                'played' => 3,
+                'wins' => 3,
+                'losses' => 0,
+                'points' => 9,
+                'score_for' => 18,
+                'score_against' => 8,
+            ],
+        );
+
+        $pairTwo = EventEntry::query()->updateOrCreate(
+            ['event_id' => $league->id, 'team_name' => 'Blue Court Duo'],
+            [
+                'contact_name' => 'Nikola Jovanovic',
+                'contact_phone' => '+38160111002',
+                'played' => 3,
+                'wins' => 2,
+                'losses' => 1,
+                'points' => 6,
+                'score_for' => 15,
+                'score_against' => 10,
+            ],
+        );
+
+        EventMatch::query()->updateOrCreate(
+            [
+                'event_id' => $league->id,
+                'round_label' => '1. kolo',
+                'home_entry_id' => $pairOne->id,
+                'away_entry_id' => $pairTwo->id,
+            ],
+            [
+                'scheduled_at' => now()->addDays(5)->setTime(19, 0),
+                'status' => 'finished',
+                'home_score' => 2,
+                'away_score' => 1,
+                'notes' => 'Demo rezultat za prikaz na sajtu i u adminu.',
             ],
         );
     }

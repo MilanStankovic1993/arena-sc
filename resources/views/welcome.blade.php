@@ -1,103 +1,137 @@
-<!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
-    <head>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <title>Arena SC</title>
-        @vite(['resources/css/app.css', 'resources/js/app.js'])
-    </head>
-    <body class="bg-[#f5f1e8] text-slate-900">
-        <div class="relative overflow-hidden">
-            <div class="absolute inset-x-0 top-0 -z-10 h-[28rem] bg-[radial-gradient(circle_at_top,#f8c15c,transparent_55%),radial-gradient(circle_at_right,#0f766e,transparent_35%)] opacity-90"></div>
+@extends('layouts.site', ['title' => 'Arena SC'])
 
-            <header class="mx-auto flex max-w-7xl items-center justify-between px-4 py-6 sm:px-6 lg:px-8">
-                <a href="{{ route('home') }}" class="text-lg font-black tracking-[0.25em]">ARENA SC</a>
+@section('content')
+    <section class="mx-auto grid max-w-7xl gap-10 px-4 py-8 sm:px-6 lg:grid-cols-[1.05fr_0.95fr] lg:items-center lg:px-8">
+        <div class="py-10">
+            <span class="site-pill">Padel · Basket 3x3 · Turniri · Liga</span>
+            <h1 class="mt-6 max-w-4xl text-5xl font-black leading-none tracking-tight text-[var(--arena-blue)] sm:text-6xl">
+                Rezervacije termina, oprema i sportski dogadjaji u jednom modernom centru.
+            </h1>
+            <p class="mt-6 max-w-2xl text-lg leading-8 text-slate-600">
+                Arena SC je zamišljena kao mesto gde korisnik prvo vidi prostor, lako proveri slobodan termin, odmah zna cenu i tek onda, uz registraciju naloga, završava rezervaciju i po želji dodaje opremu.
+            </p>
+            <div class="mt-8 flex flex-wrap gap-4">
+                <a href="{{ route('sports.index') }}" class="arena-button-primary">Rezervisi termin</a>
+                <a href="{{ route('events.index') }}" class="arena-button-secondary">Pogledaj dogadjaje</a>
+            </div>
+        </div>
 
-                <nav class="hidden items-center gap-6 text-sm font-semibold text-slate-700 md:flex">
-                    <a href="{{ route('sports.index') }}">Sportovi</a>
-                    <a href="{{ route('equipment.index') }}">Oprema</a>
-                    @auth
-                        <a href="{{ route('dashboard') }}" class="rounded-full bg-slate-950 px-4 py-2 text-white">Moj nalog</a>
-                    @else
-                        <a href="{{ route('login') }}">Prijava</a>
-                        <a href="{{ route('register') }}" class="rounded-full bg-slate-950 px-4 py-2 text-white">Kreiraj nalog</a>
-                    @endauth
-                </nav>
-            </header>
-
-            <main class="mx-auto max-w-7xl px-4 pb-20 sm:px-6 lg:px-8">
-                <section class="grid gap-10 py-12 lg:grid-cols-[1.05fr_0.95fr] lg:items-center">
+        <div class="grid gap-4">
+            <div class="site-card overflow-hidden bg-[linear-gradient(160deg,rgba(13,59,102,0.95),rgba(13,59,102,0.72)_50%,rgba(215,38,61,0.88))] p-6 text-white">
+                <div class="grid gap-4 md:grid-cols-[1.3fr_0.7fr]">
                     <div>
-                        <span class="inline-flex rounded-full border border-slate-300 bg-white/70 px-4 py-2 text-xs font-bold uppercase tracking-[0.3em] text-slate-700">Padel • Basket 3x3 • Oprema</span>
-                        <h1 class="mt-6 max-w-3xl text-5xl font-black leading-none tracking-tight sm:text-6xl">
-                            Sportski centar sa online rezervacijama koje admin drzi pod punom kontrolom.
-                        </h1>
-                        <p class="mt-6 max-w-2xl text-lg leading-8 text-slate-700">
-                            Arena SC spaja sajt za korisnike i mocan admin panel za upravljanje terenima, cenama po terminu, opremom, analizom korisnika i odobravanjem rezervacija.
+                        <p class="text-xs font-bold uppercase tracking-[0.32em] text-blue-100">Hero video zona</p>
+                        <h2 class="mt-3 text-3xl font-black">Ovde postavljamo snimke prostora, terena i event atmosfere.</h2>
+                        <p class="mt-4 text-sm leading-7 text-blue-50/80">
+                            Trenutno je ovo stilizovan placeholder blok za video pozadinu. Kada dostaviš snimke, lako ćemo ih zameniti pravim autoplay loop sekcijama.
                         </p>
-                        <div class="mt-8 flex flex-wrap gap-4">
-                            <a href="{{ auth()->check() ? route('dashboard') : route('register') }}" class="rounded-full bg-slate-950 px-6 py-3 text-sm font-semibold text-white">Rezervisi termin</a>
-                            <a href="{{ route('sports.index') }}" class="rounded-full border border-slate-300 px-6 py-3 text-sm font-semibold text-slate-800">Pogledaj sportove</a>
+                    </div>
+                    <div class="rounded-[1.75rem] bg-white/10 p-5 backdrop-blur">
+                        <p class="text-xs font-bold uppercase tracking-[0.28em] text-red-100">Live info</p>
+                        <div class="mt-5 space-y-4">
+                            <div>
+                                <p class="text-3xl font-black">{{ $sports->sum('courts_count') }}</p>
+                                <p class="text-xs uppercase tracking-[0.22em] text-blue-100">Aktivnih terena</p>
+                            </div>
+                            <div>
+                                <p class="text-3xl font-black">{{ $featuredEquipment->count() }}</p>
+                                <p class="text-xs uppercase tracking-[0.22em] text-blue-100">Top artikala opreme</p>
+                            </div>
                         </div>
                     </div>
+                </div>
+            </div>
 
-                    <div class="grid gap-4">
-                        @foreach ($featuredCourts as $court)
-                            <a href="{{ route('courts.show', $court) }}" class="rounded-[2rem] bg-white/80 p-6 shadow-sm ring-1 ring-slate-200 backdrop-blur transition hover:-translate-y-1">
-                                <div class="flex items-center justify-between gap-4">
-                                    <div>
-                                        <p class="text-sm font-semibold uppercase tracking-[0.25em] text-amber-600">{{ $court->sport->name }}</p>
-                                        <h2 class="mt-2 text-2xl font-black">{{ $court->name }}</h2>
-                                        <p class="mt-3 text-sm text-slate-600">{{ $court->description }}</p>
-                                    </div>
-                                    <div class="rounded-3xl bg-slate-950 px-4 py-5 text-right text-white">
-                                        <p class="text-xs uppercase tracking-[0.2em] text-slate-300">Od</p>
-                                        <p class="mt-2 text-2xl font-black">{{ number_format($court->base_price, 0, ',', '.') }}</p>
-                                        <p class="text-xs text-slate-300">RSD / sat</p>
-                                    </div>
-                                </div>
-                            </a>
-                        @endforeach
+            <div class="grid gap-4 md:grid-cols-3">
+                @foreach ($featuredCourts as $court)
+                    <a href="{{ route('courts.show', ['court' => $court->slug]) }}" class="site-card p-5 transition hover:-translate-y-1">
+                        <p class="text-xs font-bold uppercase tracking-[0.3em] text-[var(--arena-red)]">{{ $court->sport->name }}</p>
+                        <h3 class="mt-3 text-2xl font-black text-[var(--arena-blue)]">{{ $court->name }}</h3>
+                        <p class="mt-3 text-sm leading-7 text-slate-600">{{ $court->description }}</p>
+                        <div class="mt-5 flex items-center justify-between">
+                            <span class="text-xs font-bold uppercase tracking-[0.24em] text-slate-500">Od cene</span>
+                            <span class="text-lg font-black text-[var(--arena-blue)]">{{ number_format($court->base_price, 0, ',', '.') }} RSD</span>
+                        </div>
+                    </a>
+                @endforeach
+            </div>
+        </div>
+    </section>
+
+    <section class="mx-auto mt-10 max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div class="grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
+            <div class="site-card p-8">
+                <p class="text-sm font-bold uppercase tracking-[0.3em] text-[var(--arena-blue-soft)]">Kako radi rezervacija</p>
+                <h2 class="mt-4 text-3xl font-black text-[var(--arena-blue)]">Transparentan pregled termina pre prijave.</h2>
+                <div class="mt-6 space-y-5 text-sm leading-7 text-slate-600">
+                    <p>Gost može da pregleda slobodne slotove, trajanje termina i cenu po danu za 1h, 1.5h ili 2h.</p>
+                    <p>Kada odluči da rezerviše, sistem ga vodi na registraciju ili prijavu. Tek prijavljen korisnik može da potvrdi termin.</p>
+                    <p>U istom koraku korisnik može da doda i opremu za iznajmljivanje, ali to nije obavezno.</p>
+                </div>
+            </div>
+
+            <div class="grid gap-6 md:grid-cols-3">
+                @foreach ($sports as $sport)
+                    <div class="site-card p-6">
+                        <p class="text-xs font-bold uppercase tracking-[0.32em] text-[var(--arena-red)]">{{ $sport->name }}</p>
+                        <h3 class="mt-3 text-xl font-black text-[var(--arena-blue)]">{{ $sport->courts_count }} terena</h3>
+                        <p class="mt-3 text-sm leading-7 text-slate-600">{{ $sport->short_description }}</p>
+                        <div class="mt-5 flex items-center gap-3 text-xs font-bold uppercase tracking-[0.24em] text-slate-500">
+                            <span>{{ $sport->equipment_count }} artikala</span>
+                        </div>
                     </div>
-                </section>
+                @endforeach
+            </div>
+        </div>
+    </section>
 
-                <section class="mt-12 grid gap-6 md:grid-cols-3">
-                    @foreach ($sports as $sport)
-                        <div class="rounded-[2rem] bg-white p-6 shadow-sm ring-1 ring-slate-200">
-                            <p class="text-sm font-semibold uppercase tracking-[0.3em] text-teal-700">{{ $sport->name }}</p>
-                            <p class="mt-4 text-sm leading-7 text-slate-600">{{ $sport->short_description }}</p>
-                            <div class="mt-6 flex gap-3 text-sm font-semibold text-slate-700">
-                                <span>{{ $sport->courts_count }} terena</span>
-                                <span>•</span>
-                                <span>{{ $sport->equipment_count }} artikala</span>
+    <section class="mx-auto mt-12 max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div class="site-card overflow-hidden bg-[linear-gradient(135deg,rgba(215,38,61,0.95),rgba(13,59,102,0.96))] p-8 text-white">
+            <div class="flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
+                <div>
+                    <p class="text-sm font-bold uppercase tracking-[0.3em] text-red-100">Oprema i dogadjaji</p>
+                    <h2 class="mt-4 text-3xl font-black">Prodaja, iznajmljivanje i kalendar turnira na istom sajtu.</h2>
+                </div>
+                <div class="flex flex-wrap gap-3">
+                    <a href="{{ route('equipment.index') }}" class="rounded-full bg-white px-5 py-3 text-sm font-bold uppercase tracking-[0.18em] text-[var(--arena-blue)]">Oprema</a>
+                    <a href="{{ route('events.index') }}" class="rounded-full border border-white/40 px-5 py-3 text-sm font-bold uppercase tracking-[0.18em] text-white">Dogadjaji</a>
+                </div>
+            </div>
+
+            <div class="mt-8 grid gap-4 lg:grid-cols-2">
+                <div class="grid gap-4 md:grid-cols-2">
+                    @foreach ($featuredEquipment as $item)
+                        <div class="rounded-[1.75rem] bg-white/10 p-5 backdrop-blur">
+                            <p class="text-xs font-bold uppercase tracking-[0.28em] text-blue-100">{{ $item->sport?->name ?? 'Oprema' }}</p>
+                            <h3 class="mt-3 text-xl font-black">{{ $item->name }}</h3>
+                            <p class="mt-3 text-sm leading-7 text-white/75">{{ $item->short_description }}</p>
+                            <div class="mt-5 flex items-center justify-between text-sm font-bold">
+                                <span>Rent</span>
+                                <span>{{ number_format($item->rental_price, 0, ',', '.') }} RSD</span>
                             </div>
                         </div>
                     @endforeach
-                </section>
+                </div>
 
-                <section class="mt-12 rounded-[2.5rem] bg-slate-950 p-8 text-white">
-                    <div class="flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
-                        <div>
-                            <p class="text-sm uppercase tracking-[0.3em] text-amber-300">Oprema na sajtu</p>
-                            <h2 class="mt-4 text-3xl font-black">Iznajmljivanje i prodaja opreme na istom mestu.</h2>
-                        </div>
-                        <a href="{{ route('equipment.index') }}" class="rounded-full bg-white px-5 py-3 text-sm font-semibold text-slate-950">Sve stavke opreme</a>
-                    </div>
-
-                    <div class="mt-8 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-                        @foreach ($featuredEquipment as $item)
-                            <div class="rounded-[1.75rem] bg-white/10 p-5">
-                                <h3 class="text-lg font-bold">{{ $item->name }}</h3>
-                                <p class="mt-3 text-sm text-slate-300">{{ $item->short_description }}</p>
-                                <div class="mt-5 flex items-center justify-between">
-                                    <span class="text-xs uppercase tracking-[0.25em] text-slate-400">Rent</span>
-                                    <span class="font-bold">{{ number_format($item->rental_price, 0, ',', '.') }} RSD</span>
+                <div class="grid gap-4">
+                    @forelse ($featuredEvents as $event)
+                        <a href="{{ route('events.show', ['event' => $event->slug]) }}" class="rounded-[1.75rem] bg-white/10 p-5 backdrop-blur transition hover:bg-white/15">
+                            <div class="flex items-center justify-between gap-3">
+                                <div>
+                                    <p class="text-xs font-bold uppercase tracking-[0.28em] text-red-100">{{ $event->type->label() }}</p>
+                                    <h3 class="mt-2 text-2xl font-black">{{ $event->title }}</h3>
                                 </div>
+                                <span class="rounded-full bg-white/20 px-3 py-1 text-xs font-bold uppercase tracking-[0.18em]">{{ $event->status->label() }}</span>
                             </div>
-                        @endforeach
-                    </div>
-                </section>
-            </main>
+                            <p class="mt-4 text-sm leading-7 text-white/75">{{ $event->summary }}</p>
+                        </a>
+                    @empty
+                        <div class="rounded-[1.75rem] bg-white/10 p-5 backdrop-blur">
+                            <p class="text-sm leading-7 text-white/75">Prvi turniri i liga biće prikazani ovde čim ih uneseš kroz admin panel.</p>
+                        </div>
+                    @endforelse
+                </div>
+            </div>
         </div>
-    </body>
-</html>
+    </section>
+@endsection
