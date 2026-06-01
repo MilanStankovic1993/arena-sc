@@ -5,12 +5,15 @@ namespace App\Filament\Resources\Users;
 use App\Enums\UserRole;
 use App\Filament\Resources\Users\Pages\ManageUsers;
 use App\Models\User;
+use App\Services\UserStatisticsService;
 use BackedEnum;
+use Filament\Actions\Action;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
@@ -18,10 +21,12 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
+use Filament\Support\Enums\Width;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
+use Illuminate\Contracts\View\View;
 use UnitEnum;
 
 class UserResource extends Resource
@@ -50,6 +55,29 @@ class UserResource extends Resource
                 DatePicker::make('registered_at')->label('Datum registracije'),
                 Textarea::make('notes')->label('Napomena')->rows(4)->columnSpanFull(),
             ])->columns(2),
+            Section::make('Statistika korisnika')
+                ->visible(fn (?User $record): bool => filled($record))
+                ->schema([
+                    Placeholder::make('stats_total')
+                        ->label('Ukupno rezervacija')
+                        ->content(fn (?User $record): string => number_format(static::stats($record)['total'] ?? 0, 0, ',', '.')),
+                    Placeholder::make('stats_revenue')
+                        ->label('Ukupna potrosnja')
+                        ->content(fn (?User $record): string => static::money(static::stats($record)['revenue'] ?? 0)),
+                    Placeholder::make('stats_average')
+                        ->label('Prosecna cena')
+                        ->content(fn (?User $record): string => static::money(static::stats($record)['averageSpend'] ?? 0)),
+                    Placeholder::make('stats_cancel_rate')
+                        ->label('Stopa otkazivanja')
+                        ->content(fn (?User $record): string => number_format(static::stats($record)['cancellationRate'] ?? 0, 1, ',', '.') . '%'),
+                    Placeholder::make('stats_last')
+                        ->label('Poslednji termin')
+                        ->content(fn (?User $record): string => static::dateTime(static::stats($record)['lastReservationAt'] ?? null)),
+                    Placeholder::make('stats_favorite_sport')
+                        ->label('Najcesci sport')
+                        ->content(fn (?User $record): string => static::stats($record)['favoriteSport'] ?? 'Nema podataka'),
+                ])
+                ->columns(3),
         ]);
     }
 
@@ -85,6 +113,19 @@ class UserResource extends Resource
                     }),
             ])
             ->recordActions([
+                Action::make('statistika')
+                    ->label('Statistika')
+                    ->icon(Heroicon::OutlinedChartBarSquare)
+                    ->color('info')
+                    ->slideOver()
+                    ->modalWidth(Width::FiveExtraLarge)
+                    ->modalHeading(fn (User $record): string => 'Statistika korisnika - ' . $record->name)
+                    ->modalSubmitAction(false)
+                    ->modalCancelActionLabel('Zatvori')
+                    ->modalContent(fn (User $record): View => view('filament.resources.users.statistics', [
+                        'record' => $record,
+                        'stats' => static::stats($record),
+                    ])),
                 EditAction::make(),
                 DeleteAction::make()->visible(fn (User $record): bool => $record->role !== UserRole::SuperAdmin),
             ])
@@ -100,5 +141,24 @@ class UserResource extends Resource
         return [
             'index' => ManageUsers::route('/'),
         ];
+    }
+
+    protected static function stats(?User $record): array
+    {
+        if (! $record) {
+            return [];
+        }
+
+        return app(UserStatisticsService::class)->summary($record);
+    }
+
+    protected static function money(float|int $amount): string
+    {
+        return number_format((float) $amount, 0, ',', '.') . ' RSD';
+    }
+
+    protected static function dateTime($value): string
+    {
+        return $value?->format('d.m.Y H:i') ?? 'Nema podataka';
     }
 }

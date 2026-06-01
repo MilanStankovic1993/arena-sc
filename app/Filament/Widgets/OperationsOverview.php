@@ -15,18 +15,26 @@ class OperationsOverview extends StatsOverviewWidget
     {
         return [
             Stat::make('Ukupne rezervacije', (string) Reservation::query()->count())
-                ->description('Sve kreirane rezervacije'),
+                ->description('Sve kreirane rezervacije')
+                ->descriptionIcon('heroicon-m-calendar-days')
+                ->color('warning'),
             Stat::make(
                 'Prihod od termina',
                 number_format((float) Reservation::query()->whereIn('status', [
                     ReservationStatus::Approved->value,
                     ReservationStatus::Completed->value,
                 ])->sum('total_price'), 0, ',', '.').' RSD'
-            )->description('Odobrene i realizovane rezervacije'),
+            )->description('Odobrene i realizovane rezervacije')
+                ->descriptionIcon('heroicon-m-banknotes')
+                ->color('success'),
             Stat::make('Aktivni korisnici', (string) User::query()->where('role', 'customer')->count())
-                ->description('Registrovani korisnici za rezervacije'),
+                ->description('Registrovani korisnici za rezervacije')
+                ->descriptionIcon('heroicon-m-user-group')
+                ->color('info'),
             Stat::make('Aktivna oprema', (string) Equipment::query()->where('is_active', true)->count())
-                ->description('Artikli na sajtu'),
+                ->description('Artikli na sajtu')
+                ->descriptionIcon('heroicon-m-shopping-bag')
+                ->color('gray'),
         ];
     }
 }

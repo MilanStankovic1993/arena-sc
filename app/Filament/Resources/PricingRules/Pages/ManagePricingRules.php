@@ -5,6 +5,7 @@ namespace App\Filament\Resources\PricingRules\Pages;
 use App\Filament\Resources\PricingRules\PricingRuleResource;
 use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ManageRecords;
+use Filament\Support\Enums\Width;
 
 class ManagePricingRules extends ManageRecords
 {
@@ -13,7 +14,7 @@ class ManagePricingRules extends ManageRecords
     protected function getHeaderActions(): array
     {
         return [
-            CreateAction::make(),
+            CreateAction::make()->modalWidth(Width::Screen),
         ];
     }
 }

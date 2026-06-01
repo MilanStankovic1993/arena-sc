@@ -12,22 +12,28 @@ class ReservationPricingService
 {
     public function calculateCourtPrice(Court $court, CarbonInterface $startsAt, CarbonInterface $endsAt): float
     {
+        $durationMinutes = (int) $startsAt->diffInMinutes($endsAt);
+
         $rule = PricingRule::query()
-            ->where('court_id', $court->id)
+            ->where('sport_id', $court->sport_id)
             ->where('is_active', true)
-            ->where(fn ($query) => $query->whereNull('day_of_week')->orWhere('day_of_week', (int) $startsAt->dayOfWeek))
+            ->where(function ($query) use ($startsAt) {
+                $query
+                    ->whereNull('days_of_week')
+                    ->orWhereJsonContains('days_of_week', (int) $startsAt->dayOfWeek);
+            })
             ->whereTime('start_time', '<=', $startsAt->format('H:i:s'))
             ->whereTime('end_time', '>=', $endsAt->format('H:i:s'))
             ->where(fn ($query) => $query->whereNull('valid_from')->orWhereDate('valid_from', '<=', $startsAt->toDateString()))
             ->where(fn ($query) => $query->whereNull('valid_to')->orWhereDate('valid_to', '>=', $startsAt->toDateString()))
-            ->orderByDesc('price')
+            ->orderBy('start_time')
             ->first();
 
         if ($rule) {
-            return (float) $rule->price;
+            return $rule->priceForDuration($durationMinutes);
         }
 
-        $hours = max(1, (int) ceil($startsAt->diffInMinutes($endsAt) / 60));
+        $hours = max(1, (float) ($durationMinutes / 60));
 
         return (float) $court->base_price * $hours;
     }

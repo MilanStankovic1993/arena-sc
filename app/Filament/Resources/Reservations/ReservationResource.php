@@ -107,6 +107,13 @@ class ReservationResource extends Resource
                 EditAction::make(),
                 DeleteAction::make(),
             ])
+            ->headerActions([
+                \Filament\Actions\Action::make('calendar_view')
+                    ->label('Kalendar')
+                    ->icon('heroicon-o-calendar')
+                    ->color('warning') 
+                    ->url(fn (): string => static::getUrl('calendar')), 
+            ])
             ->toolbarActions([
                 BulkActionGroup::make([
                     DeleteBulkAction::make(),
@@ -118,6 +125,7 @@ class ReservationResource extends Resource
     {
         return [
             'index' => ManageReservations::route('/'),
+            'calendar' => Pages\CalendarReservations::route('/calendar'),
         ];
     }
 }

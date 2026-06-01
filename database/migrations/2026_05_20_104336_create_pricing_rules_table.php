@@ -13,12 +13,14 @@ return new class extends Migration
     {
         Schema::create('pricing_rules', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('court_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('sport_id')->constrained()->cascadeOnDelete();
             $table->string('name');
-            $table->unsignedTinyInteger('day_of_week')->nullable();
+            $table->json('days_of_week')->nullable();
             $table->time('start_time');
             $table->time('end_time');
-            $table->decimal('price', 10, 2);
+            $table->decimal('price_60', 10, 2);
+            $table->decimal('price_90', 10, 2);
+            $table->decimal('price_120', 10, 2);
             $table->date('valid_from')->nullable();
             $table->date('valid_to')->nullable();
             $table->boolean('is_active')->default(true);

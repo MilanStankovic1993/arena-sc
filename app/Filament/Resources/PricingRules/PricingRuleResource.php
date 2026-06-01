@@ -9,6 +9,7 @@ use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
+use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
@@ -17,6 +18,7 @@ use Filament\Forms\Components\Toggle;
 use Filament\Resources\Resource;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
+use Filament\Support\Enums\Width;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
@@ -36,30 +38,53 @@ class PricingRuleResource extends Resource
 
     protected static ?string $recordTitleAttribute = 'name';
 
+    protected static function daysOfWeekOptions(): array
+    {
+        return [
+            1 => 'Pon',
+            2 => 'Uto',
+            3 => 'Sre',
+            4 => 'Cet',
+            5 => 'Pet',
+            6 => 'Sub',
+            0 => 'Ned',
+        ];
+    }
+
     public static function form(Schema $schema): Schema
     {
         return $schema->components([
             Section::make('Pravilo cene')->schema([
-                Select::make('court_id')->label('Teren')->relationship('court', 'name')->required()->searchable()->preload(),
-                TextInput::make('name')->label('Naziv')->required(),
-                Select::make('day_of_week')
-                    ->label('Dan u nedelji')
-                    ->options([
-                        0 => 'Nedelja',
-                        1 => 'Ponedeljak',
-                        2 => 'Utorak',
-                        3 => 'Sreda',
-                        4 => 'Cetvrtak',
-                        5 => 'Petak',
-                        6 => 'Subota',
-                    ]),
-                TimePicker::make('start_time')->label('Od')->seconds(false)->required(),
-                TimePicker::make('end_time')->label('Do')->seconds(false)->required(),
-                TextInput::make('price')->label('Cena')->numeric()->prefix('RSD')->required(),
-                DatePicker::make('valid_from')->label('Vazi od'),
-                DatePicker::make('valid_to')->label('Vazi do'),
-                Toggle::make('is_active')->label('Aktivno pravilo')->default(true),
-            ])->columns(2),
+                Select::make('sport_id')
+                    ->label('Sport')
+                    ->relationship('sport', 'name')
+                    ->required()
+                    ->searchable()
+                    ->preload()
+                    ->columnSpan(3),
+                TextInput::make('name')
+                    ->label('Naziv')
+                    ->required()
+                    ->columnSpan(9),
+                CheckboxList::make('days_of_week')
+                    ->label('Dani u nedelji')
+                    ->options(static::daysOfWeekOptions())
+                    ->columns(7)
+                    ->gridDirection('row')
+                    ->helperText('Ako nista ne oznacis, pravilo vazi za sve dane.')
+                    ->columnSpanFull(),
+                TimePicker::make('start_time')->label('Od')->seconds(false)->required()->columnSpan(2),
+                TimePicker::make('end_time')->label('Do')->seconds(false)->required()->columnSpan(2),
+                Toggle::make('is_active')->label('Aktivno pravilo')->default(true)->inline(false)->columnSpan(2),
+                DatePicker::make('valid_from')->label('Vazi od')->columnSpan(3),
+                DatePicker::make('valid_to')->label('Vazi do')->columnSpan(3),
+                TextInput::make('price_60')->label('Cena za 1h')->numeric()->prefix('RSD')->required()->columnSpan(4),
+                TextInput::make('price_90')->label('Cena za 1,5h')->numeric()->prefix('RSD')->required()->columnSpan(4),
+                TextInput::make('price_120')->label('Cena za 2h')->numeric()->prefix('RSD')->required()->columnSpan(4),
+            ])
+                ->columns(12)
+                ->columnSpanFull()
+                ->maxWidth(Width::Full),
         ]);
     }
 
@@ -69,18 +94,20 @@ class PricingRuleResource extends Resource
             ->recordTitleAttribute('name')
             ->columns([
                 TextColumn::make('name')->label('Pravilo')->searchable(),
-                TextColumn::make('court.name')->label('Teren')->badge(),
-                TextColumn::make('day_of_week')->label('Dan'),
+                TextColumn::make('sport.name')->label('Sport')->badge(),
+                TextColumn::make('days_label')->label('Dani')->wrap(),
                 TextColumn::make('start_time')->label('Od'),
                 TextColumn::make('end_time')->label('Do'),
-                TextColumn::make('price')->label('Cena')->money('RSD', divideBy: 1),
+                TextColumn::make('price_60')->label('1h')->money('RSD', divideBy: 1),
+                TextColumn::make('price_90')->label('1,5h')->money('RSD', divideBy: 1),
+                TextColumn::make('price_120')->label('2h')->money('RSD', divideBy: 1),
                 IconColumn::make('is_active')->label('Aktivno')->boolean(),
             ])
             ->filters([
-                SelectFilter::make('court')->relationship('court', 'name'),
+                SelectFilter::make('sport')->relationship('sport', 'name'),
             ])
             ->recordActions([
-                EditAction::make(),
+                EditAction::make()->modalWidth(Width::Screen),
                 DeleteAction::make(),
             ])
             ->toolbarActions([

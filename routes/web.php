@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AboutController;
+use App\Http\Controllers\BookingController;
 use App\Http\Controllers\CourtController;
 use App\Http\Controllers\EquipmentController;
 use App\Http\Controllers\EventController;
@@ -11,6 +12,8 @@ use App\Http\Controllers\SportController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', LandingPageController::class)->name('home');
+Route::get('/rezervisi-termin', BookingController::class)->name('booking.index');
+Route::get('/rezervisi-termin/pregled', [BookingController::class, 'availability'])->name('booking.availability');
 Route::get('/o-nama', AboutController::class)->name('about');
 Route::get('/sportovi', [SportController::class, 'index'])->name('sports.index');
 Route::get('/tereni/{court:slug}', [CourtController::class, 'show'])->name('courts.show');

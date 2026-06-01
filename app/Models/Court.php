@@ -36,11 +36,6 @@ class Court extends Model
         return $this->belongsTo(Sport::class);
     }
 
-    public function pricingRules(): HasMany
-    {
-        return $this->hasMany(PricingRule::class);
-    }
-
     public function reservations(): HasMany
     {
         return $this->hasMany(Reservation::class);

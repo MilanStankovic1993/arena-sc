@@ -132,35 +132,69 @@ class DatabaseSeeder extends Seeder
             ],
         );
 
-        foreach ([$padelOne, $padelTwo, $basketCourt] as $court) {
-            PricingRule::query()->updateOrCreate(
-                [
-                    'court_id' => $court->id,
-                    'name' => 'Radni dan 08-16',
-                    'start_time' => '08:00:00',
-                    'end_time' => '16:00:00',
-                ],
-                [
-                    'day_of_week' => null,
-                    'price' => $court->base_price,
-                    'is_active' => true,
-                ],
-            );
+        PricingRule::query()->updateOrCreate(
+            [
+                'sport_id' => $padel->id,
+                'name' => 'Padel dnevni blok',
+                'start_time' => '08:00:00',
+                'end_time' => '18:00:00',
+            ],
+            [
+                'days_of_week' => [1, 2, 3, 4, 5],
+                'price_60' => 2800,
+                'price_90' => 4000,
+                'price_120' => 5200,
+                'is_active' => true,
+            ],
+        );
 
-            PricingRule::query()->updateOrCreate(
-                [
-                    'court_id' => $court->id,
-                    'name' => 'Vecernji termin',
-                    'start_time' => '16:00:00',
-                    'end_time' => '23:00:00',
-                ],
-                [
-                    'day_of_week' => null,
-                    'price' => $court->base_price + 500,
-                    'is_active' => true,
-                ],
-            );
-        }
+        PricingRule::query()->updateOrCreate(
+            [
+                'sport_id' => $padel->id,
+                'name' => 'Padel vecernji blok',
+                'start_time' => '18:00:00',
+                'end_time' => '23:00:00',
+            ],
+            [
+                'days_of_week' => [0, 1, 2, 3, 4, 5, 6],
+                'price_60' => 3300,
+                'price_90' => 4700,
+                'price_120' => 6100,
+                'is_active' => true,
+            ],
+        );
+
+        PricingRule::query()->updateOrCreate(
+            [
+                'sport_id' => $basket->id,
+                'name' => 'Basket dnevni blok',
+                'start_time' => '08:00:00',
+                'end_time' => '18:00:00',
+            ],
+            [
+                'days_of_week' => [1, 2, 3, 4, 5],
+                'price_60' => 2200,
+                'price_90' => 3200,
+                'price_120' => 4200,
+                'is_active' => true,
+            ],
+        );
+
+        PricingRule::query()->updateOrCreate(
+            [
+                'sport_id' => $basket->id,
+                'name' => 'Basket vecernji blok',
+                'start_time' => '18:00:00',
+                'end_time' => '23:00:00',
+            ],
+            [
+                'days_of_week' => [0, 1, 2, 3, 4, 5, 6],
+                'price_60' => 2500,
+                'price_90' => 3600,
+                'price_120' => 4700,
+                'is_active' => true,
+            ],
+        );
 
         $racket = Equipment::query()->updateOrCreate(
             ['slug' => 'padel-reket'],

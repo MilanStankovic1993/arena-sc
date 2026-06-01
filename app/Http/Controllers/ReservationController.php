@@ -43,7 +43,7 @@ class ReservationController extends Controller
         $equipmentItems = $pricingService->hydrateEquipmentPricing($request->input('equipment', []));
         $courtPrice = $pricingService->calculateCourtPrice($court, $startsAt, $endsAt);
         $equipmentPrice = $pricingService->calculateEquipmentPrice($equipmentItems);
-        $status = $court->requires_approval ? ReservationStatus::Pending : ReservationStatus::Approved;
+        $status = ReservationStatus::Approved;
 
         DB::transaction(function () use (
             $request,
@@ -63,7 +63,6 @@ class ReservationController extends Controller
                 'starts_at' => $startsAt,
                 'ends_at' => $endsAt,
                 'duration_minutes' => $request->integer('duration_minutes'),
-                'players_count' => $request->integer('players_count'),
                 'court_price' => $courtPrice,
                 'equipment_price' => $equipmentPrice,
                 'total_price' => $courtPrice + $equipmentPrice,
@@ -76,6 +75,6 @@ class ReservationController extends Controller
             }
         });
 
-        return redirect()->route('dashboard')->with('status', 'Zahtev za rezervaciju je uspesno poslat.');
+        return redirect()->route('dashboard')->with('status', 'Rezervacija je uspesno potvrdena.');
     }
 }

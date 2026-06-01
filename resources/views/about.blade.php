@@ -1,31 +1,35 @@
 @extends('layouts.site', ['title' => 'O nama | Arena SC'])
 
 @section('content')
-    <section class="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
-        <div class="grid gap-6 lg:grid-cols-[0.95fr_1.05fr]">
-            <div class="site-card overflow-hidden bg-[linear-gradient(135deg,rgba(13,59,102,0.98),rgba(215,38,61,0.9))] p-8 text-white">
-                <p class="text-sm font-bold uppercase tracking-[0.3em] text-blue-100">O nama</p>
-                <h1 class="mt-4 text-5xl font-black leading-none">Mesto za rekreativce, timove i sportske događaje.</h1>
-                <p class="mt-6 text-base leading-8 text-white/75">
-                    Ovo je početni tekst stranice O nama. Kasnije možemo uneti tvoju stvarnu priču o centru, prostoru, timu, trenerima, ambijentu i razlozima zašto korisnici biraju baš Arena SC.
-                </p>
-            </div>
-
-            <div class="grid gap-6">
-                <div class="site-card p-8">
-                    <h2 class="text-2xl font-black text-[var(--arena-blue)]">Sta ovde korisnik treba da oseti</h2>
-                    <p class="mt-4 text-sm leading-8 text-slate-600">
-                        Da je prostor profesionalan, ali prijatan. Da su termini pregledni. Da su pravila jasna. Da postoji ozbiljan sistem za turnire, ligu i statistiku, a da je korisniku rezervacija ipak laka i brza.
+    <section class="site-grid py-10 sm:py-12">
+        <div class="page-stack">
+            <div class="grid gap-6 lg:grid-cols-[0.95fr_1.05fr]">
+                <div class="page-hero-dark overflow-hidden">
+                    <span class="dark-eyebrow-chip">O nama</span>
+                    <h1 class="hero-title-dark mt-6 text-5xl sm:text-6xl">Mesto za rekreativce, timove i sportske dogadjaje.</h1>
+                    <p class="hero-copy-dark mt-5">
+                        Ovo je pocetni tekst stranice O nama. Kasnije ovde unosimo tvoju stvarnu pricu o centru, prostoru, timu, trenerima, ambijentu i razlozima zasto korisnici biraju bas Arena SC.
                     </p>
                 </div>
-                <div class="grid gap-6 md:grid-cols-2">
-                    <div class="site-card p-6">
-                        <p class="text-xs font-bold uppercase tracking-[0.3em] text-[var(--arena-red)]">Misija</p>
-                        <p class="mt-3 text-sm leading-7 text-slate-600">Podrazumevani tekst koji kasnije zamenjujemo tvojim konkretnim sadržajem.</p>
+
+                <div class="premium-grid">
+                    <div class="premium-card p-8">
+                        <span class="eyebrow-chip">Utisak prostora</span>
+                        <h2 class="hero-title mt-5 text-3xl sm:text-4xl">Profesionalno, pregledno i dovoljno ozbiljno da ljudi veruju sistemu.</h2>
+                        <p class="hero-copy mt-5 text-sm">
+                            Korisnik ovde treba da oseti da je prostor moderan i pouzdan, da su termini jasni, pravila transparentna i da iza svega postoji ozbiljna organizacija za rezervacije, ligu i dogadjaje.
+                        </p>
                     </div>
-                    <div class="site-card p-6">
-                        <p class="text-xs font-bold uppercase tracking-[0.3em] text-[var(--arena-blue-soft)]">Vizija</p>
-                        <p class="mt-3 text-sm leading-7 text-slate-600">Ovde možemo kasnije ubaciti plan razvoja centra, lige, događaja i programa za članove.</p>
+
+                    <div class="premium-grid md:grid-cols-2">
+                        <div class="premium-card p-6">
+                            <p class="text-xs font-extrabold uppercase tracking-[0.3em] text-[color:var(--arena-forest-glow)]">Misija</p>
+                            <p class="mt-3 text-sm leading-7 text-[color:var(--arena-muted)]">Podrazumevani tekst koji kasnije zamenjujemo tvojim konkretnim sadrzajem i tonom komunikacije centra.</p>
+                        </div>
+                        <div class="premium-card p-6">
+                            <p class="text-xs font-extrabold uppercase tracking-[0.3em] text-[color:var(--arena-forest)]">Vizija</p>
+                            <p class="mt-3 text-sm leading-7 text-[color:var(--arena-muted)]">Ovde mozemo kasnije ubaciti plan razvoja centra, lige, turnira, clanstava i dodatnih programa za igrace.</p>
+                        </div>
                     </div>
                 </div>
             </div>
