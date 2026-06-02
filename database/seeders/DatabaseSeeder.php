@@ -251,7 +251,7 @@ class DatabaseSeeder extends Seeder
             ],
             [
                 'sport_id' => $padel->id,
-                'status' => 'approved',
+                'status' => 'reserved',
                 'ends_at' => (clone $startsAt)->addHour(),
                 'duration_minutes' => 60,
                 'players_count' => 4,
@@ -259,7 +259,6 @@ class DatabaseSeeder extends Seeder
                 'equipment_price' => 800,
                 'total_price' => 4100,
                 'customer_note' => 'Treba nam i dva reketa.',
-                'approved_at' => now(),
             ],
         );
 

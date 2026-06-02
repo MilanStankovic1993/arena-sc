@@ -36,6 +36,10 @@ class PricingRuleResource extends Resource
 
     protected static string|UnitEnum|null $navigationGroup = 'Rezervacije';
 
+    protected static ?string $modelLabel = 'Pravilo cene';
+
+    protected static ?string $pluralModelLabel = 'Cenovnici termina';
+
     protected static ?string $recordTitleAttribute = 'name';
 
     protected static function daysOfWeekOptions(): array

@@ -58,8 +58,7 @@ class CalendarReservationsWidget extends CalendarWidget
                 $title = $reservation->user?->name ?: 'Gost';
 
                 $color = match ($reservation->status->value ?? $reservation->status) {
-                    'approved', 'completed' => '#16a34a',
-                    'pending' => '#d97706',
+                    'reserved' => '#16a34a',
                     'cancelled' => '#dc2626',
                     default => '#2563eb',
                 };

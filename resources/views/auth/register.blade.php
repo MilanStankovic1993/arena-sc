@@ -1,58 +1,54 @@
 <x-guest-layout>
-    <form method="POST" action="{{ route('register') }}">
-        @csrf
-
-        <!-- Name -->
-        <div>
-            <x-input-label for="name" :value="__('Name')" />
-            <x-text-input id="name" class="block mt-1 w-full" type="text" name="name" :value="old('name')" required autofocus autocomplete="name" />
-            <x-input-error :messages="$errors->get('name')" class="mt-2" />
+    <div class="space-y-8">
+        <div class="space-y-4">
+            <span class="eyebrow-chip">Registracija</span>
+            <h2 class="section-title text-[2.7rem] sm:text-[3.3rem]">Kreirajte svoj nalog.</h2>
         </div>
 
-        <div class="mt-4">
-            <x-input-label for="phone" value="Telefon" />
-            <x-text-input id="phone" class="block mt-1 w-full" type="text" name="phone" :value="old('phone')" autocomplete="tel" />
-            <x-input-error :messages="$errors->get('phone')" class="mt-2" />
-        </div>
+        <form method="POST" action="{{ route('register') }}" class="space-y-5">
+            @csrf
 
-        <!-- Email Address -->
-        <div class="mt-4">
-            <x-input-label for="email" :value="__('Email')" />
-            <x-text-input id="email" class="block mt-1 w-full" type="email" name="email" :value="old('email')" required autocomplete="username" />
-            <x-input-error :messages="$errors->get('email')" class="mt-2" />
-        </div>
+            <div class="auth-field">
+                <x-input-label for="name" value="Ime i prezime" />
+                <x-text-input id="name" type="text" name="name" :value="old('name')" required autofocus autocomplete="name" />
+                <x-input-error :messages="$errors->get('name')" />
+            </div>
 
-        <!-- Password -->
-        <div class="mt-4">
-            <x-input-label for="password" :value="__('Password')" />
+            <div class="auth-field">
+                <x-input-label for="phone" value="Telefon" />
+                <x-text-input id="phone" type="text" name="phone" :value="old('phone')" autocomplete="tel" />
+                <x-input-error :messages="$errors->get('phone')" />
+            </div>
 
-            <x-text-input id="password" class="block mt-1 w-full"
-                            type="password"
-                            name="password"
-                            required autocomplete="new-password" />
+            <div class="auth-field">
+                <x-input-label for="email" value="Email adresa" />
+                <x-text-input id="email" type="email" name="email" :value="old('email')" required autocomplete="username" />
+                <x-input-error :messages="$errors->get('email')" />
+            </div>
 
-            <x-input-error :messages="$errors->get('password')" class="mt-2" />
-        </div>
+            <div class="grid gap-5 sm:grid-cols-2">
+                <div class="auth-field">
+                    <x-input-label for="password" value="Lozinka" />
+                    <x-text-input id="password" type="password" name="password" required autocomplete="new-password" />
+                    <x-input-error :messages="$errors->get('password')" />
+                </div>
 
-        <!-- Confirm Password -->
-        <div class="mt-4">
-            <x-input-label for="password_confirmation" :value="__('Confirm Password')" />
+                <div class="auth-field">
+                    <x-input-label for="password_confirmation" value="Potvrda lozinke" />
+                    <x-text-input id="password_confirmation" type="password" name="password_confirmation" required autocomplete="new-password" />
+                    <x-input-error :messages="$errors->get('password_confirmation')" />
+                </div>
+            </div>
 
-            <x-text-input id="password_confirmation" class="block mt-1 w-full"
-                            type="password"
-                            name="password_confirmation" required autocomplete="new-password" />
+            <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <a class="auth-link" href="{{ route('login') }}">
+                    Vec imate nalog? Prijavite se
+                </a>
 
-            <x-input-error :messages="$errors->get('password_confirmation')" class="mt-2" />
-        </div>
-
-        <div class="flex items-center justify-end mt-4">
-            <a class="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" href="{{ route('login') }}">
-                {{ __('Vec imas nalog?') }}
-            </a>
-
-            <x-primary-button class="ms-4">
-                {{ __('Kreiraj nalog') }}
-            </x-primary-button>
-        </div>
-    </form>
+                <x-primary-button class="w-full justify-center sm:w-auto">
+                    Kreiraj nalog
+                </x-primary-button>
+            </div>
+        </form>
+    </div>
 </x-guest-layout>

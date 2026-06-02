@@ -2,12 +2,18 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\Storage;
 
 class Court extends Model
 {
+    protected $appends = [
+        'image_url',
+    ];
+
     protected $fillable = [
         'sport_id',
         'name',
@@ -44,5 +50,10 @@ class Court extends Model
     public function closures(): HasMany
     {
         return $this->hasMany(CourtClosure::class);
+    }
+
+    protected function imageUrl(): Attribute
+    {
+        return Attribute::get(fn (): ?string => $this->image ? Storage::disk('public')->url($this->image) : null);
     }
 }

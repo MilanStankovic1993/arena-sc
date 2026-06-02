@@ -24,7 +24,6 @@ class Reservation extends Model
         'customer_note',
         'admin_note',
         'cancellation_reason',
-        'approved_at',
         'cancelled_at',
     ];
 
@@ -37,7 +36,6 @@ class Reservation extends Model
             'court_price' => 'decimal:2',
             'equipment_price' => 'decimal:2',
             'total_price' => 'decimal:2',
-            'approved_at' => 'datetime',
             'cancelled_at' => 'datetime',
         ];
     }

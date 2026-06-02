@@ -16,6 +16,7 @@ use Filament\Forms\Components\Toggle;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Schemas\Components\Section;
+use Filament\Support\Enums\Width;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
@@ -31,6 +32,10 @@ class SportResource extends Resource
     protected static ?string $navigationLabel = 'Sportovi';
 
     protected static string|UnitEnum|null $navigationGroup = 'Katalog';
+
+    protected static ?string $modelLabel = 'Sport';
+
+    protected static ?string $pluralModelLabel = 'Sportovi';
 
     protected static ?string $recordTitleAttribute = 'name';
 
@@ -62,7 +67,7 @@ class SportResource extends Resource
             ])
             ->filters([])
             ->recordActions([
-                EditAction::make(),
+                EditAction::make()->modalWidth(Width::Screen),
                 DeleteAction::make(),
             ])
             ->toolbarActions([

@@ -42,20 +42,15 @@
         <x-filament::section>
             <div class="analytics-section-title">Rezervacije - izabrani period</div>
 
-            <div class="analytics-card-grid analytics-card-grid--four analytics-card-grid--compact">
+            <div class="analytics-card-grid analytics-card-grid--compact" style="grid-template-columns: repeat(2, minmax(0, 1fr));">
                 <div class="analytics-metric-card">
                     <span class="analytics-metric-label">Ukupno rezervacija</span>
                     <strong class="analytics-metric-value">{{ number_format($period['total'], 0, ',', '.') }}</strong>
                 </div>
 
                 <div class="analytics-metric-card">
-                    <span class="analytics-metric-label">Aktivnih</span>
-                    <strong class="analytics-metric-value analytics-metric-value--blue">{{ number_format($period['active'], 0, ',', '.') }}</strong>
-                </div>
-
-                <div class="analytics-metric-card">
-                    <span class="analytics-metric-label">Zavrsenih</span>
-                    <strong class="analytics-metric-value">{{ number_format($period['completed'], 0, ',', '.') }}</strong>
+                    <span class="analytics-metric-label">Rezervisane</span>
+                    <strong class="analytics-metric-value analytics-metric-value--blue">{{ number_format($period['reserved'], 0, ',', '.') }}</strong>
                 </div>
 
                 <div class="analytics-metric-card">

@@ -1,25 +1,30 @@
 <x-guest-layout>
-    <div class="mb-4 text-sm text-gray-600">
-        {{ __('Forgot your password? No problem. Just let us know your email address and we will email you a password reset link that will allow you to choose a new one.') }}
+    <div class="space-y-8">
+        <div class="space-y-4">
+            <span class="eyebrow-chip">Obnova pristupa</span>
+            <h2 class="section-title text-[2.5rem] sm:text-[3.2rem]">Resetujte lozinku.</h2>
+        </div>
+
+        <x-auth-session-status class="mb-2" :status="session('status')" />
+
+        <form method="POST" action="{{ route('password.email') }}" class="space-y-5">
+            @csrf
+
+            <div class="auth-field">
+                <x-input-label for="email" value="Email adresa" />
+                <x-text-input id="email" type="email" name="email" :value="old('email')" required autofocus />
+                <x-input-error :messages="$errors->get('email')" />
+            </div>
+
+            <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <a class="auth-link" href="{{ route('login') }}">
+                    Nazad na prijavu
+                </a>
+
+                <x-primary-button class="w-full justify-center sm:w-auto">
+                    Posalji link
+                </x-primary-button>
+            </div>
+        </form>
     </div>
-
-    <!-- Session Status -->
-    <x-auth-session-status class="mb-4" :status="session('status')" />
-
-    <form method="POST" action="{{ route('password.email') }}">
-        @csrf
-
-        <!-- Email Address -->
-        <div>
-            <x-input-label for="email" :value="__('Email')" />
-            <x-text-input id="email" class="block mt-1 w-full" type="email" name="email" :value="old('email')" required autofocus />
-            <x-input-error :messages="$errors->get('email')" class="mt-2" />
-        </div>
-
-        <div class="flex items-center justify-end mt-4">
-            <x-primary-button>
-                {{ __('Email Password Reset Link') }}
-            </x-primary-button>
-        </div>
-    </form>
 </x-guest-layout>

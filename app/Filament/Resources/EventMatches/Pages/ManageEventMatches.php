@@ -5,6 +5,7 @@ namespace App\Filament\Resources\EventMatches\Pages;
 use App\Filament\Resources\EventMatches\EventMatchResource;
 use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ManageRecords;
+use Filament\Support\Enums\Width;
 
 class ManageEventMatches extends ManageRecords
 {
@@ -13,7 +14,7 @@ class ManageEventMatches extends ManageRecords
     protected function getHeaderActions(): array
     {
         return [
-            CreateAction::make(),
+            CreateAction::make()->modalWidth(Width::Screen),
         ];
     }
 }

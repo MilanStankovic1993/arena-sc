@@ -39,6 +39,10 @@ class UserResource extends Resource
 
     protected static string|UnitEnum|null $navigationGroup = 'Korisnici i analitika';
 
+    protected static ?string $modelLabel = 'Korisnik';
+
+    protected static ?string $pluralModelLabel = 'Korisnici';
+
     protected static ?string $recordTitleAttribute = 'name';
 
     public static function form(Schema $schema): Schema
@@ -126,7 +130,7 @@ class UserResource extends Resource
                         'record' => $record,
                         'stats' => static::stats($record),
                     ])),
-                EditAction::make(),
+                EditAction::make()->modalWidth(Width::Screen),
                 DeleteAction::make()->visible(fn (User $record): bool => $record->role !== UserRole::SuperAdmin),
             ])
             ->toolbarActions([

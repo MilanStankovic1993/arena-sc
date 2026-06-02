@@ -4,33 +4,120 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="csrf-token" content="{{ csrf_token() }}">
+        <meta name="theme-color" content="#0F2A1F">
 
-        <title>{{ config('app.name', 'Laravel') }}</title>
+        <title>{{ config('app.name', 'Arena SC') }}</title>
+        <link rel="icon" type="image/svg+xml" href="{{ asset('brand/favicon.svg') }}">
+        <link rel="alternate icon" href="{{ asset('favicon.ico') }}">
 
-        <!-- Fonts -->
-        <link rel="preconnect" href="https://fonts.bunny.net">
-        <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
-
-        <!-- Scripts -->
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     </head>
-    <body class="font-sans antialiased">
-        <div class="min-h-screen bg-gray-100">
-            @include('layouts.navigation')
+    <body>
+        <div class="account-shell">
+            <div class="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[38rem] bg-[radial-gradient(circle_at_top_left,rgba(245,245,242,0.16),transparent_30%),radial-gradient(circle_at_top_right,rgba(15,42,31,0.2),transparent_28%),linear-gradient(180deg,rgba(9,23,17,0.12),transparent_74%)]"></div>
+            <span class="floating-orb floating-orb--sand absolute -left-16 top-24 -z-10 h-52 w-52"></span>
+            <span class="floating-orb floating-orb--forest absolute right-0 top-[28rem] -z-10 h-72 w-72"></span>
 
-            <!-- Page Heading -->
-            @isset($header)
-                <header class="bg-white shadow">
-                    <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-                        {{ $header }}
+            <header class="premium-header site-grid pt-4 sm:pt-6">
+                <div class="premium-nav-shell flex items-center justify-between gap-4">
+                    <a href="{{ route('home') }}" class="premium-brand">
+                        <span class="logo-badge">
+                            <img src="{{ asset('brand/arena-sc-mark.svg') }}" alt="Arena SC logo" class="h-11 w-11 sm:h-12 sm:w-12">
+                        </span>
+                        <span class="premium-brand-copy">
+                            <span class="block text-base font-black uppercase tracking-[0.28em] text-[color:var(--arena-paper)] sm:text-lg sm:tracking-[0.34em]">Sportski centar</span>
+                            <span class="brand-script -mt-1 block">Arena</span>
+                        </span>
+                    </a>
+
+                    <nav class="premium-nav-links">
+                        <a href="{{ route('home') }}" class="account-nav-link {{ request()->routeIs('home') ? 'is-active' : '' }}">Pocetna</a>
+                        <a href="{{ route('dashboard') }}" class="account-nav-link {{ request()->routeIs('dashboard') ? 'is-active' : '' }}">Moj nalog</a>
+                        <a href="{{ route('profile.edit') }}" class="account-nav-link {{ request()->routeIs('profile.*') ? 'is-active' : '' }}">Profil</a>
+                        <a href="{{ route('sports.index') }}" class="account-nav-link {{ request()->routeIs('sports.*') || request()->routeIs('courts.*') ? 'is-active' : '' }}">Tereni</a>
+                        <a href="{{ route('equipment.index') }}" class="account-nav-link {{ request()->routeIs('equipment.*') ? 'is-active' : '' }}">Oprema</a>
+                        <a href="{{ route('events.index') }}" class="account-nav-link {{ request()->routeIs('events.*') ? 'is-active' : '' }}">Dogadjaji</a>
+                        @if(auth()->user()?->canAccessPanel(app(\Filament\PanelRegistry::class)->get('admin')))
+                            <a href="{{ url('/admin') }}" class="arena-button-secondary">Admin panel</a>
+                        @endif
+                    </nav>
+
+                    <details class="relative xl:hidden">
+                        <summary class="flex h-12 w-12 cursor-pointer items-center justify-center rounded-full border border-[color:var(--arena-sand-glow)] bg-[rgba(245,245,242,0.08)] text-[color:var(--arena-sand)] marker:content-none">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M4 7h16M4 12h16M4 17h16" />
+                            </svg>
+                        </summary>
+                        <div class="mobile-sheet absolute right-0 top-[calc(100%+0.9rem)] z-20 w-[min(18rem,86vw)]">
+                            <div class="grid gap-3">
+                                <a href="{{ route('home') }}" class="site-link">Pocetna</a>
+                                <a href="{{ route('dashboard') }}" class="site-link">Moj nalog</a>
+                                <a href="{{ route('profile.edit') }}" class="site-link">Profil</a>
+                                <a href="{{ route('sports.index') }}" class="site-link">Tereni</a>
+                                <a href="{{ route('equipment.index') }}" class="site-link">Oprema</a>
+                                <a href="{{ route('events.index') }}" class="site-link">Dogadjaji</a>
+                                @if(auth()->user()?->canAccessPanel(app(\Filament\PanelRegistry::class)->get('admin')))
+                                    <a href="{{ url('/admin') }}" class="site-link">Admin panel</a>
+                                @endif
+                            </div>
+
+                            <div class="mt-5 grid gap-3">
+                                <form method="POST" action="{{ route('logout') }}">
+                                    @csrf
+                                    <button type="submit" class="arena-button-primary w-full">Odjava</button>
+                                </form>
+                            </div>
+                        </div>
+                    </details>
+
+                    <div class="hidden xl:block">
+                        <form method="POST" action="{{ route('logout') }}">
+                            @csrf
+                            <button type="submit" class="arena-button-primary">Odjava</button>
+                        </form>
                     </div>
-                </header>
-            @endisset
+                </div>
+            </header>
 
-            <!-- Page Content -->
-            <main>
-                {{ $slot }}
+            <main class="account-grid">
+                <div class="account-stack">
+                    @isset($header)
+                        <div class="page-hero overflow-hidden">
+                            {{ $header }}
+                        </div>
+                    @endisset
+
+                    {{ $slot }}
+                </div>
             </main>
+
+            <footer class="site-grid pb-12 pt-12 sm:pt-14">
+                <div class="page-hero-dark overflow-hidden">
+                    <div class="site-footer-grid">
+                        <div>
+                            <div class="flex items-center gap-3">
+                                <span class="logo-badge">
+                                    <img src="{{ asset('brand/arena-sc-mark.svg') }}" alt="Arena SC logo" class="h-10 w-10">
+                                </span>
+                                <div>
+                                    <p class="text-sm font-extrabold uppercase tracking-[0.34em] text-[color:var(--arena-paper)]">Sportski centar</p>
+                                    <p class="brand-script mt-1 text-4xl">Arena</p>
+                                </div>
+                            </div>
+                            <h2 class="mt-5 max-w-3xl text-3xl font-black sm:text-4xl">Jedan sistem za nalog, rezervacije, opremu i dogadjaje.</h2>
+                        </div>
+
+                        <div class="grid gap-3 text-sm font-extrabold uppercase tracking-[0.18em] text-white/78 sm:grid-cols-2">
+                            <a href="{{ route('dashboard') }}">Moj nalog</a>
+                            <a href="{{ route('profile.edit') }}">Profil</a>
+                            <a href="{{ route('booking.index') }}">Rezervisi termin</a>
+                            <a href="{{ route('sports.index') }}">Tereni</a>
+                            <a href="{{ route('equipment.index') }}">Oprema</a>
+                            <a href="{{ route('events.index') }}">Dogadjaji</a>
+                        </div>
+                    </div>
+                </div>
+            </footer>
         </div>
     </body>
 </html>

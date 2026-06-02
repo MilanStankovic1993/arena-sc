@@ -10,7 +10,7 @@
                     </div>
 
                     <div class="analytics-donut-label">{{ $duration['label'] }}</div>
-                    <div class="analytics-donut-meta">{{ number_format($duration['count'], 0, ',', '.') }} termina</div>
+                    <div class="analytics-donut-meta">{{ number_format($duration['count'], 0, ',', '.') }} {{ $duration['count'] === 1 ? 'termin' : 'termina' }}</div>
                 </div>
             @empty
                 <p class="analytics-empty-state">Nema podataka za trajanja rezervacija.</p>

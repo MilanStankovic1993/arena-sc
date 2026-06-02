@@ -41,7 +41,7 @@
                             <div class="flex items-start justify-between gap-4">
                                 <span class="dark-eyebrow-chip">Prostor i atmosfera</span>
                                 <span class="logo-badge">
-                                    <img src="{{ asset('brand/arena-sc-mark.png') }}" alt="Arena SC amblem" class="h-16 w-16 sm:h-20 sm:w-20">
+                                    <img src="{{ asset('brand/arena-sc-mark.svg') }}" alt="Arena SC amblem" class="h-16 w-16 sm:h-20 sm:w-20">
                                 </span>
                             </div>
 
@@ -76,15 +76,16 @@
         </section>
 
         <section class="site-grid">
-            <div class="split-surface premium-grid">
+            <div class="split-surface">
+                <div class="grid gap-8 xl:grid-cols-[1fr_0.92fr] xl:gap-10">
                 <div class="premium-card">
                     <span class="eyebrow-chip">Kako radi sistem</span>
-                    <h2 class="hero-title mt-5 max-w-3xl text-4xl sm:text-5xl">Jedan cist tok od izbora sporta do gotove rezervacije.</h2>
+                    <h2 class="section-title mt-5 max-w-3xl">Jedan cist tok od izbora sporta do gotove rezervacije.</h2>
                     <p class="hero-copy mt-5 max-w-2xl">
                         Posetilac bira sport, konkretan teren, datum i trajanje od 1h, 1,5h ili 2h. Sistem prikazuje samo slobodne slotove bas za taj teren, sa cenom iz cenovnika po vremenskom bloku.
                     </p>
 
-                    <div class="premium-grid mt-8 md:grid-cols-3">
+                    <div class="grid gap-4 mt-8 md:grid-cols-3">
                         <div class="premium-card bg-[color:var(--arena-paper)] p-5">
                             <p class="text-[11px] font-extrabold uppercase tracking-[0.28em] text-[color:var(--arena-muted)]">Korak 1</p>
                             <p class="mt-3 text-xl font-black text-[color:var(--arena-forest)]">Izaberi sport i teren</p>
@@ -101,19 +102,20 @@
                 </div>
 
                 <div class="showcase-panel">
-                    <div class="premium-grid md:grid-cols-3">
+                    <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-2">
                         @foreach ($sports as $sport)
                             <div class="premium-card-dark">
                                 <p class="text-xs font-extrabold uppercase tracking-[0.32em] text-[color:var(--arena-sand)]">{{ $sport->name }}</p>
                                 <h3 class="mt-4 text-2xl font-black text-white">{{ $sport->courts_count }} terena</h3>
                                 <p class="mt-3 text-sm leading-7 text-white/70">{{ $sport->short_description }}</p>
                                 <div class="mt-5 flex flex-wrap gap-2">
-                                    <span class="info-chip-soft">{{ $sport->equipment_count }} artikala</span>
-                                    <span class="info-chip-soft">{{ $sport->pricing_rules_count }} blokova</span>
+                                    <span class="info-chip-soft-dark">{{ $sport->equipment_count }} artikala</span>
+                                    <span class="info-chip-soft-dark">{{ $sport->pricing_rules_count }} blokova</span>
                                 </div>
                             </div>
                         @endforeach
                     </div>
+                </div>
                 </div>
             </div>
         </section>
@@ -122,21 +124,21 @@
             <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
                 <div>
                     <span class="eyebrow-chip">Izdvojeni tereni</span>
-                    <h2 class="hero-title mt-5 max-w-3xl text-4xl sm:text-5xl">Prostor koji deluje premium i pre nego sto korisnik zakaze prvi termin.</h2>
+                    <h2 class="section-title mt-5 max-w-3xl">Prostor koji deluje premium i pre nego sto korisnik zakaze prvi termin.</h2>
                 </div>
                 <a href="{{ route('sports.index') }}" class="arena-button-secondary">Svi tereni</a>
             </div>
 
-            <div class="premium-grid mt-8 lg:grid-cols-3">
+            <div class="grid gap-5 mt-8 lg:grid-cols-3">
                 @foreach ($featuredCourts as $court)
                     <a href="{{ route('courts.show', ['court' => $court->slug]) }}" class="premium-card group overflow-hidden p-6 transition hover:-translate-y-1.5">
                         <div class="display-panel rounded-[1.8rem] border border-white/0 bg-[linear-gradient(145deg,rgba(8,38,28,0.98),rgba(18,63,48,0.95))] p-6 text-white">
                             <p class="text-xs font-extrabold uppercase tracking-[0.3em] text-[color:var(--arena-sand)]">{{ $court->sport->name }}</p>
-                            <h3 class="mt-4 text-3xl font-black">{{ $court->name }}</h3>
+                            <h3 class="card-title-dark mt-4">{{ $court->name }}</h3>
                             <p class="mt-4 text-sm leading-7 text-white/70">{{ $court->description }}</p>
                             <div class="info-strip mt-6">
-                                <span class="info-chip-soft">{{ $court->location }}</span>
-                                <span class="info-chip-soft">{{ $court->surface }}</span>
+                                <span class="info-chip-soft-dark">{{ $court->location }}</span>
+                                <span class="info-chip-soft-dark">{{ $court->surface }}</span>
                             </div>
                         </div>
                         <div class="mt-5 flex items-center justify-between">
@@ -153,7 +155,7 @@
                 <div class="grid gap-8 xl:grid-cols-[0.95fr_1.05fr] xl:items-start">
                     <div>
                         <span class="dark-eyebrow-chip">Oprema i dogadjaji</span>
-                        <h2 class="hero-title-dark mt-6 max-w-3xl text-4xl sm:text-5xl">Prodaja, iznajmljivanje, turniri i liga u istom ozbiljnom tonu.</h2>
+                        <h2 class="section-title-dark mt-6 max-w-3xl">Prodaja, iznajmljivanje, turniri i liga u istom ozbiljnom tonu.</h2>
                         <p class="hero-copy-dark mt-5 max-w-2xl">
                             Sajt ne sluzi samo za rezervaciju. Ovde gradimo kompletno iskustvo centra: oprema koja prati termin i dogadjaji koji drze zajednicu aktivnom.
                         </p>
@@ -163,13 +165,22 @@
                         </div>
                     </div>
 
-                    <div class="premium-grid lg:grid-cols-2">
-                        <div class="premium-grid">
-                            @foreach ($featuredEquipment as $item)
-                                <div class="premium-card-dark">
-                                    <p class="text-xs font-extrabold uppercase tracking-[0.28em] text-white/54">{{ $item->sport?->name ?? 'Oprema' }}</p>
-                                    <h3 class="mt-3 text-2xl font-black text-white">{{ $item->name }}</h3>
-                                    <p class="mt-3 text-sm leading-7 text-white/70">{{ $item->short_description }}</p>
+                        <div class="grid gap-5 lg:grid-cols-2">
+                            <div class="grid gap-4">
+                                @foreach ($featuredEquipment as $item)
+                                    <div class="premium-card-dark">
+                                        <div class="overflow-hidden rounded-[1.35rem] border border-white/10 bg-white/5">
+                                            @if ($item->image_url)
+                                                <img src="{{ $item->image_url }}" alt="{{ $item->name }}" class="h-40 w-full object-cover">
+                                            @else
+                                                <div class="flex h-40 items-center justify-center bg-[linear-gradient(145deg,rgba(15,42,31,0.96),rgba(26,26,26,0.92))]">
+                                                    <img src="{{ asset('brand/arena-sc-mark.svg') }}" alt="Arena SC" class="h-14 w-14 opacity-80">
+                                                </div>
+                                            @endif
+                                        </div>
+                                        <p class="text-xs font-extrabold uppercase tracking-[0.28em] text-white/54">{{ $item->sport?->name ?? 'Oprema' }}</p>
+                                        <h3 class="card-title-dark mt-3">{{ $item->name }}</h3>
+                                        <p class="mt-3 text-sm leading-7 text-white/70">{{ $item->short_description }}</p>
                                     <div class="mt-5 flex items-center justify-between text-sm font-extrabold">
                                         <span>Iznajmljivanje</span>
                                         <span class="text-[color:var(--arena-sand)]">{{ number_format($item->rental_price, 0, ',', '.') }} RSD</span>
@@ -178,15 +189,15 @@
                             @endforeach
                         </div>
 
-                        <div class="premium-grid">
+                        <div class="grid gap-4">
                             @forelse ($featuredEvents as $event)
                                 <a href="{{ route('events.show', ['event' => $event->slug]) }}" class="premium-card-dark transition hover:bg-white/12">
                                     <div class="flex items-start justify-between gap-3">
                                         <div>
                                             <p class="text-xs font-extrabold uppercase tracking-[0.28em] text-white/55">{{ $event->type->label() }}</p>
-                                            <h3 class="mt-2 text-2xl font-black text-white">{{ $event->title }}</h3>
+                                            <h3 class="card-title-dark mt-2">{{ $event->title }}</h3>
                                         </div>
-                                        <span class="info-chip-soft">{{ $event->status->label() }}</span>
+                                        <span class="info-chip-soft-dark">{{ $event->status->label() }}</span>
                                     </div>
                                     <p class="mt-4 text-sm leading-7 text-white/70">{{ $event->summary }}</p>
                                 </a>

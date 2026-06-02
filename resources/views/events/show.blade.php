@@ -3,16 +3,22 @@
 @section('content')
     <section class="site-grid py-10 sm:py-12">
         <div class="page-stack">
-        <div class="grid gap-8 lg:grid-cols-[0.9fr_1.1fr]">
+        <div class="grid gap-8 xl:grid-cols-[0.92fr_1.08fr] xl:gap-10">
             <div class="space-y-6">
                 <div class="page-hero-dark overflow-hidden">
+                    @if ($event->cover_image_url)
+                        <div class="mb-6 overflow-hidden rounded-[1.6rem] border border-white/10 bg-white/5">
+                            <img src="{{ $event->cover_image_url }}" alt="{{ $event->title }}" class="h-64 w-full object-cover">
+                        </div>
+                    @endif
+
                     <p class="text-xs font-extrabold uppercase tracking-[0.3em] text-[color:var(--arena-sand)]">{{ $event->type->label() }}</p>
-                    <h1 class="mt-3 text-5xl font-black sm:text-6xl">{{ $event->title }}</h1>
+                    <h1 class="hero-title-dark mt-3">{{ $event->title }}</h1>
                     <p class="mt-5 text-base leading-8 text-white/75">{{ $event->description ?: $event->summary }}</p>
                     <div class="mt-6 flex flex-wrap gap-3">
-                        <span class="info-chip-soft">{{ $event->status->label() }}</span>
+                        <span class="info-chip-soft-dark">{{ $event->status->label() }}</span>
                         @if ($event->start_date)
-                            <span class="info-chip-soft">{{ $event->start_date->format('d.m.Y') }}</span>
+                            <span class="info-chip-soft-dark">{{ $event->start_date->format('d.m.Y') }}</span>
                         @endif
                     </div>
                 </div>
@@ -28,7 +34,7 @@
                     <div class="flex items-center justify-between gap-4">
                         <div>
                             <p class="text-sm font-extrabold uppercase tracking-[0.3em] text-[color:var(--arena-forest-glow)]">Tabela i ucesnici</p>
-                            <h2 class="hero-title mt-4 text-3xl sm:text-4xl">Pregled statistike</h2>
+                            <h2 class="section-title mt-4 text-[2.4rem] sm:text-[3rem]">Pregled statistike</h2>
                         </div>
                     </div>
 

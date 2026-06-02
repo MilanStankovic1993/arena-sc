@@ -16,7 +16,7 @@ return new class extends Migration
             $table->foreignId('user_id')->constrained()->cascadeOnDelete();
             $table->foreignId('sport_id')->constrained()->cascadeOnDelete();
             $table->foreignId('court_id')->constrained()->cascadeOnDelete();
-            $table->enum('status', ['pending', 'approved', 'completed', 'cancelled', 'rejected'])->default('pending');
+            $table->enum('status', ['reserved', 'cancelled'])->default('reserved');
             $table->timestamp('starts_at');
             $table->timestamp('ends_at');
             $table->unsignedInteger('duration_minutes')->default(60);
@@ -27,7 +27,6 @@ return new class extends Migration
             $table->text('customer_note')->nullable();
             $table->text('admin_note')->nullable();
             $table->text('cancellation_reason')->nullable();
-            $table->timestamp('approved_at')->nullable();
             $table->timestamp('cancelled_at')->nullable();
             $table->timestamps();
 

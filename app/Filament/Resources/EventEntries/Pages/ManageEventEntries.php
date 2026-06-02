@@ -5,6 +5,7 @@ namespace App\Filament\Resources\EventEntries\Pages;
 use App\Filament\Resources\EventEntries\EventEntryResource;
 use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ManageRecords;
+use Filament\Support\Enums\Width;
 
 class ManageEventEntries extends ManageRecords
 {
@@ -13,7 +14,7 @@ class ManageEventEntries extends ManageRecords
     protected function getHeaderActions(): array
     {
         return [
-            CreateAction::make(),
+            CreateAction::make()->modalWidth(Width::Screen),
         ];
     }
 }

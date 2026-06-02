@@ -41,25 +41,15 @@
     <x-filament::section>
         <div class="analytics-section-title">Status rezervacija</div>
 
-        <div class="analytics-card-grid analytics-card-grid--four analytics-card-grid--compact">
+        <div class="analytics-card-grid analytics-card-grid--compact" style="grid-template-columns: repeat(2, minmax(0, 1fr));">
             <div class="analytics-metric-card">
-                <span class="analytics-metric-label">Na cekanju</span>
-                <strong class="analytics-metric-value analytics-metric-value--blue">{{ number_format($stats['pending'], 0, ',', '.') }}</strong>
+                <span class="analytics-metric-label">Rezervisane</span>
+                <strong class="analytics-metric-value analytics-metric-value--blue">{{ number_format($stats['reserved'], 0, ',', '.') }}</strong>
             </div>
 
             <div class="analytics-metric-card">
-                <span class="analytics-metric-label">Odobrene</span>
-                <strong class="analytics-metric-value">{{ number_format($stats['approved'], 0, ',', '.') }}</strong>
-            </div>
-
-            <div class="analytics-metric-card">
-                <span class="analytics-metric-label">Realizovane</span>
-                <strong class="analytics-metric-value">{{ number_format($stats['completed'], 0, ',', '.') }}</strong>
-            </div>
-
-            <div class="analytics-metric-card">
-                <span class="analytics-metric-label">Otkazane / odbijene</span>
-                <strong class="analytics-metric-value analytics-metric-value--danger">{{ number_format($stats['cancelled'] + $stats['rejected'], 0, ',', '.') }}</strong>
+                <span class="analytics-metric-label">Otkazane</span>
+                <strong class="analytics-metric-value analytics-metric-value--danger">{{ number_format($stats['cancelled'], 0, ',', '.') }}</strong>
                 <span class="analytics-metric-meta">Stopa: {{ number_format($stats['cancellationRate'], 1, ',', '.') }}%</span>
             </div>
         </div>

@@ -5,6 +5,7 @@ namespace App\Filament\Resources\Sports\Pages;
 use App\Filament\Resources\Sports\SportResource;
 use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ManageRecords;
+use Filament\Support\Enums\Width;
 
 class ManageSports extends ManageRecords
 {
@@ -13,7 +14,7 @@ class ManageSports extends ManageRecords
     protected function getHeaderActions(): array
     {
         return [
-            CreateAction::make(),
+            CreateAction::make()->modalWidth(Width::Screen),
         ];
     }
 }

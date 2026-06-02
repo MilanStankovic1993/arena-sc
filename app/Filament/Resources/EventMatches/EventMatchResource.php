@@ -16,6 +16,7 @@ use Filament\Forms\Components\Textarea;
 use Filament\Resources\Resource;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
+use Filament\Support\Enums\Width;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
@@ -31,6 +32,10 @@ class EventMatchResource extends Resource
     protected static ?string $navigationLabel = 'Mecevi i rezultati';
 
     protected static string|UnitEnum|null $navigationGroup = 'Dogadjaji';
+
+    protected static ?string $modelLabel = 'Mec / rezultat';
+
+    protected static ?string $pluralModelLabel = 'Mecevi / rezultati';
 
     protected static ?string $recordTitleAttribute = 'round_label';
 
@@ -80,7 +85,7 @@ class EventMatchResource extends Resource
                 ]),
             ])
             ->recordActions([
-                EditAction::make(),
+                EditAction::make()->modalWidth(Width::Screen),
                 DeleteAction::make(),
             ])
             ->toolbarActions([

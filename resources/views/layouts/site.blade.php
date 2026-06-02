@@ -3,7 +3,7 @@
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <meta name="theme-color" content="#08261c">
+        <meta name="theme-color" content="#0F2A1F">
         <title>{{ $title ?? 'Arena SC' }}</title>
         <link rel="icon" type="image/svg+xml" href="{{ asset('brand/favicon.svg') }}">
         <link rel="alternate icon" href="{{ asset('favicon.ico') }}">
@@ -11,7 +11,7 @@
     </head>
     <body class="min-h-screen">
         <div class="site-shell">
-            <div class="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[34rem] bg-[radial-gradient(circle_at_top_left,rgba(226,204,170,0.3),transparent_32%),radial-gradient(circle_at_top_right,rgba(18,63,48,0.16),transparent_28%),linear-gradient(180deg,rgba(255,255,255,0.34),transparent_72%)]"></div>
+            <div class="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[38rem] bg-[radial-gradient(circle_at_top_left,rgba(245,245,242,0.16),transparent_30%),radial-gradient(circle_at_top_right,rgba(15,42,31,0.2),transparent_28%),linear-gradient(180deg,rgba(9,23,17,0.12),transparent_74%)]"></div>
             <span class="floating-orb floating-orb--sand absolute -left-16 top-24 -z-10 h-52 w-52"></span>
             <span class="floating-orb floating-orb--forest absolute right-0 top-[28rem] -z-10 h-72 w-72"></span>
 
@@ -19,11 +19,11 @@
                 <div class="premium-nav-shell flex items-center justify-between gap-4">
                     <a href="{{ route('home') }}" class="premium-brand">
                         <span class="logo-badge">
-                            <img src="{{ asset('brand/arena-sc-mark.png') }}" alt="Arena SC logo" class="h-11 w-11 sm:h-12 sm:w-12">
+                            <img src="{{ asset('brand/arena-sc-mark.svg') }}" alt="Arena SC logo" class="h-11 w-11 sm:h-12 sm:w-12">
                         </span>
                         <span class="premium-brand-copy">
-                            <span class="block text-base font-black uppercase tracking-[0.28em] text-[color:var(--arena-forest)] sm:text-lg sm:tracking-[0.34em]">Arena SC</span>
-                            <span class="block text-[10px] font-extrabold uppercase tracking-[0.22em] text-[color:var(--arena-muted)] sm:text-[11px]">Padel | 3x3 | Liga | Turniri</span>
+                            <span class="block text-base font-black uppercase tracking-[0.28em] text-[color:var(--arena-paper)] sm:text-lg sm:tracking-[0.34em]">Sportski centar</span>
+                            <span class="brand-script -mt-1 block">Arena</span>
                         </span>
                     </a>
 
@@ -42,7 +42,7 @@
                     </nav>
 
                     <details class="relative xl:hidden">
-                        <summary class="flex h-12 w-12 cursor-pointer items-center justify-center rounded-full border border-[color:var(--arena-border)] bg-white/80 text-[color:var(--arena-forest)] marker:content-none">
+                        <summary class="flex h-12 w-12 cursor-pointer items-center justify-center rounded-full border border-[color:var(--arena-sand-glow)] bg-[rgba(245,245,242,0.08)] text-[color:var(--arena-sand)] marker:content-none">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M4 7h16M4 12h16M4 17h16" />
                             </svg>
@@ -79,9 +79,12 @@
                         <div>
                             <div class="flex items-center gap-3">
                                 <span class="logo-badge">
-                                    <img src="{{ asset('brand/arena-sc-mark.png') }}" alt="Arena SC logo" class="h-10 w-10">
+                                    <img src="{{ asset('brand/arena-sc-mark.svg') }}" alt="Arena SC logo" class="h-10 w-10">
                                 </span>
-                                <p class="text-sm font-extrabold uppercase tracking-[0.34em] text-[color:var(--arena-sand)]">Arena SC</p>
+                                <div>
+                                    <p class="text-sm font-extrabold uppercase tracking-[0.34em] text-[color:var(--arena-paper)]">Sportski centar</p>
+                                    <p class="brand-script mt-1 text-4xl">Arena</p>
+                                </div>
                             </div>
                             <h2 class="mt-5 max-w-3xl text-3xl font-black sm:text-4xl">Savremen sportski centar za rezervacije, opremu, turnire i ligu.</h2>
                             <p class="mt-4 max-w-2xl text-sm leading-7 text-white/72">

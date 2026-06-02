@@ -5,6 +5,7 @@ namespace App\Filament\Resources\CourtClosures\Pages;
 use App\Filament\Resources\CourtClosures\CourtClosureResource;
 use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ManageRecords;
+use Filament\Support\Enums\Width;
 
 class ManageCourtClosures extends ManageRecords
 {
@@ -13,7 +14,7 @@ class ManageCourtClosures extends ManageRecords
     protected function getHeaderActions(): array
     {
         return [
-            CreateAction::make(),
+            CreateAction::make()->modalWidth(Width::Screen),
         ];
     }
 }

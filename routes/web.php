@@ -24,6 +24,7 @@ Route::get('/dogadjaji/{event:slug}', [EventController::class, 'show'])->name('e
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/dashboard', [ReservationController::class, 'index'])->name('dashboard');
     Route::post('/rezervacije', [ReservationController::class, 'store'])->name('reservations.store');
+    Route::post('/rezervacije/{reservation}/otkazi', [ReservationController::class, 'cancel'])->name('reservations.cancel');
 });
 
 Route::middleware('auth')->group(function () {

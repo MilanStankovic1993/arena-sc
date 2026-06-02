@@ -17,6 +17,7 @@ use Filament\Forms\Components\Toggle;
 use Filament\Resources\Resource;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
+use Filament\Support\Enums\Width;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
@@ -33,6 +34,10 @@ class CourtClosureResource extends Resource
     protected static ?string $navigationLabel = 'Blokade terena';
 
     protected static string|UnitEnum|null $navigationGroup = 'Rezervacije';
+
+    protected static ?string $modelLabel = 'Blokada terena';
+
+    protected static ?string $pluralModelLabel = 'Blokade terena';
 
     protected static ?string $recordTitleAttribute = 'title';
 
@@ -65,7 +70,7 @@ class CourtClosureResource extends Resource
                 SelectFilter::make('court')->relationship('court', 'name'),
             ])
             ->recordActions([
-                EditAction::make(),
+                EditAction::make()->modalWidth(Width::Screen),
                 DeleteAction::make(),
             ])
             ->toolbarActions([

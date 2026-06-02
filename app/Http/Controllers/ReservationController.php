@@ -5,9 +5,7 @@ namespace App\Http\Controllers;
 use App\Enums\ReservationStatus;
 use App\Http\Requests\StoreReservationRequest;
 use App\Models\Court;
-use App\Models\Equipment;
 use App\Models\Reservation;
-use App\Models\Sport;
 use App\Services\ReservationAvailabilityService;
 use App\Services\ReservationPricingService;
 use Carbon\Carbon;
@@ -43,7 +41,7 @@ class ReservationController extends Controller
         $equipmentItems = $pricingService->hydrateEquipmentPricing($request->input('equipment', []));
         $courtPrice = $pricingService->calculateCourtPrice($court, $startsAt, $endsAt);
         $equipmentPrice = $pricingService->calculateEquipmentPrice($equipmentItems);
-        $status = ReservationStatus::Approved;
+        $status = ReservationStatus::Reserved;
 
         DB::transaction(function () use (
             $request,
@@ -67,7 +65,6 @@ class ReservationController extends Controller
                 'equipment_price' => $equipmentPrice,
                 'total_price' => $courtPrice + $equipmentPrice,
                 'customer_note' => $request->string('customer_note')->toString(),
-                'approved_at' => $status === ReservationStatus::Approved ? now() : null,
             ]);
 
             foreach ($equipmentItems as $item) {
@@ -76,5 +73,21 @@ class ReservationController extends Controller
         });
 
         return redirect()->route('dashboard')->with('status', 'Rezervacija je uspesno potvrdena.');
+    }
+
+    public function cancel(Reservation $reservation): RedirectResponse
+    {
+        abort_unless($reservation->user_id === Auth::id(), 403);
+
+        if ($reservation->status === ReservationStatus::Cancelled) {
+            return redirect()->route('dashboard')->with('status', 'Rezervacija je vec otkazana.');
+        }
+
+        $reservation->update([
+            'status' => ReservationStatus::Cancelled,
+            'cancellation_reason' => 'Otkazano od korisnika.',
+        ]);
+
+        return redirect()->route('dashboard')->with('status', 'Rezervacija je uspesno otkazana.');
     }
 }

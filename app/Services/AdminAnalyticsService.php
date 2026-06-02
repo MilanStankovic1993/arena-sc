@@ -75,11 +75,8 @@ class AdminAnalyticsService
         $query = $this->reservationQuery($filters);
 
         $total = (clone $query)->count();
-        $active = (clone $query)
-            ->whereIn('status', $this->activeStatuses())
-            ->count();
-        $completed = (clone $query)
-            ->where('status', ReservationStatus::Completed->value)
+        $reserved = (clone $query)
+            ->where('status', ReservationStatus::Reserved->value)
             ->count();
         $cancelled = (clone $query)
             ->whereIn('status', $this->cancelledStatuses())
@@ -90,8 +87,7 @@ class AdminAnalyticsService
 
         return [
             'total' => $total,
-            'active' => $active,
-            'completed' => $completed,
+            'reserved' => $reserved,
             'cancelled' => $cancelled,
             'revenue' => $revenue,
             'averagePrice' => $total > 0 ? $revenue / $total : 0,
@@ -170,8 +166,8 @@ class AdminAnalyticsService
             $items = $grouped->get($court->id, collect());
             $count = $items->count();
             $revenue = $items
-                ->whereIn('status', $this->revenueStatuses())
-                ->sum('total_price');
+                ->filter(fn (Reservation $reservation): bool => in_array($reservation->status?->value, $this->revenueStatuses(), true))
+                ->sum(fn (Reservation $reservation): float => (float) $reservation->total_price);
 
             return [
                 'name' => $court->name,
@@ -197,7 +193,7 @@ class AdminAnalyticsService
         ];
 
         $counts = $this->reservationQuery($filters)
-            ->where('status', '!=', ReservationStatus::Rejected->value)
+            ->where('status', '!=', ReservationStatus::Cancelled->value)
             ->get(['starts_at'])
             ->countBy(fn (Reservation $reservation) => $reservation->starts_at->isoWeekday());
 
@@ -217,7 +213,7 @@ class AdminAnalyticsService
     public function popularityByHour(array $filters = []): Collection
     {
         $counts = $this->reservationQuery($filters)
-            ->where('status', '!=', ReservationStatus::Rejected->value)
+            ->where('status', '!=', ReservationStatus::Cancelled->value)
             ->get(['starts_at'])
             ->countBy(fn (Reservation $reservation) => $reservation->starts_at->format('H:00'))
             ->sortDesc()
@@ -237,7 +233,7 @@ class AdminAnalyticsService
     public function durationDistribution(array $filters = []): Collection
     {
         $counts = $this->reservationQuery($filters)
-            ->where('status', '!=', ReservationStatus::Rejected->value)
+            ->where('status', '!=', ReservationStatus::Cancelled->value)
             ->get(['duration_minutes'])
             ->countBy('duration_minutes')
             ->sortKeys();
@@ -248,11 +244,21 @@ class AdminAnalyticsService
             $duration = (int) $minutes;
 
             return [
-                'label' => $duration . ' min',
+                'label' => $this->formatDurationLabel($duration),
                 'count' => $count,
                 'percentage' => round(($count / $total) * 100, 1),
             ];
         })->values();
+    }
+
+    protected function formatDurationLabel(int $minutes): string
+    {
+        return match ($minutes) {
+            60 => '1h',
+            90 => '1,5h',
+            120 => '2h',
+            default => rtrim(rtrim(number_format($minutes / 60, 2, ',', ''), '0'), ',') . 'h',
+        };
     }
 
     public function reservationQuery(array $filters = []): Builder
@@ -297,19 +303,10 @@ class AdminAnalyticsService
             ->whereBetween('starts_at', [$startDate, $endDate]);
     }
 
-    public function activeStatuses(): array
-    {
-        return [
-            ReservationStatus::Pending->value,
-            ReservationStatus::Approved->value,
-        ];
-    }
-
     public function revenueStatuses(): array
     {
         return [
-            ReservationStatus::Approved->value,
-            ReservationStatus::Completed->value,
+            ReservationStatus::Reserved->value,
         ];
     }
 
@@ -317,7 +314,6 @@ class AdminAnalyticsService
     {
         return [
             ReservationStatus::Cancelled->value,
-            ReservationStatus::Rejected->value,
         ];
     }
 }

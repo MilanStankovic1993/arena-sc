@@ -2,13 +2,19 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\Storage;
 
 class Equipment extends Model
 {
     protected $table = 'equipment';
+
+    protected $appends = [
+        'image_url',
+    ];
 
     protected $fillable = [
         'sport_id',
@@ -45,5 +51,10 @@ class Equipment extends Model
     public function reservationItems(): HasMany
     {
         return $this->hasMany(ReservationEquipment::class);
+    }
+
+    protected function imageUrl(): Attribute
+    {
+        return Attribute::get(fn (): ?string => $this->image ? Storage::disk('public')->url($this->image) : null);
     }
 }

@@ -21,10 +21,9 @@ class OperationsOverview extends StatsOverviewWidget
             Stat::make(
                 'Prihod od termina',
                 number_format((float) Reservation::query()->whereIn('status', [
-                    ReservationStatus::Approved->value,
-                    ReservationStatus::Completed->value,
+                    ReservationStatus::Reserved->value,
                 ])->sum('total_price'), 0, ',', '.').' RSD'
-            )->description('Odobrene i realizovane rezervacije')
+            )->description('Aktivne rezervacije')
                 ->descriptionIcon('heroicon-m-banknotes')
                 ->color('success'),
             Stat::make('Aktivni korisnici', (string) User::query()->where('role', 'customer')->count())

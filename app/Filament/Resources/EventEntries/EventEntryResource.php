@@ -15,6 +15,7 @@ use Filament\Forms\Components\Textarea;
 use Filament\Resources\Resource;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
+use Filament\Support\Enums\Width;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
@@ -30,6 +31,10 @@ class EventEntryResource extends Resource
     protected static ?string $navigationLabel = 'Ucesnici / timovi';
 
     protected static string|UnitEnum|null $navigationGroup = 'Dogadjaji';
+
+    protected static ?string $modelLabel = 'Ucesnik / tim';
+
+    protected static ?string $pluralModelLabel = 'Ucesnici / timovi';
 
     protected static ?string $recordTitleAttribute = 'team_name';
 
@@ -68,7 +73,7 @@ class EventEntryResource extends Resource
                 SelectFilter::make('event')->relationship('event', 'title'),
             ])
             ->recordActions([
-                EditAction::make(),
+                EditAction::make()->modalWidth(Width::Screen),
                 DeleteAction::make(),
             ])
             ->toolbarActions([

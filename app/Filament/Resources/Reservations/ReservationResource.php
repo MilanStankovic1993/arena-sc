@@ -18,6 +18,7 @@ use Filament\Forms\Components\TextInput;
 use Filament\Resources\Resource;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
+use Filament\Support\Enums\Width;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\Filter;
@@ -35,6 +36,10 @@ class ReservationResource extends Resource
 
     protected static string|UnitEnum|null $navigationGroup = 'Rezervacije';
 
+    protected static ?string $modelLabel = 'Rezervacija';
+
+    protected static ?string $pluralModelLabel = 'Rezervacije';
+
     protected static ?string $recordTitleAttribute = 'id';
 
     public static function form(Schema $schema): Schema
@@ -47,7 +52,8 @@ class ReservationResource extends Resource
                 Select::make('status')
                     ->label('Status')
                     ->options(collect(ReservationStatus::cases())->mapWithKeys(fn (ReservationStatus $status) => [$status->value => $status->label()])->all())
-                    ->required(),
+                    ->required()
+                    ->default(ReservationStatus::Reserved->value),
                 DateTimePicker::make('starts_at')->label('Pocetak')->required(),
                 DateTimePicker::make('ends_at')->label('Kraj')->required(),
                 TextInput::make('duration_minutes')->label('Trajanje (min)')->numeric()->default(60)->required(),
@@ -57,11 +63,17 @@ class ReservationResource extends Resource
                 TextInput::make('total_price')->label('Ukupno')->numeric()->prefix('RSD')->required(),
                 Textarea::make('customer_note')->label('Napomena korisnika')->rows(3)->columnSpanFull(),
                 Textarea::make('admin_note')->label('Interna napomena')->rows(3)->columnSpanFull(),
-                Textarea::make('cancellation_reason')->label('Razlog otkazivanja')->rows(3)->columnSpanFull(),
+                Textarea::make('cancellation_reason')
+                    ->label('Razlog otkazivanja')
+                    ->rows(3)
+                    ->columnSpanFull()
+                    ->visible(fn ($get) => $get('status') === ReservationStatus::Cancelled->value),
             ])->columns(3),
             Section::make('Oprema uz termin')->schema([
                 Repeater::make('equipmentItems')
                     ->relationship()
+                    ->label('Stavke opreme')
+                    ->addActionLabel('Dodaj stavku opreme')
                     ->schema([
                         Select::make('equipment_id')->relationship('equipment', 'name')->required()->searchable()->preload(),
                         TextInput::make('quantity')->label('Kolicina')->numeric()->default(1)->required(),
@@ -84,7 +96,10 @@ class ReservationResource extends Resource
                 TextColumn::make('user.name')->label('Korisnik')->searchable(),
                 TextColumn::make('sport.name')->label('Sport')->badge(),
                 TextColumn::make('court.name')->label('Teren')->badge(),
-                TextColumn::make('status')->label('Status')->badge(),
+                TextColumn::make('status')
+                    ->label('Status')
+                    ->badge()
+                    ->formatStateUsing(fn (ReservationStatus|string|null $state): string => $state instanceof ReservationStatus ? $state->label() : (ReservationStatus::tryFrom((string) $state)?->label() ?? (string) $state)),
                 TextColumn::make('starts_at')->label('Pocetak')->dateTime()->sortable(),
                 TextColumn::make('ends_at')->label('Kraj')->dateTime(),
                 TextColumn::make('total_price')->label('Ukupno')->money('RSD', divideBy: 1)->sortable(),
@@ -104,7 +119,7 @@ class ReservationResource extends Resource
                     }),
             ])
             ->recordActions([
-                EditAction::make(),
+                EditAction::make()->modalWidth(Width::Screen),
                 DeleteAction::make(),
             ])
             ->headerActions([

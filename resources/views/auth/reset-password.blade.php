@@ -1,39 +1,40 @@
 <x-guest-layout>
-    <form method="POST" action="{{ route('password.store') }}">
-        @csrf
-
-        <!-- Password Reset Token -->
-        <input type="hidden" name="token" value="{{ $request->route('token') }}">
-
-        <!-- Email Address -->
-        <div>
-            <x-input-label for="email" :value="__('Email')" />
-            <x-text-input id="email" class="block mt-1 w-full" type="email" name="email" :value="old('email', $request->email)" required autofocus autocomplete="username" />
-            <x-input-error :messages="$errors->get('email')" class="mt-2" />
+    <div class="space-y-8">
+        <div class="space-y-4">
+            <span class="eyebrow-chip">Nova lozinka</span>
+            <h2 class="section-title text-[2.5rem] sm:text-[3.2rem]">Postavite novu lozinku.</h2>
         </div>
 
-        <!-- Password -->
-        <div class="mt-4">
-            <x-input-label for="password" :value="__('Password')" />
-            <x-text-input id="password" class="block mt-1 w-full" type="password" name="password" required autocomplete="new-password" />
-            <x-input-error :messages="$errors->get('password')" class="mt-2" />
-        </div>
+        <form method="POST" action="{{ route('password.store') }}" class="space-y-5">
+            @csrf
 
-        <!-- Confirm Password -->
-        <div class="mt-4">
-            <x-input-label for="password_confirmation" :value="__('Confirm Password')" />
+            <input type="hidden" name="token" value="{{ $request->route('token') }}">
 
-            <x-text-input id="password_confirmation" class="block mt-1 w-full"
-                                type="password"
-                                name="password_confirmation" required autocomplete="new-password" />
+            <div class="auth-field">
+                <x-input-label for="email" value="Email adresa" />
+                <x-text-input id="email" type="email" name="email" :value="old('email', $request->email)" required autofocus autocomplete="username" />
+                <x-input-error :messages="$errors->get('email')" />
+            </div>
 
-            <x-input-error :messages="$errors->get('password_confirmation')" class="mt-2" />
-        </div>
+            <div class="grid gap-5 sm:grid-cols-2">
+                <div class="auth-field">
+                    <x-input-label for="password" value="Nova lozinka" />
+                    <x-text-input id="password" type="password" name="password" required autocomplete="new-password" />
+                    <x-input-error :messages="$errors->get('password')" />
+                </div>
 
-        <div class="flex items-center justify-end mt-4">
-            <x-primary-button>
-                {{ __('Reset Password') }}
-            </x-primary-button>
-        </div>
-    </form>
+                <div class="auth-field">
+                    <x-input-label for="password_confirmation" value="Potvrda lozinke" />
+                    <x-text-input id="password_confirmation" type="password" name="password_confirmation" required autocomplete="new-password" />
+                    <x-input-error :messages="$errors->get('password_confirmation')" />
+                </div>
+            </div>
+
+            <div class="flex justify-end">
+                <x-primary-button class="w-full justify-center sm:w-auto">
+                    Sacuvaj novu lozinku
+                </x-primary-button>
+            </div>
+        </form>
+    </div>
 </x-guest-layout>

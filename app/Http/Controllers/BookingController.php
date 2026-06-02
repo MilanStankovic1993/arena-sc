@@ -27,9 +27,7 @@ class BookingController extends Controller
             'sports' => $sports,
             'initialState' => [
                 'sport' => $request->string('sport')->toString(),
-                'court' => $request->string('court')->toString(),
                 'date' => Carbon::parse($request->input('date', now()->toDateString()))->format('Y-m-d'),
-                'duration' => (int) $request->integer('duration', 60),
             ],
         ]);
     }
@@ -47,42 +45,95 @@ class BookingController extends Controller
 
         abort_unless($sport, 404);
 
-        $court = Court::query()
-            ->where('slug', $request->string('court')->toString())
+        $courts = Court::query()
             ->where('sport_id', $sport->id)
             ->where('is_active', true)
             ->with('sport')
-            ->first();
+            ->orderBy('name')
+            ->get();
 
-        abort_unless($court, 404);
+        abort_if($courts->isEmpty(), 404);
 
         $selectedDay = Carbon::parse($request->input('date', now()->toDateString()))->startOfDay();
-        $selectedDuration = max(60, min(120, (int) $request->integer('duration', 60)));
 
-        $pricingRules = $court->sport->pricingRules()
+        $pricingRules = $sport->pricingRules()
             ->where('is_active', true)
             ->orderBy('start_time')
             ->get();
 
-        $slots = $scheduleService->buildDailySchedule($court, $selectedDay, $selectedDuration)
-            ->map(function (array $slot) use ($court, $availabilityService, $pricingService) {
-                $available = $availabilityService->isAvailable($court, $slot['starts_at'], $slot['ends_at']);
+        $days = collect(range(0, 4))
+            ->map(function (int $offset) use ($selectedDay, $courts, $scheduleService, $availabilityService, $pricingService): array {
+                $day = $selectedDay->copy()->addDays($offset);
+
+                $times = $scheduleService->buildDailySchedule($courts->first(), $day, 60)
+                    ->map(function (array $slot) use ($courts, $availabilityService, $pricingService) {
+                        $durations = collect([60, 90, 120])
+                            ->map(function (int $minutes) use ($slot, $courts, $availabilityService, $pricingService) {
+                                $startsAt = $slot['starts_at']->copy();
+                                $endsAt = $startsAt->copy()->addMinutes($minutes);
+
+                                $availableCourts = $courts
+                                    ->filter(fn (Court $court): bool => $availabilityService->isAvailable($court, $startsAt, $endsAt))
+                                    ->map(fn (Court $court): array => [
+                                        'id' => $court->id,
+                                        'name' => $court->name,
+                                        'slug' => $court->slug,
+                                        'location' => $court->location,
+                                        'surface' => $court->surface,
+                                        'description' => $court->description,
+                                        'image_url' => $court->image_url,
+                                        'price' => $pricingService->calculateCourtPrice($court, $startsAt, $endsAt),
+                                        'starts_at' => $startsAt->format('Y-m-d H:i:s'),
+                                        'ends_at' => $endsAt->format('Y-m-d H:i:s'),
+                                    ])
+                                    ->values();
+
+                                if ($availableCourts->isEmpty()) {
+                                    return null;
+                                }
+
+                                return [
+                                    'minutes' => $minutes,
+                                    'label' => match ($minutes) {
+                                        90 => '1.5 sata',
+                                        120 => '2 sata',
+                                        default => '1 sat',
+                                    },
+                                    'price_from' => $availableCourts->min('price'),
+                                    'courts' => $availableCourts,
+                                ];
+                            })
+                            ->filter()
+                            ->values();
+
+                        if ($durations->isEmpty()) {
+                            return null;
+                        }
+
+                        return [
+                            'time' => $slot['starts_at']->format('H:i'),
+                            'starts_at' => $slot['starts_at']->format('Y-m-d H:i:s'),
+                            'durations' => $durations,
+                        ];
+                    })
+                    ->filter()
+                    ->values();
 
                 return [
-                    'starts_at' => $slot['starts_at']->format('Y-m-d H:i:s'),
-                    'ends_at' => $slot['ends_at']->format('Y-m-d H:i:s'),
-                    'label' => $slot['starts_at']->format('H:i') . ' - ' . $slot['ends_at']->format('H:i'),
-                    'price' => $pricingService->calculateCourtPrice($court, $slot['starts_at'], $slot['ends_at']),
-                    'available' => $available,
+                    'date' => $day->format('Y-m-d'),
+                    'day_label' => $day->translatedFormat('D'),
+                    'date_label' => $day->format('d'),
+                    'month_label' => $day->translatedFormat('M'),
+                    'full_label' => $day->format('d.m.Y'),
+                    'times' => $times,
                 ];
             })
-            ->filter(fn (array $slot): bool => $slot['available'])
             ->values();
 
         $equipment = Equipment::query()
             ->where('is_active', true)
             ->where('is_rentable', true)
-            ->where(fn ($query) => $query->whereNull('sport_id')->orWhere('sport_id', $court->sport_id))
+            ->where(fn ($query) => $query->whereNull('sport_id')->orWhere('sport_id', $sport->id))
             ->orderBy('name')
             ->get()
             ->map(fn (Equipment $item): array => [
@@ -90,18 +141,15 @@ class BookingController extends Controller
                 'name' => $item->name,
                 'description' => $item->short_description,
                 'price' => (float) $item->rental_price,
+                'image_url' => $item->image_url,
             ])
             ->values();
 
         return response()->json([
-            'court' => [
-                'id' => $court->id,
-                'name' => $court->name,
-                'description' => $court->description,
-                'location' => $court->location,
-                'surface' => $court->surface,
-                'capacity' => $court->capacity,
-                'sport' => $court->sport->name,
+            'sport' => [
+                'id' => $sport->id,
+                'name' => $sport->name,
+                'cover_image_url' => $sport->cover_image_url,
             ],
             'pricingRules' => $pricingRules->map(fn ($rule): array => [
                 'name' => $rule->name,
@@ -111,14 +159,8 @@ class BookingController extends Controller
                 'price90' => (float) $rule->price_90,
                 'price120' => (float) $rule->price_120,
             ])->values(),
-            'slots' => $slots,
+            'days' => $days,
             'equipment' => $equipment,
-            'selectedDayLabel' => $selectedDay->format('d.m.Y'),
-            'durationLabel' => match ($selectedDuration) {
-                90 => '1,5h',
-                120 => '2h',
-                default => '1h',
-            },
         ]);
     }
 }

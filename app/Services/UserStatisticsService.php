@@ -16,25 +16,19 @@ class UserStatisticsService
             ->get();
 
         $total = $reservations->count();
-        $pending = $reservations->where('status', ReservationStatus::Pending)->count();
-        $approved = $reservations->where('status', ReservationStatus::Approved)->count();
-        $completed = $reservations->where('status', ReservationStatus::Completed)->count();
+        $reserved = $reservations->where('status', ReservationStatus::Reserved)->count();
         $cancelled = $reservations->where('status', ReservationStatus::Cancelled)->count();
-        $rejected = $reservations->where('status', ReservationStatus::Rejected)->count();
         $revenue = (float) $reservations
-            ->whereIn('status', [ReservationStatus::Approved, ReservationStatus::Completed])
+            ->whereIn('status', [ReservationStatus::Reserved])
             ->sum('total_price');
         $durationMinutes = (int) $reservations->sum('duration_minutes');
         $averageSpend = $total > 0 ? $revenue / $total : 0.0;
-        $cancellationRate = $total > 0 ? (($cancelled + $rejected) / $total) * 100 : 0.0;
+        $cancellationRate = $total > 0 ? ($cancelled / $total) * 100 : 0.0;
 
         return [
             'total' => $total,
-            'pending' => $pending,
-            'approved' => $approved,
-            'completed' => $completed,
+            'reserved' => $reserved,
             'cancelled' => $cancelled,
-            'rejected' => $rejected,
             'revenue' => $revenue,
             'averageSpend' => $averageSpend,
             'durationMinutes' => $durationMinutes,

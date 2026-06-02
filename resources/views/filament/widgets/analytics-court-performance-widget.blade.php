@@ -17,7 +17,7 @@
                         </div>
 
                         <div class="analytics-list-values">
-                            <span>{{ number_format($court['reservations'], 0, ',', '.') }} term.</span>
+                            <span>{{ number_format($court['reservations'], 0, ',', '.') }} {{ $court['reservations'] === 1 ? 'termin' : 'termina' }}</span>
                             <strong>{{ number_format($court['revenue'], 0, ',', '.') }} RSD</strong>
                         </div>
                     </div>

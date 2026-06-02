@@ -7,7 +7,7 @@
                 <span class="eyebrow-chip">Tereni i sportovi</span>
                 <div class="hero-grid mt-6 items-end">
                     <div>
-                        <h1 class="hero-title max-w-4xl text-5xl sm:text-6xl">Pregled sportova i svih raspolozivih terena u premium ambijentu.</h1>
+                        <h1 class="hero-title max-w-4xl">Pregled sportova i svih raspolozivih terena u premium ambijentu.</h1>
                         <p class="hero-copy mt-5 max-w-2xl">
                             Izaberi sport, otvori teren i vidi cenovnik po vremenskim blokovima, pravila rezervacije i direktan ulaz u planer termina.
                         </p>
@@ -31,19 +31,19 @@
                     <div class="grid gap-8 lg:grid-cols-[0.9fr_1.1fr]">
                         <div>
                             <p class="text-xs font-extrabold uppercase tracking-[0.3em] text-[color:var(--arena-forest-glow)]">{{ $sport->name }}</p>
-                            <h2 class="mt-3 text-3xl font-black text-[color:var(--arena-forest)]">{{ $sport->name }} program</h2>
+                            <h2 class="card-title mt-3">{{ $sport->name }} program</h2>
                             <p class="mt-4 text-sm leading-8 text-[color:var(--arena-muted)]">{{ $sport->description }}</p>
                             <div class="mt-6 flex flex-wrap gap-3">
                                 <span class="rounded-full bg-[color:var(--arena-cream)] px-3 py-2 text-xs font-extrabold uppercase tracking-[0.18em] text-[color:var(--arena-forest)]">{{ $sport->courts->count() }} terena</span>
                                 <span class="rounded-full bg-[color:var(--arena-sand-soft)] px-3 py-2 text-xs font-extrabold uppercase tracking-[0.18em] text-[color:var(--arena-forest)]">{{ $sport->pricing_rules_count }} cenovnih blokova</span>
                             </div>
                         </div>
-                        <div class="premium-grid md:grid-cols-2">
+                        <div class="grid gap-4 md:grid-cols-2">
                             @foreach ($sport->courts as $court)
                                 <a href="{{ route('courts.show', ['court' => $court->slug]) }}" class="premium-card bg-[color:var(--arena-paper)] p-5 transition hover:-translate-y-1">
                                     <div class="flex items-start justify-between gap-3">
                                         <div>
-                                            <h3 class="text-xl font-black text-[color:var(--arena-forest)]">{{ $court->name }}</h3>
+                                            <h3 class="card-title text-[2rem]">{{ $court->name }}</h3>
                                             <p class="mt-2 text-sm text-[color:var(--arena-muted)]">{{ $court->location }}</p>
                                         </div>
                                         <span class="info-chip">{{ $court->surface }}</span>

@@ -8,7 +8,7 @@
                     <div class="analytics-list-header">
                         <div class="analytics-list-title">{{ $hour['label'] }}</div>
                         <div class="analytics-list-values">
-                            <span>{{ number_format($hour['count'], 0, ',', '.') }} term.</span>
+                            <span>{{ number_format($hour['count'], 0, ',', '.') }} {{ $hour['count'] === 1 ? 'termin' : 'termina' }}</span>
                         </div>
                     </div>
 

@@ -25,9 +25,7 @@ class ReservationAvailabilityService
             ->where('court_id', $court->id)
             ->when($ignoreReservationId, fn ($query) => $query->whereKeyNot($ignoreReservationId))
             ->whereIn('status', [
-                ReservationStatus::Pending->value,
-                ReservationStatus::Approved->value,
-                ReservationStatus::Completed->value,
+                ReservationStatus::Reserved->value,
             ])
             ->where('starts_at', '<', $endsAt)
             ->where('ends_at', '>', $startsAt)

@@ -7,6 +7,21 @@ use App\Models\Reservation;
 
 class ReservationObserver
 {
+    public function saving(Reservation $reservation): void
+    {
+        if ($reservation->status === ReservationStatus::Cancelled) {
+            $reservation->cancelled_at ??= now();
+            $reservation->cancellation_reason = filled($reservation->cancellation_reason)
+                ? $reservation->cancellation_reason
+                : 'Otkazano od administratora.';
+
+            return;
+        }
+
+        $reservation->cancelled_at = null;
+        $reservation->cancellation_reason = null;
+    }
+
     public function saved(Reservation $reservation): void
     {
         $user = $reservation->user;

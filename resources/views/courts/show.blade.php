@@ -34,7 +34,7 @@
                     <div class="flex flex-wrap items-end justify-between gap-4">
                         <div>
                             <span class="eyebrow-chip">Cenovnik po sportu</span>
-                            <h2 class="hero-title mt-4 text-3xl sm:text-4xl">Jasna tabela cena za svaki vremenski blok.</h2>
+                            <h2 class="section-title mt-4">Jasna tabela cena za svaki vremenski blok.</h2>
                         </div>
                         <span class="info-chip">
                             {{ $court->sport->name }}
@@ -78,7 +78,7 @@
 
                 <div class="premium-card p-6 sm:p-7">
                     <p class="text-sm font-extrabold uppercase tracking-[0.3em] text-[color:var(--arena-forest-glow)]">Rezervacija</p>
-                    <h2 class="hero-title mt-4 text-3xl sm:text-4xl">Za rezervaciju koristi centralni planer termina.</h2>
+                    <h2 class="section-title mt-4">Za rezervaciju koristi centralni planer termina.</h2>
                     <p class="hero-copy mt-4 text-sm">
                         Detalj terena sada je informativan, a rezervacija ide kroz jedan cist planer. Prvo biras sport, zatim konkretan teren, pa sistem prikazuje samo slobodne termine bas za taj teren.
                     </p>

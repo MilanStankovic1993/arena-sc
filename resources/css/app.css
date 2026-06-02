@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Sora:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Great+Vibes&family=Manrope:wght@400;500;600;700;800&family=Sora:wght@500;600;700;800&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -6,21 +6,22 @@
 
 @layer base {
     :root {
-        --arena-forest: #08261c;
-        --arena-forest-soft: #123f30;
-        --arena-forest-glow: #1a5e47;
-        --arena-forest-deep: #041810;
-        --arena-sand: #e2ccaa;
-        --arena-sand-soft: #f0e4d0;
-        --arena-sand-deep: #c6ab7f;
-        --arena-sand-glow: rgba(226, 204, 170, 0.36);
-        --arena-cream: #f5f0e7;
-        --arena-paper: #fbf8f2;
-        --arena-ink: #12281f;
-        --arena-muted: #5f6f67;
-        --arena-border: rgba(8, 38, 28, 0.12);
-        --arena-border-strong: rgba(8, 38, 28, 0.18);
-        --arena-shadow: 0 32px 90px rgba(8, 38, 28, 0.12);
+        --arena-forest: #0f2a1f;
+        --arena-forest-soft: #183728;
+        --arena-forest-glow: #24513b;
+        --arena-forest-deep: #091711;
+        --arena-sand: #c8b89a;
+        --arena-sand-soft: #dacdb5;
+        --arena-sand-deep: #b29d78;
+        --arena-sand-glow: rgba(200, 184, 154, 0.34);
+        --arena-cream: #ebe2d1;
+        --arena-paper: #f5f5f2;
+        --arena-ink: #161d19;
+        --arena-muted: #5f6058;
+        --arena-charcoal: #1a1a1a;
+        --arena-border: rgba(15, 42, 31, 0.16);
+        --arena-border-strong: rgba(15, 42, 31, 0.26);
+        --arena-shadow: 0 32px 90px rgba(15, 42, 31, 0.18);
     }
 
     html {
@@ -30,11 +31,12 @@
     body {
         font-family: 'Manrope', sans-serif;
         background:
-            radial-gradient(circle at top right, rgba(226, 204, 170, 0.42), transparent 24rem),
-            radial-gradient(circle at left 20%, rgba(26, 94, 71, 0.14), transparent 26rem),
-            radial-gradient(circle at 80% 72%, rgba(26, 94, 71, 0.08), transparent 22rem),
-            linear-gradient(180deg, #fbf8f2 0%, #f5efe5 48%, #efe6d9 100%);
+            radial-gradient(circle at top right, rgba(245, 245, 242, 0.2), transparent 21rem),
+            radial-gradient(circle at left 18%, rgba(15, 42, 31, 0.12), transparent 25rem),
+            radial-gradient(circle at 82% 74%, rgba(15, 42, 31, 0.08), transparent 22rem),
+            linear-gradient(180deg, #c8b89a 0%, #c2b18f 44%, #b9a683 100%);
         color: var(--arena-ink);
+        line-height: 1.65;
     }
 
     h1,
@@ -43,8 +45,9 @@
     h4,
     h5,
     h6 {
-        font-family: 'Sora', sans-serif;
-        letter-spacing: -0.03em;
+        font-family: 'Cormorant Garamond', serif;
+        font-weight: 600;
+        letter-spacing: -0.035em;
     }
 
     ::selection {
@@ -59,15 +62,16 @@
     }
 
     .site-grid {
-        @apply mx-auto w-full max-w-[90rem] px-4 sm:px-6 lg:px-10;
+        @apply mx-auto w-full max-w-[100rem] px-4 sm:px-6 lg:px-10 xl:px-12;
     }
 
     .page-stack {
-        @apply space-y-8 sm:space-y-10 lg:space-y-12;
+        @apply space-y-10 sm:space-y-12 lg:space-y-16;
     }
 
     .site-link {
-        @apply text-sm font-semibold uppercase tracking-[0.18em] text-[color:var(--arena-muted)] transition hover:text-[color:var(--arena-forest)];
+        @apply text-sm font-semibold uppercase tracking-[0.18em] text-white/[0.74] transition hover:text-[color:var(--arena-sand)];
+        font-family: 'Sora', sans-serif;
     }
 
     .site-link-active {
@@ -75,11 +79,12 @@
     }
 
     .site-pill {
-        @apply inline-flex items-center rounded-full border border-[color:var(--arena-border)] bg-white/70 px-4 py-2 text-xs font-extrabold uppercase tracking-[0.28em] text-[color:var(--arena-forest-soft)] backdrop-blur;
+        @apply inline-flex items-center rounded-full border border-[color:var(--arena-border)] bg-[rgba(245,245,242,0.56)] px-4 py-2 text-xs font-extrabold uppercase tracking-[0.28em] text-[color:var(--arena-forest-soft)] backdrop-blur;
+        font-family: 'Sora', sans-serif;
     }
 
     .site-card {
-        @apply rounded-[2rem] border bg-white/[0.82] backdrop-blur;
+        @apply rounded-[2rem] border bg-[rgba(245,245,242,0.78)] backdrop-blur;
         border-color: var(--arena-border);
         box-shadow: var(--arena-shadow);
     }
@@ -89,11 +94,11 @@
     }
 
     .site-card-premium {
-        @apply relative overflow-hidden rounded-[2.25rem] border bg-white/[0.86] p-6 sm:p-8;
-        border-color: rgba(255, 255, 255, 0.72);
+        @apply relative overflow-hidden rounded-[2.25rem] border bg-[rgba(245,245,242,0.76)] p-6 sm:p-8;
+        border-color: rgba(245, 245, 242, 0.58);
         box-shadow:
-            0 40px 90px rgba(8, 38, 28, 0.12),
-            inset 0 1px 0 rgba(255, 255, 255, 0.64);
+            0 40px 90px rgba(15, 42, 31, 0.16),
+            inset 0 1px 0 rgba(255, 255, 255, 0.32);
         backdrop-filter: blur(18px);
     }
 
@@ -108,12 +113,12 @@
 
     .premium-nav-shell {
         @apply rounded-[2rem] border px-4 py-3 sm:px-6;
-        border-color: rgba(255, 255, 255, 0.8);
+        border-color: rgba(200, 184, 154, 0.22);
         background:
-            linear-gradient(180deg, rgba(255, 255, 255, 0.94) 0%, rgba(255, 255, 255, 0.82) 100%);
+            linear-gradient(180deg, rgba(15, 42, 31, 0.94) 0%, rgba(9, 23, 17, 0.88) 100%);
         box-shadow:
-            0 28px 80px rgba(8, 38, 28, 0.1),
-            inset 0 1px 0 rgba(255, 255, 255, 0.8);
+            0 28px 80px rgba(9, 23, 17, 0.24),
+            inset 0 1px 0 rgba(255, 255, 255, 0.04);
         backdrop-filter: blur(20px);
     }
 
@@ -125,6 +130,14 @@
         @apply flex items-center gap-4;
     }
 
+    .brand-script {
+        font-family: 'Great Vibes', cursive;
+        font-size: 1.95rem;
+        line-height: 0.9;
+        letter-spacing: 0.01em;
+        color: var(--arena-sand);
+    }
+
     .premium-brand-copy {
         @apply flex flex-col;
     }
@@ -134,24 +147,25 @@
     }
 
     .premium-nav-link {
-        @apply rounded-full px-4 py-3 text-[11px] font-extrabold uppercase tracking-[0.26em] text-[color:var(--arena-muted)] transition;
+        @apply rounded-full px-4 py-3 text-[11px] font-extrabold uppercase tracking-[0.26em] text-white/[0.68] transition;
+        font-family: 'Sora', sans-serif;
     }
 
     .premium-nav-link:hover,
     .premium-nav-link.is-active {
-        @apply text-[color:var(--arena-forest)];
-        background: rgba(8, 38, 28, 0.05);
+        color: var(--arena-sand);
+        background: rgba(200, 184, 154, 0.1);
     }
 
     .arena-button-primary {
-        @apply inline-flex items-center justify-center rounded-full px-6 py-3 text-sm font-extrabold uppercase tracking-[0.18em] text-[color:var(--arena-forest)] transition duration-200;
-        background: linear-gradient(135deg, var(--arena-sand) 0%, var(--arena-sand-soft) 100%);
-        box-shadow: 0 14px 30px rgba(198, 171, 127, 0.24);
+        @apply inline-flex items-center justify-center rounded-full px-6 py-3 text-sm font-extrabold uppercase tracking-[0.18em] text-[color:var(--arena-charcoal)] transition duration-200;
+        background: linear-gradient(135deg, #d8cab0 0%, var(--arena-sand) 100%);
+        box-shadow: 0 16px 34px rgba(178, 157, 120, 0.32);
     }
 
     .arena-button-primary:hover {
         transform: translateY(-1px);
-        box-shadow: 0 20px 34px rgba(198, 171, 127, 0.28);
+        box-shadow: 0 22px 40px rgba(178, 157, 120, 0.38);
     }
 
     .arena-button-primary:disabled {
@@ -162,14 +176,14 @@
 
     .arena-button-secondary {
         @apply inline-flex items-center justify-center rounded-full border px-6 py-3 text-sm font-extrabold uppercase tracking-[0.18em] transition duration-200;
-        border-color: rgba(8, 38, 28, 0.18);
+        border-color: rgba(200, 184, 154, 0.22);
         color: var(--arena-forest);
-        background: rgba(255, 255, 255, 0.7);
+        background: rgba(245, 245, 242, 0.56);
     }
 
     .arena-button-secondary:hover {
-        border-color: rgba(8, 38, 28, 0.35);
-        background: rgba(255, 255, 255, 0.95);
+        border-color: rgba(15, 42, 31, 0.34);
+        background: rgba(245, 245, 242, 0.88);
     }
 
     .hero-frame {
@@ -219,7 +233,9 @@
     }
 
     .mobile-sheet {
-        @apply rounded-[2rem] border border-[color:var(--arena-border)] bg-white/95 p-5 shadow-[0_22px_60px_rgba(8,38,28,0.14)] backdrop-blur;
+        @apply rounded-[2rem] border p-5 shadow-[0_22px_60px_rgba(9,23,17,0.22)] backdrop-blur;
+        border-color: rgba(200, 184, 154, 0.18);
+        background: linear-gradient(180deg, rgba(15, 42, 31, 0.96), rgba(9, 23, 17, 0.92));
     }
 
     .section-kicker {
@@ -229,12 +245,12 @@
 
     .page-hero {
         @apply relative overflow-hidden rounded-[2.4rem] border px-6 py-8 sm:px-8 sm:py-10 lg:px-10 lg:py-12;
-        border-color: rgba(255, 255, 255, 0.82);
+        border-color: rgba(245, 245, 242, 0.38);
         background:
-            linear-gradient(150deg, rgba(255, 255, 255, 0.88), rgba(255, 255, 255, 0.72) 46%, rgba(240, 228, 208, 0.74) 100%);
+            linear-gradient(150deg, rgba(218, 205, 181, 0.84), rgba(213, 198, 172, 0.78) 46%, rgba(188, 170, 135, 0.86) 100%);
         box-shadow:
-            0 44px 100px rgba(8, 38, 28, 0.14),
-            inset 0 1px 0 rgba(255, 255, 255, 0.86);
+            0 44px 100px rgba(15, 42, 31, 0.18),
+            inset 0 1px 0 rgba(255, 255, 255, 0.28);
         backdrop-filter: blur(22px);
     }
 
@@ -264,10 +280,10 @@
 
     .page-hero-dark {
         @apply relative overflow-hidden rounded-[2.5rem] border px-6 py-8 text-white sm:px-8 sm:py-10 lg:px-10 lg:py-12;
-        border-color: rgba(255, 255, 255, 0.08);
+        border-color: rgba(200, 184, 154, 0.14);
         background:
-            linear-gradient(135deg, rgba(4, 24, 16, 0.98), rgba(8, 38, 28, 0.96) 34%, rgba(18, 63, 48, 0.94) 100%);
-        box-shadow: 0 44px 110px rgba(8, 38, 28, 0.34);
+            linear-gradient(135deg, rgba(9, 23, 17, 0.99), rgba(15, 42, 31, 0.97) 34%, rgba(26, 26, 26, 0.95) 100%);
+        box-shadow: 0 44px 110px rgba(9, 23, 17, 0.38);
     }
 
     .page-hero-dark::before {
@@ -295,38 +311,54 @@
     }
 
     .hero-grid {
-        @apply relative z-[1] grid gap-8 xl:grid-cols-[1.1fr_0.9fr] xl:items-center;
+        @apply relative z-[1] grid gap-8 xl:grid-cols-[1.08fr_0.92fr] xl:items-center xl:gap-12;
     }
 
     .eyebrow-chip {
         @apply inline-flex items-center gap-2 rounded-full border px-4 py-2 text-[11px] font-extrabold uppercase tracking-[0.28em];
-        border-color: rgba(8, 38, 28, 0.12);
+        border-color: rgba(15, 42, 31, 0.14);
         color: var(--arena-forest-soft);
-        background: rgba(255, 255, 255, 0.62);
+        background: rgba(245, 245, 242, 0.48);
         backdrop-filter: blur(12px);
     }
 
     .dark-eyebrow-chip {
         @apply inline-flex items-center gap-2 rounded-full border px-4 py-2 text-[11px] font-extrabold uppercase tracking-[0.28em] text-[color:var(--arena-sand)];
-        border-color: rgba(255, 255, 255, 0.12);
-        background: rgba(255, 255, 255, 0.08);
+        border-color: rgba(200, 184, 154, 0.18);
+        background: rgba(200, 184, 154, 0.08);
         backdrop-filter: blur(12px);
     }
 
     .hero-title {
-        @apply max-w-5xl text-5xl font-black leading-[0.92] text-[color:var(--arena-forest)] sm:text-6xl lg:text-7xl;
+        @apply max-w-5xl text-[2.9rem] font-semibold leading-[0.94] text-[color:var(--arena-forest)] sm:text-[4rem] lg:text-[5.1rem];
     }
 
     .hero-title-dark {
-        @apply max-w-5xl text-5xl font-black leading-[0.94] text-white sm:text-6xl lg:text-7xl;
+        @apply max-w-5xl text-[2.9rem] font-semibold leading-[0.96] text-white sm:text-[4rem] lg:text-[5.1rem];
+    }
+
+    .section-title {
+        @apply text-[2.2rem] font-semibold leading-[1] text-[color:var(--arena-forest)] sm:text-[3rem] lg:text-[3.6rem];
+    }
+
+    .section-title-dark {
+        @apply text-[2.2rem] font-semibold leading-[1] text-white sm:text-[3rem] lg:text-[3.6rem];
+    }
+
+    .card-title {
+        @apply text-[1.9rem] font-semibold leading-[1.02] text-[color:var(--arena-forest)] sm:text-[2.35rem];
+    }
+
+    .card-title-dark {
+        @apply text-[1.9rem] font-semibold leading-[1.02] text-white sm:text-[2.35rem];
     }
 
     .hero-copy {
-        @apply max-w-3xl text-base leading-8 text-[color:var(--arena-muted)] sm:text-lg;
+        @apply max-w-3xl text-[1rem] leading-8 text-[color:var(--arena-muted)] sm:text-[1.08rem];
     }
 
     .hero-copy-dark {
-        @apply max-w-3xl text-base leading-8 text-white/[0.72] sm:text-lg;
+        @apply max-w-3xl text-[1rem] leading-8 text-white/[0.72] sm:text-[1.08rem];
     }
 
     .metric-ribbon {
@@ -335,23 +367,23 @@
 
     .metric-ribbon-card {
         @apply rounded-[1.45rem] border p-4;
-        border-color: rgba(8, 38, 28, 0.09);
-        background: rgba(255, 255, 255, 0.72);
-        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.55);
+        border-color: rgba(15, 42, 31, 0.14);
+        background: rgba(245, 245, 242, 0.52);
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2);
     }
 
     .dark-metric-ribbon-card {
         @apply rounded-[1.45rem] border p-4;
-        border-color: rgba(255, 255, 255, 0.08);
-        background: rgba(255, 255, 255, 0.07);
+        border-color: rgba(200, 184, 154, 0.12);
+        background: rgba(200, 184, 154, 0.08);
         backdrop-filter: blur(10px);
     }
 
     .showcase-panel {
         @apply relative overflow-hidden rounded-[2.2rem] border p-6 sm:p-8;
-        border-color: rgba(255, 255, 255, 0.12);
+        border-color: rgba(200, 184, 154, 0.14);
         background:
-            linear-gradient(165deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.03) 40%, rgba(255, 255, 255, 0.08) 100%);
+            linear-gradient(165deg, rgba(15, 42, 31, 0.92), rgba(9, 23, 17, 0.88) 40%, rgba(15, 42, 31, 0.92) 100%);
         backdrop-filter: blur(14px);
     }
 
@@ -366,37 +398,41 @@
     }
 
     .split-surface {
-        @apply grid gap-6 xl:grid-cols-[0.9fr_1.1fr];
+        @apply relative overflow-hidden rounded-[2.4rem] border p-6 sm:p-8 lg:p-10;
+        border-color: rgba(245, 245, 242, 0.32);
+        background: linear-gradient(180deg, rgba(245, 245, 242, 0.38), rgba(234, 224, 204, 0.32));
+        box-shadow: 0 36px 86px rgba(15, 42, 31, 0.14);
+        backdrop-filter: blur(18px);
     }
 
     .premium-grid {
-        @apply grid gap-5 md:grid-cols-2 xl:grid-cols-3;
+        @apply grid gap-5;
     }
 
     .premium-card {
         @apply relative overflow-hidden rounded-[2rem] border p-6 transition duration-200;
-        border-color: rgba(255, 255, 255, 0.82);
+        border-color: rgba(245, 245, 242, 0.34);
         background:
-            linear-gradient(180deg, rgba(255, 255, 255, 0.88) 0%, rgba(255, 255, 255, 0.72) 100%);
+            linear-gradient(180deg, rgba(245, 245, 242, 0.6) 0%, rgba(234, 224, 204, 0.56) 100%);
         box-shadow:
-            0 30px 70px rgba(8, 38, 28, 0.1),
-            inset 0 1px 0 rgba(255, 255, 255, 0.84);
+            0 30px 70px rgba(15, 42, 31, 0.14),
+            inset 0 1px 0 rgba(255, 255, 255, 0.18);
         backdrop-filter: blur(18px);
     }
 
     .premium-card:hover {
         transform: translateY(-4px);
         box-shadow:
-            0 42px 84px rgba(8, 38, 28, 0.15),
-            inset 0 1px 0 rgba(255, 255, 255, 0.9);
+            0 42px 84px rgba(15, 42, 31, 0.18),
+            inset 0 1px 0 rgba(255, 255, 255, 0.24);
     }
 
     .premium-card-dark {
         @apply relative overflow-hidden rounded-[2rem] border p-6 text-white transition duration-200;
-        border-color: rgba(255, 255, 255, 0.08);
+        border-color: rgba(200, 184, 154, 0.12);
         background:
-            linear-gradient(155deg, rgba(4, 24, 16, 0.98), rgba(10, 36, 26, 0.95) 42%, rgba(18, 63, 48, 0.92) 100%);
-        box-shadow: 0 30px 84px rgba(8, 38, 28, 0.28);
+            linear-gradient(155deg, rgba(9, 23, 17, 0.99), rgba(15, 42, 31, 0.96) 42%, rgba(26, 26, 26, 0.92) 100%);
+        box-shadow: 0 30px 84px rgba(9, 23, 17, 0.34);
     }
 
     .premium-card-dark:hover {
@@ -409,20 +445,26 @@
 
     .info-chip {
         @apply rounded-full px-3 py-2 text-[11px] font-extrabold uppercase tracking-[0.22em];
-        background: rgba(8, 38, 28, 0.06);
-        color: var(--arena-forest);
+        background: rgba(15, 42, 31, 0.12);
+        color: var(--arena-forest-deep);
     }
 
     .info-chip-soft {
         @apply rounded-full px-3 py-2 text-[11px] font-extrabold uppercase tracking-[0.22em];
-        background: rgba(226, 204, 170, 0.44);
-        color: var(--arena-forest);
+        background: rgba(200, 184, 154, 0.28);
+        color: var(--arena-forest-deep);
+    }
+
+    .info-chip-soft-dark {
+        @apply rounded-full px-3 py-2 text-[11px] font-extrabold uppercase tracking-[0.22em];
+        background: rgba(200, 184, 154, 0.16);
+        color: var(--arena-sand);
     }
 
     .display-panel {
         @apply rounded-[1.75rem] border p-5;
-        border-color: rgba(8, 38, 28, 0.08);
-        background: rgba(255, 255, 255, 0.66);
+        border-color: rgba(200, 184, 154, 0.12);
+        background: rgba(245, 245, 242, 0.1);
         backdrop-filter: blur(10px);
     }
 
@@ -434,17 +476,17 @@
     }
 
     .floating-orb--sand {
-        background: rgba(226, 204, 170, 0.34);
+        background: rgba(200, 184, 154, 0.32);
     }
 
     .floating-orb--forest {
-        background: rgba(26, 94, 71, 0.14);
+        background: rgba(15, 42, 31, 0.16);
     }
 
     .site-table-shell {
         @apply overflow-hidden rounded-[1.6rem] border;
-        border-color: rgba(8, 38, 28, 0.09);
-        background: rgba(255, 255, 255, 0.7);
+        border-color: rgba(15, 42, 31, 0.12);
+        background: rgba(245, 245, 242, 0.58);
     }
 
     .site-table-shell table {
@@ -453,12 +495,12 @@
     }
 
     .site-table-shell thead {
-        background: rgba(255, 255, 255, 0.82);
-        color: rgba(18, 40, 31, 0.62);
+        background: rgba(245, 245, 242, 0.74);
+        color: rgba(22, 29, 25, 0.66);
     }
 
     .site-table-shell tbody {
-        background: rgba(255, 255, 255, 0.55);
+        background: rgba(245, 245, 242, 0.38);
     }
 
     .site-table-shell tbody tr {
@@ -470,17 +512,209 @@
     }
 
     .booking-planner-grid {
-        @apply grid gap-4 xl:grid-cols-[1fr_1fr_1fr_0.9fr_auto];
+        @apply grid gap-4 lg:grid-cols-2 xl:grid-cols-[1fr_1fr_1fr_0.9fr_auto];
     }
 
     .booking-side-grid {
-        @apply grid gap-8 xl:grid-cols-[0.92fr_1.08fr];
+        @apply grid gap-8 xl:grid-cols-[0.92fr_1.08fr] xl:gap-10;
+    }
+
+    .booking-workspace {
+        @apply grid gap-8 xl:grid-cols-[minmax(0,1.2fr)_23rem] xl:items-start;
+    }
+
+    .booking-sidebar {
+        @apply space-y-6 xl:sticky xl:top-28;
+    }
+
+    .booking-compact-grid {
+        @apply grid gap-4 md:grid-cols-2 xl:grid-cols-6;
+    }
+
+    .booking-compact-field {
+        @apply space-y-2;
+    }
+
+    .booking-compact-field--wide {
+        @apply xl:col-span-2;
+    }
+
+    .booking-select {
+        @apply w-full rounded-[1.25rem] border bg-white px-4 py-3 text-sm font-semibold text-[color:var(--arena-forest)] outline-none transition;
+        border-color: rgba(15, 42, 31, 0.14);
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4);
+    }
+
+    .booking-select:focus {
+        border-color: rgba(178, 157, 120, 0.75);
+        box-shadow:
+            0 0 0 3px rgba(200, 184, 154, 0.24),
+            inset 0 1px 0 rgba(255, 255, 255, 0.4);
+    }
+
+    .booking-select:disabled {
+        opacity: 0.7;
+        cursor: not-allowed;
+    }
+
+    .booking-mini-card {
+        @apply rounded-[1.4rem] border bg-white/90 p-4;
+        border-color: rgba(15, 42, 31, 0.12);
+        box-shadow:
+            0 18px 36px rgba(15, 42, 31, 0.08),
+            inset 0 1px 0 rgba(255, 255, 255, 0.45);
+    }
+
+    .booking-summary-grid {
+        @apply grid gap-6 xl:grid-cols-[minmax(0,1fr)_23rem];
+    }
+
+    .booking-stage {
+        @apply rounded-[2.25rem] border border-[rgba(15,42,31,0.1)] bg-[linear-gradient(180deg,rgba(15,42,31,0.96),rgba(27,61,47,0.96))] p-4 sm:p-6 lg:p-8 shadow-[0_34px_80px_rgba(9,23,17,0.28)];
+    }
+
+    .booking-panel {
+        @apply mx-auto w-full max-w-[48rem] rounded-[2rem] border bg-white p-5 sm:p-7;
+        border-color: rgba(15, 42, 31, 0.12);
+        box-shadow:
+            0 28px 64px rgba(15, 42, 31, 0.16),
+            inset 0 1px 0 rgba(255, 255, 255, 0.55);
+    }
+
+    .booking-day-strip {
+        @apply grid items-stretch gap-3;
+        grid-template-columns: 2.8rem minmax(0, 1fr) 2.8rem;
+    }
+
+    .booking-day-cards {
+        @apply grid gap-3;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .booking-nav-button {
+        @apply inline-flex h-11 w-11 items-center justify-center rounded-[1rem] border bg-white text-[color:var(--arena-forest)] transition;
+        border-color: rgba(15, 42, 31, 0.12);
+        box-shadow: 0 10px 24px rgba(15, 42, 31, 0.08);
+    }
+
+    .booking-nav-button:hover {
+        transform: translateY(-1px);
+        border-color: rgba(15, 42, 31, 0.22);
+    }
+
+    .booking-nav-button:disabled {
+        opacity: 0.45;
+        cursor: not-allowed;
+        transform: none;
+    }
+
+    .booking-day-card {
+        @apply rounded-[1.35rem] border bg-white px-4 py-4 text-center text-[color:var(--arena-forest)] transition;
+        border-color: rgba(15, 42, 31, 0.12);
+    }
+
+    .booking-day-card.is-active {
+        background: linear-gradient(135deg, rgba(200, 184, 154, 0.96), rgba(184, 162, 120, 0.95));
+        border-color: rgba(178, 157, 120, 0.85);
+        color: var(--arena-charcoal);
+        box-shadow: 0 16px 30px rgba(178, 157, 120, 0.22);
+    }
+
+    .booking-time-grid-compact {
+        @apply grid gap-3;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+
+    .booking-time-pill {
+        @apply rounded-[1rem] border bg-white px-3 py-3 text-center text-base font-bold text-[color:var(--arena-forest)] transition;
+        border-color: rgba(15, 42, 31, 0.12);
+        box-shadow: 0 8px 20px rgba(15, 42, 31, 0.06);
+    }
+
+    .booking-time-pill:hover {
+        transform: translateY(-1px);
+        border-color: rgba(15, 42, 31, 0.22);
+    }
+
+    .booking-time-pill.is-active {
+        background: linear-gradient(135deg, rgba(200, 184, 154, 0.96), rgba(184, 162, 120, 0.95));
+        border-color: rgba(178, 157, 120, 0.85);
+        color: var(--arena-charcoal);
+        box-shadow: 0 16px 30px rgba(178, 157, 120, 0.22);
+    }
+
+    .booking-time-pill.is-muted {
+        opacity: 0.42;
+    }
+
+    .booking-chooser-grid {
+        @apply mt-6 grid gap-4 lg:grid-cols-3;
+    }
+
+    .booking-inline-summary {
+        @apply mt-6 rounded-[1.35rem] border bg-[rgba(15,42,31,0.04)] px-4 py-4;
+        border-color: rgba(15, 42, 31, 0.12);
+    }
+
+    .booking-section {
+        @apply space-y-5;
+    }
+
+    .booking-day-grid {
+        @apply grid gap-3 sm:grid-cols-3 xl:grid-cols-5;
+    }
+
+    .booking-time-grid {
+        @apply grid gap-3 sm:grid-cols-3 lg:grid-cols-4;
+    }
+
+    .booking-option {
+        @apply rounded-[1.45rem] border bg-white/90 px-4 py-4 text-left text-[color:var(--arena-forest)] transition duration-200;
+        border-color: rgba(15, 42, 31, 0.12);
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.45);
+    }
+
+    .booking-option:hover {
+        transform: translateY(-2px);
+        border-color: rgba(15, 42, 31, 0.24);
+        box-shadow:
+            0 14px 30px rgba(15, 42, 31, 0.1),
+            inset 0 1px 0 rgba(255, 255, 255, 0.52);
+    }
+
+    .booking-option.is-active {
+        border-color: rgba(178, 157, 120, 0.7);
+        background: linear-gradient(135deg, rgba(216, 202, 176, 0.9), rgba(200, 184, 154, 0.92));
+        color: var(--arena-charcoal);
+        box-shadow:
+            0 18px 36px rgba(178, 157, 120, 0.24),
+            inset 0 0 0 1px rgba(255, 255, 255, 0.18);
+    }
+
+    .booking-option-soft {
+        @apply rounded-[1.3rem] border px-4 py-3 text-sm font-bold transition duration-200;
+        border-color: rgba(15, 42, 31, 0.12);
+        background: rgba(245, 245, 242, 0.72);
+        color: var(--arena-forest);
+    }
+
+    .booking-option-soft:hover {
+        transform: translateY(-1px);
+        border-color: rgba(15, 42, 31, 0.24);
+        background: rgba(245, 245, 242, 0.96);
+    }
+
+    .booking-option-soft.is-active {
+        border-color: rgba(178, 157, 120, 0.75);
+        background: rgba(200, 184, 154, 0.92);
+        color: var(--arena-charcoal);
+        box-shadow: 0 12px 24px rgba(178, 157, 120, 0.22);
     }
 
     .soft-message {
         @apply rounded-[1.3rem] border px-4 py-3 text-sm;
-        border-color: rgba(8, 38, 28, 0.08);
-        background: rgba(255, 255, 255, 0.56);
+        border-color: rgba(15, 42, 31, 0.1);
+        background: rgba(245, 245, 242, 0.48);
     }
 
     .stack-divider {
@@ -492,10 +726,198 @@
         @apply grid gap-10 lg:grid-cols-[1.1fr_0.9fr] lg:items-end;
     }
 
+    .account-shell {
+        @apply site-shell min-h-screen;
+    }
+
+    .account-grid {
+        @apply site-grid py-10 sm:py-12;
+    }
+
+    .account-stack {
+        @apply space-y-8 sm:space-y-10;
+    }
+
+    .account-card {
+        @apply premium-card p-6 sm:p-8;
+    }
+
+    .account-card-dark {
+        @apply premium-card-dark p-6 sm:p-8;
+    }
+
+    .account-section-title {
+        @apply text-[2rem] font-semibold leading-none text-[color:var(--arena-forest)] sm:text-[2.6rem];
+    }
+
+    .account-nav-link {
+        @apply rounded-full px-4 py-3 text-[11px] font-extrabold uppercase tracking-[0.26em] text-white/[0.68] transition;
+        font-family: 'Sora', sans-serif;
+    }
+
+    .account-nav-link:hover,
+    .account-nav-link.is-active {
+        color: var(--arena-sand);
+        background: rgba(200, 184, 154, 0.1);
+    }
+
+    .auth-shell {
+        @apply min-h-screen px-4 py-6 sm:px-6 sm:py-8;
+    }
+
+    .auth-grid {
+        @apply mx-auto grid min-h-[calc(100vh-3rem)] max-w-[96rem] gap-6 xl:grid-cols-[0.96fr_1.04fr] xl:items-stretch;
+    }
+
+    .auth-stage {
+        @apply relative overflow-hidden rounded-[2.5rem] border p-6 text-white sm:p-8 lg:p-10;
+        border-color: rgba(200, 184, 154, 0.14);
+        background:
+            linear-gradient(135deg, rgba(9, 23, 17, 0.98), rgba(15, 42, 31, 0.95) 42%, rgba(26, 26, 26, 0.94) 100%);
+        box-shadow: 0 40px 110px rgba(9, 23, 17, 0.34);
+    }
+
+    .auth-stage::before {
+        content: '';
+        position: absolute;
+        inset: -12% auto auto -10%;
+        width: 24rem;
+        height: 24rem;
+        border-radius: 999px;
+        background: radial-gradient(circle, rgba(200, 184, 154, 0.18), transparent 68%);
+        filter: blur(18px);
+        pointer-events: none;
+    }
+
+    .auth-form-card {
+        @apply relative overflow-hidden rounded-[2.25rem] border bg-[rgba(245,245,242,0.82)] p-6 sm:p-8 lg:p-10;
+        border-color: rgba(245, 245, 242, 0.45);
+        box-shadow:
+            0 36px 90px rgba(15, 42, 31, 0.16),
+            inset 0 1px 0 rgba(255, 255, 255, 0.34);
+        backdrop-filter: blur(22px);
+    }
+
+    .auth-form-card::before {
+        content: '';
+        position: absolute;
+        inset: 0 0 auto 0;
+        height: 1px;
+        background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.92) 50%, transparent 100%);
+        pointer-events: none;
+    }
+
+    .auth-field {
+        @apply space-y-2;
+    }
+
+    .auth-label {
+        @apply block text-xs font-extrabold uppercase tracking-[0.22em] text-[color:var(--arena-forest-glow)];
+        font-family: 'Sora', sans-serif;
+    }
+
+    .auth-input {
+        @apply block w-full rounded-[1.25rem] border bg-white px-4 py-3 text-[color:var(--arena-forest)] outline-none transition;
+        border-color: rgba(15, 42, 31, 0.14);
+        box-shadow:
+            0 10px 24px rgba(15, 42, 31, 0.06),
+            inset 0 1px 0 rgba(255, 255, 255, 0.55);
+    }
+
+    .auth-input:focus {
+        border-color: rgba(178, 157, 120, 0.78);
+        box-shadow:
+            0 0 0 3px rgba(200, 184, 154, 0.26),
+            inset 0 1px 0 rgba(255, 255, 255, 0.55);
+    }
+
+    .auth-button {
+        @apply inline-flex items-center justify-center rounded-full px-6 py-3 text-sm font-extrabold uppercase tracking-[0.18em] transition duration-200;
+        background: linear-gradient(135deg, #d8cab0 0%, var(--arena-sand) 100%);
+        color: var(--arena-charcoal);
+        box-shadow: 0 16px 34px rgba(178, 157, 120, 0.32);
+    }
+
+    .auth-button:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 22px 40px rgba(178, 157, 120, 0.38);
+    }
+
+    .auth-link {
+        @apply text-sm font-bold text-[color:var(--arena-forest)] underline-offset-4 transition hover:text-[color:var(--arena-forest-glow)] hover:underline;
+    }
+
+    .auth-error {
+        @apply text-sm text-red-700;
+    }
+
+    .auth-status {
+        @apply rounded-[1.15rem] border px-4 py-3 text-sm font-semibold text-green-800;
+        border-color: rgba(52, 123, 78, 0.18);
+        background: rgba(211, 240, 219, 0.72);
+    }
+
+    .auth-alert {
+        @apply rounded-[1.2rem] border px-4 py-4 text-sm leading-7;
+        border-color: rgba(15, 42, 31, 0.12);
+        background: rgba(245, 245, 242, 0.7);
+        color: var(--arena-muted);
+    }
+
     @media (max-width: 1279px) {
         .hero-title,
         .hero-title-dark {
-            font-size: clamp(3rem, 10vw, 4.8rem);
+            font-size: clamp(2.7rem, 8vw, 4.5rem);
+        }
+    }
+
+    @media (max-width: 767px) {
+        .page-hero,
+        .page-hero-dark,
+        .split-surface,
+        .premium-card,
+        .premium-card-dark,
+        .site-card,
+        .site-card-dark {
+            border-radius: 1.75rem;
+        }
+
+        .hero-title,
+        .hero-title-dark {
+            font-size: clamp(2.45rem, 12vw, 3.2rem);
+            line-height: 0.98;
+        }
+
+        .section-title,
+        .section-title-dark {
+            font-size: clamp(2rem, 10vw, 2.6rem);
+            line-height: 1;
+        }
+
+        .card-title,
+        .card-title-dark {
+            font-size: clamp(1.55rem, 8vw, 2rem);
+        }
+
+        .booking-option,
+        .booking-option-soft {
+            border-radius: 1.15rem;
+        }
+
+        .booking-day-strip {
+            grid-template-columns: 2.6rem minmax(0, 1fr) 2.6rem;
+        }
+
+        .booking-day-cards {
+            gap: 0.6rem;
+        }
+
+        .booking-day-card {
+            padding: 0.85rem 0.45rem;
+        }
+
+        .booking-time-grid-compact {
+            grid-template-columns: repeat(3, minmax(0, 1fr));
         }
     }
 }

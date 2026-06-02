@@ -17,6 +17,7 @@ use Filament\Forms\Components\Toggle;
 use Filament\Resources\Resource;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
+use Filament\Support\Enums\Width;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
@@ -33,6 +34,10 @@ class EquipmentResource extends Resource
     protected static ?string $navigationLabel = 'Oprema';
 
     protected static string|UnitEnum|null $navigationGroup = 'Katalog';
+
+    protected static ?string $modelLabel = 'Artikal';
+
+    protected static ?string $pluralModelLabel = 'Oprema';
 
     protected static ?string $recordTitleAttribute = 'name';
 
@@ -75,7 +80,7 @@ class EquipmentResource extends Resource
                 SelectFilter::make('sport')->relationship('sport', 'name'),
             ])
             ->recordActions([
-                EditAction::make(),
+                EditAction::make()->modalWidth(Width::Screen),
                 DeleteAction::make(),
             ])
             ->toolbarActions([

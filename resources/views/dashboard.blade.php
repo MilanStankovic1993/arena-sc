@@ -1,15 +1,14 @@
 <x-app-layout>
     <x-slot name="header">
         <div>
-            <h2 class="text-2xl font-black tracking-tight text-[color:var(--arena-forest)]">Moj nalog</h2>
-            <p class="text-sm text-slate-500">Prati istoriju rezervacija i brzo se vrati na pregled termina.</p>
+            <span class="eyebrow-chip">Moj nalog</span>
+            <h2 class="section-title mt-4">Pregled rezervacija.</h2>
         </div>
     </x-slot>
 
-    <div class="py-10">
-        <div class="mx-auto grid max-w-7xl gap-8 px-4 sm:px-6 lg:grid-cols-[0.8fr_1.2fr] lg:px-8">
+    <div class="grid gap-8 lg:grid-cols-[0.84fr_1.16fr]">
             <div class="space-y-6">
-                <div class="rounded-[2rem] bg-[linear-gradient(145deg,rgba(8,38,28,0.98),rgba(18,63,48,0.93))] p-6 text-white shadow-sm">
+                <div class="account-card-dark">
                     <p class="text-sm uppercase tracking-[0.3em] text-[color:var(--arena-sand)]">Moj profil</p>
                     <h3 class="mt-3 text-3xl font-black">{{ auth()->user()->name }}</h3>
                     <div class="mt-6 grid gap-4 sm:grid-cols-3">
@@ -27,36 +26,43 @@
                         </div>
                     </div>
                     <div class="mt-6">
-                        <a href="{{ route('sports.index') }}" class="inline-flex rounded-full bg-white px-5 py-3 text-sm font-bold uppercase tracking-[0.18em] text-[color:var(--arena-forest)]">Nova rezervacija</a>
+                        <a href="{{ route('booking.index') }}" class="arena-button-primary">Nova rezervacija</a>
                     </div>
                 </div>
             </div>
 
-            <div class="rounded-[2rem] bg-white p-6 shadow-sm ring-1 ring-[color:var(--arena-border)]">
+            <div class="account-card">
                 @if (session('status'))
-                    <div class="mb-6 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
+                    <div class="auth-status mb-6">
                         {{ session('status') }}
                     </div>
                 @endif
 
-                <h3 class="text-lg font-bold text-[color:var(--arena-forest)]">Istorija zahteva</h3>
+                <h3 class="account-section-title">Istorija rezervacija</h3>
                 <div class="mt-5 space-y-4">
                     @forelse ($reservations as $reservation)
-                        <div class="rounded-2xl border border-slate-200 p-4">
+                        <div class="rounded-[1.5rem] border border-[rgba(15,42,31,0.1)] bg-white/70 p-4">
                             <div class="flex flex-wrap items-center justify-between gap-3">
                                 <div>
                                     <p class="font-semibold text-[color:var(--arena-forest)]">{{ $reservation->court->name }}</p>
                                     <p class="text-sm text-slate-500">{{ $reservation->sport->name }} | {{ $reservation->starts_at->format('d.m.Y H:i') }}</p>
                                 </div>
-                                <span class="rounded-full bg-slate-100 px-3 py-1 text-xs font-bold uppercase tracking-[0.2em] text-slate-700">{{ $reservation->status->label() }}</span>
+                                <span class="info-chip">{{ $reservation->status->label() }}</span>
                             </div>
                             <p class="mt-3 text-sm text-slate-600">Ukupna cena: {{ number_format($reservation->total_price, 0, ',', '.') }} RSD</p>
+                            @if ($reservation->status === \App\Enums\ReservationStatus::Reserved && $reservation->starts_at->isFuture())
+                                <form method="POST" action="{{ route('reservations.cancel', $reservation) }}" class="mt-4">
+                                    @csrf
+                                    <button type="submit" class="arena-button-secondary">Otkazi termin</button>
+                                </form>
+                            @elseif ($reservation->status === \App\Enums\ReservationStatus::Cancelled && $reservation->cancellation_reason)
+                                <p class="mt-3 text-sm text-slate-500">Razlog: {{ $reservation->cancellation_reason }}</p>
+                            @endif
                         </div>
                     @empty
                         <p class="text-sm text-slate-500">Jos uvek nemas poslate rezervacije.</p>
                     @endforelse
                 </div>
             </div>
-        </div>
     </div>
 </x-app-layout>

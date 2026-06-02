@@ -2,11 +2,17 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\Storage;
 
 class Sport extends Model
 {
+    protected $appends = [
+        'cover_image_url',
+    ];
+
     protected $fillable = [
         'name',
         'slug',
@@ -42,5 +48,10 @@ class Sport extends Model
     public function pricingRules(): HasMany
     {
         return $this->hasMany(PricingRule::class);
+    }
+
+    protected function coverImageUrl(): Attribute
+    {
+        return Attribute::get(fn (): ?string => $this->cover_image ? Storage::disk('public')->url($this->cover_image) : null);
     }
 }

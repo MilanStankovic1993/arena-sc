@@ -5,6 +5,7 @@ namespace App\Filament\Resources\Reservations\Pages;
 use App\Filament\Resources\Reservations\ReservationResource;
 use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ManageRecords;
+use Filament\Support\Enums\Width;
 
 class ManageReservations extends ManageRecords
 {
@@ -13,7 +14,7 @@ class ManageReservations extends ManageRecords
     protected function getHeaderActions(): array
     {
         return [
-            CreateAction::make(),
+            CreateAction::make()->modalWidth(Width::Screen),
         ];
     }
 }
