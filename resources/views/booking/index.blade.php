@@ -16,14 +16,27 @@
         data-availability-url="{{ route('booking.availability') }}"
         data-authenticated="{{ auth()->check() ? '1' : '0' }}"
     >
-        <div class="page-stack">
+        <div class="page-stack booking-page-stack">
+            <div class="booking-intro-card">
+                <div>
+                    <span class="dark-eyebrow-chip">Rezervisi termin</span>
+                    <h1 class="hero-title-dark booking-intro-card__title">IZABERI SPORT, DAN I VREME. BRZO I JASNO.</h1>
+                </div>
+
+                <div class="booking-intro-card__chips">
+                    <span class="info-chip-soft-dark">Padel</span>
+                    <span class="info-chip-soft-dark">Basket 3x3</span>
+                    <span class="info-chip-soft-dark">Oprema uz termin</span>
+                </div>
+            </div>
+
             <div class="booking-summary-grid">
                 <div class="booking-stage">
                     <div class="booking-panel">
                         <div class="mb-6 flex flex-wrap items-end justify-between gap-4">
                             <div>
                                 <span class="eyebrow-chip">Rezervacija</span>
-                                <h1 class="mt-4 text-[2rem] font-semibold leading-none text-[color:var(--arena-forest)] sm:text-[2.8rem]">Rezervisi vas termin.</h1>
+                                <h2 class="mt-4 text-[2rem] font-semibold leading-none text-[color:var(--arena-forest)] sm:text-[2.8rem]">Rezervisi termin.</h2>
                             </div>
 
                             <div class="booking-compact-field min-w-[15rem] max-w-[22rem] flex-1 sm:flex-none">
@@ -110,7 +123,7 @@
 
                         @if (! auth()->check())
                             <div class="soft-message">
-                                <p class="text-sm leading-7 text-[color:var(--arena-ink)]">Za potvrdu rezervacije potrebno je da imas nalog i da budes prijavljen.</p>
+                                <p class="text-sm leading-7 text-[color:var(--arena-ink)]">Za potvrdu termina prijavi se ili napravi nalog.</p>
                                 <div class="mt-4 flex flex-wrap gap-3">
                                     <a href="{{ route('register') }}" class="arena-button-primary">Registruj se</a>
                                     <a href="{{ route('login') }}" class="arena-button-secondary">Prijavi se</a>
@@ -127,7 +140,7 @@
                                     <div class="flex flex-wrap items-center justify-between gap-3">
                                         <div>
                                             <p class="text-sm font-extrabold uppercase tracking-[0.26em] text-[color:var(--arena-forest-glow)]">Iznajmljivanje opreme</p>
-                                            <p class="mt-2 text-sm text-[color:var(--arena-muted)]">Dodaj opremu uz termin ako zelis.</p>
+                                            <p class="mt-2 text-sm text-[color:var(--arena-muted)]">Dodaj opremu uz termin.</p>
                                         </div>
                                         <span class="info-chip-soft">Opcionalno</span>
                                     </div>
@@ -312,23 +325,26 @@
 
                 items.forEach((item, index) => {
                     const wrapper = document.createElement('div');
-                    wrapper.className = 'booking-mini-card';
+                    wrapper.className = 'booking-mini-card booking-equipment-item';
                     wrapper.innerHTML = `
-                        <div class="grid gap-3 sm:grid-cols-[5rem_minmax(0,1fr)_6rem] sm:items-center">
-                            <div class="overflow-hidden rounded-[1rem] border border-white/20 bg-[rgba(15,42,31,0.08)]">
+                        <div class="booking-equipment-item__grid">
+                            <div class="booking-equipment-item__image-shell">
                                 ${item.image_url
-                                    ? `<img src="${item.image_url}" alt="${item.name}" class="h-20 w-full object-cover">`
-                                    : `<div class="flex h-20 items-center justify-center bg-[linear-gradient(145deg,rgba(15,42,31,0.96),rgba(26,26,26,0.92))]"><img src="{{ asset('brand/arena-sc-mark.svg') }}" alt="Arena SC" class="h-10 w-10 opacity-80"></div>`
+                                    ? `<img src="${item.image_url}" alt="${item.name}" class="booking-equipment-item__image">`
+                                    : `<div class="booking-equipment-item__image-fallback"><img src="{{ asset('brand/arena-sc-mark.svg') }}" alt="Arena SC" class="h-10 w-10 opacity-80"></div>`
                                 }
                             </div>
-                            <div>
-                                <p class="font-bold text-[color:var(--arena-forest)]">${item.name}</p>
-                                <p class="mt-1 text-sm text-slate-500">${item.description || 'Oprema za termin.'}</p>
+                            <div class="booking-equipment-item__copy">
+                                <div class="booking-equipment-item__top">
+                                    <p class="booking-equipment-item__name">${item.name}</p>
+                                    <span class="booking-equipment-item__price">${formatMoney(item.price)}</span>
+                                </div>
+                                <p class="booking-equipment-item__description">${item.description || 'Oprema za termin.'}</p>
                                 <input type="hidden" name="equipment[${index}][equipment_id]" value="${item.id}">
                             </div>
-                            <div>
-                                <span class="block text-xs font-extrabold uppercase tracking-[0.18em] text-slate-500">${formatMoney(item.price)}</span>
-                                <input type="number" min="0" max="10" name="equipment[${index}][quantity]" value="0" class="mt-2 w-full rounded-[1rem] border-[color:var(--arena-border)] bg-white px-3 py-2 text-sm">
+                            <div class="booking-equipment-item__quantity">
+                                <label class="booking-equipment-item__quantity-label">Kolicina</label>
+                                <input type="number" min="0" max="10" name="equipment[${index}][quantity]" value="0" class="booking-equipment-item__input">
                             </div>
                         </div>
                     `;

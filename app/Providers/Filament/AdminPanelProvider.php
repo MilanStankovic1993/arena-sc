@@ -33,7 +33,10 @@ class AdminPanelProvider extends PanelProvider
             ->default()
             ->id('admin')
             ->path('admin')
-            ->brandName('Arena SC Admin')
+            ->brandLogo(asset('brand/arena-sc-mark.svg'))
+            ->darkModeBrandLogo(asset('brand/arena-sc-mark.svg'))
+            ->brandLogoHeight('3.5rem')
+            ->brandName('')
             ->login()
             ->colors([
                 'primary' => Color::Amber,

@@ -47,7 +47,7 @@ class SportResource extends Resource
                 TextInput::make('slug')->required()->unique(ignoreRecord: true),
                 Textarea::make('short_description')->label('Kratak opis')->rows(2),
                 Textarea::make('description')->label('Opis')->rows(5)->columnSpanFull(),
-                FileUpload::make('cover_image')->label('Naslovna slika')->image()->directory('sports'),
+                FileUpload::make('cover_image')->label('Naslovna slika')->image()->disk('public')->directory('sports'),
                 TextInput::make('sort_order')->label('Redosled')->numeric()->default(0),
                 Toggle::make('is_active')->label('Aktivan sport')->default(true),
             ])->columns(2),

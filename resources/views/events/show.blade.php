@@ -1,101 +1,130 @@
 @extends('layouts.site', ['title' => $event->title . ' | Arena SC'])
 
 @section('content')
-    <section class="site-grid py-10 sm:py-12">
-        <div class="page-stack">
-        <div class="grid gap-8 xl:grid-cols-[0.92fr_1.08fr] xl:gap-10">
-            <div class="space-y-6">
-                <div class="page-hero-dark overflow-hidden">
-                    @if ($event->cover_image_url)
-                        <div class="mb-6 overflow-hidden rounded-[1.6rem] border border-white/10 bg-white/5">
-                            <img src="{{ $event->cover_image_url }}" alt="{{ $event->title }}" class="h-64 w-full object-cover">
-                        </div>
-                    @endif
+    <div class="page-stack">
+        <section
+            class="event-detail-hero"
+            style="background-image: linear-gradient(180deg, rgba(7, 16, 13, 0.62) 0%, rgba(7, 16, 13, 0.78) 48%, rgba(7, 16, 13, 0.9) 100%), url('{{ $event->cover_image_url ?: asset('media/home/events-hero.png') }}');"
+        >
+            <div class="site-grid event-detail-hero__inner">
+                <div class="event-detail-hero__content">
+                    <span class="dark-eyebrow-chip">{{ $event->type->label() }}</span>
+                    <h1 class="hero-title-dark max-w-4xl">{{ $event->title }}</h1>
 
-                    <p class="text-xs font-extrabold uppercase tracking-[0.3em] text-[color:var(--arena-sand)]">{{ $event->type->label() }}</p>
-                    <h1 class="hero-title-dark mt-3">{{ $event->title }}</h1>
-                    <p class="mt-5 text-base leading-8 text-white/75">{{ $event->description ?: $event->summary }}</p>
-                    <div class="mt-6 flex flex-wrap gap-3">
+                    <div class="event-detail-hero__chips">
                         <span class="info-chip-soft-dark">{{ $event->status->label() }}</span>
                         @if ($event->start_date)
                             <span class="info-chip-soft-dark">{{ $event->start_date->format('d.m.Y') }}</span>
                         @endif
+                        <span class="info-chip-soft-dark">{{ $event->entries_count }} ucesnika</span>
+                        <span class="info-chip-soft-dark">{{ $event->matches_count }} meceva</span>
+                    </div>
+
+                    @if ($event->description ?: $event->summary)
+                        <p class="hero-copy-dark max-w-3xl">{{ $event->description ?: $event->summary }}</p>
+                    @endif
+                </div>
+            </div>
+        </section>
+
+        <section class="site-grid pb-10 sm:pb-14">
+            <div class="events-detail-stack">
+                <div class="events-detail-grid">
+                    <div class="premium-card p-6 sm:p-8">
+                        <span class="eyebrow-chip">Pravila</span>
+                        <h2 class="section-title mt-5">Pravila i format</h2>
+                        <p class="events-detail-copy mt-6">
+                            {{ $event->rules ?: 'Ovde ide tekst pravila turnira ili lige. Dodaj pravila kroz admin panel kada budu finalizovana.' }}
+                        </p>
+                    </div>
+
+                    <div class="premium-card p-6 sm:p-8">
+                        <span class="eyebrow-chip">Pregled</span>
+                        <div class="events-detail-summary-grid mt-6">
+                            <div class="events-detail-summary-box">
+                                <span class="events-detail-summary-box__label">Status</span>
+                                <span class="events-detail-summary-box__value">{{ $event->status->label() }}</span>
+                            </div>
+                            <div class="events-detail-summary-box">
+                                <span class="events-detail-summary-box__label">Tip</span>
+                                <span class="events-detail-summary-box__value">{{ $event->type->label() }}</span>
+                            </div>
+                            <div class="events-detail-summary-box">
+                                <span class="events-detail-summary-box__label">Ucesnici</span>
+                                <span class="events-detail-summary-box__value">{{ $event->entries_count }}</span>
+                            </div>
+                            <div class="events-detail-summary-box">
+                                <span class="events-detail-summary-box__label">Mecevi</span>
+                                <span class="events-detail-summary-box__value">{{ $event->matches_count }}</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
-                <div class="premium-card p-6 sm:p-7">
-                    <span class="eyebrow-chip">Pravila</span>
-                    <p class="mt-4 text-sm leading-8 text-[color:var(--arena-muted)]">{{ $event->rules ?: 'Ovde ce biti prikazana pravila turnira ili lige kada ih uneses kroz admin panel.' }}</p>
-                </div>
-            </div>
+                <div class="events-detail-grid">
+                    <div class="premium-card p-6 sm:p-8">
+                        <span class="eyebrow-chip">Tabela</span>
+                        <h2 class="section-title mt-5">Ucesnici i plasman</h2>
 
-            <div class="space-y-6">
-                <div class="premium-card p-6 sm:p-7">
-                    <div class="flex items-center justify-between gap-4">
-                        <div>
-                            <p class="text-sm font-extrabold uppercase tracking-[0.3em] text-[color:var(--arena-forest-glow)]">Tabela i ucesnici</p>
-                            <h2 class="section-title mt-4 text-[2.4rem] sm:text-[3rem]">Pregled statistike</h2>
+                        <div class="site-table-shell mt-6 overflow-hidden">
+                            <table class="min-w-full divide-y divide-slate-200 text-sm">
+                                <thead class="bg-slate-50 text-left text-xs font-extrabold uppercase tracking-[0.22em] text-slate-500">
+                                    <tr>
+                                        <th class="px-4 py-4">Tim ili par</th>
+                                        <th class="px-4 py-4">P</th>
+                                        <th class="px-4 py-4">W</th>
+                                        <th class="px-4 py-4">L</th>
+                                        <th class="px-4 py-4">Pts</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-slate-200 bg-white">
+                                    @forelse ($event->entries as $entry)
+                                        <tr>
+                                            <td class="px-4 py-4 font-semibold text-[color:var(--arena-forest)]">{{ $entry->team_name }}</td>
+                                            <td class="px-4 py-4">{{ $entry->played }}</td>
+                                            <td class="px-4 py-4">{{ $entry->wins }}</td>
+                                            <td class="px-4 py-4">{{ $entry->losses }}</td>
+                                            <td class="px-4 py-4 font-bold text-[color:var(--arena-forest-glow)]">{{ $entry->points }}</td>
+                                        </tr>
+                                    @empty
+                                        <tr>
+                                            <td colspan="5" class="px-4 py-6 text-sm text-slate-500">Jos nema dodatih ucesnika.</td>
+                                        </tr>
+                                    @endforelse
+                                </tbody>
+                            </table>
                         </div>
                     </div>
 
-                    <div class="site-table-shell mt-6 overflow-hidden">
-                        <table class="min-w-full divide-y divide-slate-200 text-sm">
-                            <thead class="bg-slate-50 text-left text-xs font-extrabold uppercase tracking-[0.22em] text-slate-500">
-                                <tr>
-                                    <th class="px-4 py-4">Tim ili par</th>
-                                    <th class="px-4 py-4">P</th>
-                                    <th class="px-4 py-4">W</th>
-                                    <th class="px-4 py-4">L</th>
-                                    <th class="px-4 py-4">Pts</th>
-                                </tr>
-                            </thead>
-                            <tbody class="divide-y divide-slate-200 bg-white">
-                                @forelse ($event->entries as $entry)
-                                    <tr>
-                                        <td class="px-4 py-4 font-semibold text-[color:var(--arena-forest)]">{{ $entry->team_name }}</td>
-                                        <td class="px-4 py-4">{{ $entry->played }}</td>
-                                        <td class="px-4 py-4">{{ $entry->wins }}</td>
-                                        <td class="px-4 py-4">{{ $entry->losses }}</td>
-                                        <td class="px-4 py-4 font-bold text-[color:var(--arena-forest-glow)]">{{ $entry->points }}</td>
-                                    </tr>
-                                @empty
-                                    <tr>
-                                        <td colspan="5" class="px-4 py-6 text-sm text-slate-500">Jos nema dodatih ucesnika.</td>
-                                    </tr>
-                                @endforelse
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
+                    <div class="premium-card p-6 sm:p-8">
+                        <span class="eyebrow-chip">Mecevi</span>
+                        <h2 class="section-title mt-5">Raspored i rezultati</h2>
 
-                <div class="premium-card p-6 sm:p-7">
-                    <p class="text-sm font-extrabold uppercase tracking-[0.3em] text-[color:var(--arena-forest-glow)]">Mecevi i rezultati</p>
-                    <div class="mt-5 space-y-4">
-                        @forelse ($event->matches as $match)
-                            <div class="premium-card bg-[color:var(--arena-paper)] p-4">
-                                <div class="flex flex-wrap items-start justify-between gap-3">
+                        <div class="events-matches-stack mt-6">
+                            @forelse ($event->matches as $match)
+                                <div class="events-match-card">
                                     <div>
-                                        <p class="text-xs font-extrabold uppercase tracking-[0.22em] text-slate-500">{{ $match->round_label ?: 'Mec' }}</p>
-                                        <p class="mt-2 font-black text-[color:var(--arena-forest)]">
+                                        <p class="events-match-card__round">{{ $match->round_label ?: 'Mec' }}</p>
+                                        <p class="events-match-card__teams">
                                             {{ $match->homeEntry?->team_name ?? 'TBD' }} vs {{ $match->awayEntry?->team_name ?? 'TBD' }}
                                         </p>
-                                        <p class="mt-2 text-sm text-slate-500">{{ optional($match->scheduled_at)->format('d.m.Y H:i') ?: 'Termin uskoro' }}</p>
+                                        <p class="events-match-card__time">{{ optional($match->scheduled_at)->format('d.m.Y H:i') ?: 'Termin uskoro' }}</p>
                                     </div>
-                                    <div class="text-right">
+
+                                    <div class="events-match-card__score-wrap">
                                         <span class="info-chip">{{ ucfirst($match->status) }}</span>
                                         @if (! is_null($match->home_score) && ! is_null($match->away_score))
-                                            <p class="mt-3 text-2xl font-black text-[color:var(--arena-forest-glow)]">{{ $match->home_score }} : {{ $match->away_score }}</p>
+                                            <p class="events-match-card__score">{{ $match->home_score }} : {{ $match->away_score }}</p>
                                         @endif
                                     </div>
                                 </div>
-                            </div>
-                        @empty
-                            <p class="text-sm text-slate-500">Jos nema unetih meceva za ovaj dogadjaj.</p>
-                        @endforelse
+                            @empty
+                                <p class="events-empty-copy">Jos nema unetih meceva za ovaj dogadjaj.</p>
+                            @endforelse
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
-        </div>
-    </section>
+        </section>
+    </div>
 @endsection

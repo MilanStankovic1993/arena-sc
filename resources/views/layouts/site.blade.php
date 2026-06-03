@@ -15,16 +15,11 @@
             <span class="floating-orb floating-orb--sand absolute -left-16 top-24 -z-10 h-52 w-52"></span>
             <span class="floating-orb floating-orb--forest absolute right-0 top-[28rem] -z-10 h-72 w-72"></span>
 
-            <header class="premium-header site-grid pt-4 sm:pt-6">
-                <div class="premium-nav-shell flex items-center justify-between gap-4">
+            <header class="premium-header">
+                <div class="premium-nav-shell">
+                    <div class="site-grid flex items-center justify-between gap-4">
                     <a href="{{ route('home') }}" class="premium-brand">
-                        <span class="logo-badge">
-                            <img src="{{ asset('brand/arena-sc-mark.svg') }}" alt="Arena SC logo" class="h-11 w-11 sm:h-12 sm:w-12">
-                        </span>
-                        <span class="premium-brand-copy">
-                            <span class="block text-base font-black uppercase tracking-[0.28em] text-[color:var(--arena-paper)] sm:text-lg sm:tracking-[0.34em]">Sportski centar</span>
-                            <span class="brand-script -mt-1 block">Arena</span>
-                        </span>
+                        <img src="{{ asset('brand/arena-sc-mark.svg') }}" alt="Sportski centar Arena logo" class="brand-logo brand-logo--header">
                     </a>
 
                     <nav class="premium-nav-links">
@@ -66,6 +61,7 @@
                             </div>
                         </div>
                     </details>
+                    </div>
                 </div>
             </header>
 
@@ -74,25 +70,13 @@
             </main>
 
             <footer class="site-grid pb-12 pt-16 sm:pt-20">
-                <div class="page-hero-dark overflow-hidden">
+                <div class="premium-footer-shell">
                     <div class="site-footer-grid">
                         <div>
-                            <div class="flex items-center gap-3">
-                                <span class="logo-badge">
-                                    <img src="{{ asset('brand/arena-sc-mark.svg') }}" alt="Arena SC logo" class="h-10 w-10">
-                                </span>
-                                <div>
-                                    <p class="text-sm font-extrabold uppercase tracking-[0.34em] text-[color:var(--arena-paper)]">Sportski centar</p>
-                                    <p class="brand-script mt-1 text-4xl">Arena</p>
-                                </div>
-                            </div>
-                            <h2 class="mt-5 max-w-3xl text-3xl font-black sm:text-4xl">Savremen sportski centar za rezervacije, opremu, turnire i ligu.</h2>
-                            <p class="mt-4 max-w-2xl text-sm leading-7 text-white/72">
-                                Premium vizuelni sistem, cist korisnicki tok i ozbiljan sportski identitet sada rade kao jedna celina spremna za dalje sirenje centra.
-                            </p>
+                            <img src="{{ asset('brand/arena-sc-mark.svg') }}" alt="Sportski centar Arena logo" class="brand-logo brand-logo--footer mt-5">
                         </div>
 
-                        <div class="grid gap-3 text-sm font-extrabold uppercase tracking-[0.18em] text-white/78 sm:grid-cols-2">
+                        <div class="footer-links-grid">
                             <a href="{{ route('booking.index') }}">Rezervisi termin</a>
                             <a href="{{ route('sports.index') }}">Tereni</a>
                             <a href="{{ route('equipment.index') }}">Oprema</a>

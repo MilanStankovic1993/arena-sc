@@ -1,65 +1,71 @@
 @extends('layouts.site', ['title' => 'Tereni i sportovi | Arena SC'])
 
 @section('content')
-    <section class="site-grid py-10 sm:py-12">
-        <div class="page-stack">
-            <div class="page-hero">
-                <span class="eyebrow-chip">Tereni i sportovi</span>
-                <div class="hero-grid mt-6 items-end">
-                    <div>
-                        <h1 class="hero-title max-w-4xl">Pregled sportova i svih raspolozivih terena u premium ambijentu.</h1>
-                        <p class="hero-copy mt-5 max-w-2xl">
-                            Izaberi sport, otvori teren i vidi cenovnik po vremenskim blokovima, pravila rezervacije i direktan ulaz u planer termina.
-                        </p>
-                    </div>
-                    <div class="metric-ribbon">
-                        <div class="metric-ribbon-card">
-                            <p class="text-xs font-extrabold uppercase tracking-[0.24em] text-[color:var(--arena-muted)]">Sportovi</p>
-                            <p class="mt-3 text-3xl font-black text-[color:var(--arena-forest)]">{{ $sports->count() }}</p>
-                        </div>
-                        <div class="metric-ribbon-card">
-                            <p class="text-xs font-extrabold uppercase tracking-[0.24em] text-[color:var(--arena-muted)]">Tereni</p>
-                            <p class="mt-3 text-3xl font-black text-[color:var(--arena-forest)]">{{ $sports->sum(fn ($sport) => $sport->courts->count()) }}</p>
-                        </div>
-                    </div>
+    <div class="page-stack sports-page-stack">
+        <section class="sports-hero" style="background-image: linear-gradient(90deg, rgba(7, 16, 13, 0.82) 0%, rgba(7, 16, 13, 0.48) 44%, rgba(7, 16, 13, 0.82) 100%), url('{{ asset('media/home/sports-hero.png') }}');">
+            <div class="site-grid sports-hero__inner">
+                <div class="sports-hero__content">
+                    <span class="dark-eyebrow-chip">Tereni</span>
+                    <h1 class="hero-title-dark max-w-4xl">RASPOLAZEMO PADEL TERENIMA I TERENIMA ZA BASKET 3X3.</h1>
                 </div>
             </div>
+        </section>
 
-            <div class="space-y-8">
-            @foreach ($sports as $sport)
-                <section class="split-surface">
-                    <div class="grid gap-8 lg:grid-cols-[0.9fr_1.1fr]">
-                        <div>
-                            <p class="text-xs font-extrabold uppercase tracking-[0.3em] text-[color:var(--arena-forest-glow)]">{{ $sport->name }}</p>
-                            <h2 class="card-title mt-3">{{ $sport->name }} program</h2>
-                            <p class="mt-4 text-sm leading-8 text-[color:var(--arena-muted)]">{{ $sport->description }}</p>
-                            <div class="mt-6 flex flex-wrap gap-3">
-                                <span class="rounded-full bg-[color:var(--arena-cream)] px-3 py-2 text-xs font-extrabold uppercase tracking-[0.18em] text-[color:var(--arena-forest)]">{{ $sport->courts->count() }} terena</span>
-                                <span class="rounded-full bg-[color:var(--arena-sand-soft)] px-3 py-2 text-xs font-extrabold uppercase tracking-[0.18em] text-[color:var(--arena-forest)]">{{ $sport->pricing_rules_count }} cenovnih blokova</span>
-                            </div>
+        <section class="site-grid pb-10 sm:pb-14">
+            <div class="sports-section-stack">
+                @foreach ($sports as $sport)
+                    <section class="sports-showcase">
+                        <div class="sports-showcase__intro">
+                            <span class="eyebrow-chip">{{ $sport->name }}</span>
+                            <h2 class="sports-showcase__title mt-5">{{ $sport->name }} TERENI.</h2>
+                            @if ($sport->short_description ?: $sport->description)
+                                <p class="sports-showcase__copy mt-5">{{ $sport->short_description ?: $sport->description }}</p>
+                            @endif
                         </div>
-                        <div class="grid gap-4 md:grid-cols-2">
+
+                        <div class="sports-cards-grid">
                             @foreach ($sport->courts as $court)
-                                <a href="{{ route('courts.show', ['court' => $court->slug]) }}" class="premium-card bg-[color:var(--arena-paper)] p-5 transition hover:-translate-y-1">
-                                    <div class="flex items-start justify-between gap-3">
-                                        <div>
-                                            <h3 class="card-title text-[2rem]">{{ $court->name }}</h3>
-                                            <p class="mt-2 text-sm text-[color:var(--arena-muted)]">{{ $court->location }}</p>
+                                <a
+                                    href="{{ route('courts.show', ['court' => $court->slug]) }}"
+                                    class="sports-court-card"
+                                >
+                                    @if ($court->image_url)
+                                        <img
+                                            src="{{ $court->image_url }}"
+                                            alt="{{ $court->name }}"
+                                            class="sports-court-card__image"
+                                            loading="lazy"
+                                        >
+                                    @else
+                                        <div class="sports-court-card__fallback"></div>
+                                    @endif
+
+                                    <div class="sports-court-card__overlay">
+                                        <div class="space-y-4">
+                                            <div class="flex items-start justify-between gap-4">
+                                                <div>
+                                                    <p class="sports-court-card__sport">{{ $sport->name }}</p>
+                                                    <h3 class="card-title-dark mt-3">{{ $court->name }}</h3>
+                                                </div>
+                                                <span class="info-chip-soft-dark">{{ $court->surface }}</span>
+                                            </div>
+
+                                            @if ($court->description)
+                                                <p class="sports-court-card__description">{{ $court->description }}</p>
+                                            @endif
                                         </div>
-                                        <span class="info-chip">{{ $court->surface }}</span>
-                                    </div>
-                                    <p class="mt-4 text-sm leading-7 text-[color:var(--arena-muted)]">{{ $court->description }}</p>
-                                    <div class="mt-5 flex items-center justify-between">
-                                        <span class="text-xs font-extrabold uppercase tracking-[0.24em] text-[color:var(--arena-muted)]">Rezervacija po terenu</span>
-                                        <span class="text-sm font-black uppercase tracking-[0.16em] text-[color:var(--arena-forest-glow)]">Otvori detalj</span>
+
+                                        <div class="flex items-center justify-between gap-3">
+                                            <span class="info-chip-soft-dark">{{ $court->location }}</span>
+                                            <span class="sports-court-card__cta">Pogledaj teren</span>
+                                        </div>
                                     </div>
                                 </a>
                             @endforeach
                         </div>
-                    </div>
-                </section>
-            @endforeach
+                    </section>
+                @endforeach
             </div>
-        </div>
-    </section>
+        </section>
+    </div>
 @endsection

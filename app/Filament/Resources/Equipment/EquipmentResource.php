@@ -49,7 +49,7 @@ class EquipmentResource extends Resource
                 TextInput::make('name')->label('Naziv')->required(),
                 TextInput::make('slug')->required()->unique(ignoreRecord: true),
                 TextInput::make('sku')->label('Sifra artikla')->unique(ignoreRecord: true),
-                FileUpload::make('image')->label('Slika')->image()->directory('equipment'),
+                FileUpload::make('image')->label('Slika')->image()->disk('public')->directory('equipment'),
                 Textarea::make('short_description')->label('Kratak opis')->rows(2)->columnSpanFull(),
                 Textarea::make('description')->label('Opis')->rows(4)->columnSpanFull(),
                 TextInput::make('rental_price')->label('Cena iznajmljivanja')->numeric()->prefix('RSD'),

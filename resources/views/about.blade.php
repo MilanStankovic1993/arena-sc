@@ -1,38 +1,79 @@
 @extends('layouts.site', ['title' => 'O nama | Arena SC'])
 
 @section('content')
-    <section class="site-grid py-10 sm:py-12">
-        <div class="page-stack">
-            <div class="grid gap-6 xl:grid-cols-[1.05fr_0.95fr] xl:gap-8">
-                <div class="page-hero-dark overflow-hidden">
+    <div class="page-stack about-page-stack">
+        <section
+            class="about-hero"
+            style="background-image: linear-gradient(90deg, rgba(7, 16, 13, 0.86) 0%, rgba(7, 16, 13, 0.46) 42%, rgba(7, 16, 13, 0.78) 100%), url('{{ asset('media/home/about-hero.png') }}');"
+        >
+            <div class="site-grid about-hero__inner">
+                <div class="about-hero__content">
                     <span class="dark-eyebrow-chip">O nama</span>
-                    <h1 class="hero-title-dark mt-6 text-5xl sm:text-6xl">Mesto za rekreativce, timove i sportske dogadjaje.</h1>
-                    <p class="hero-copy-dark mt-5">
-                        Ovo je pocetni tekst stranice O nama. Kasnije ovde unosimo tvoju stvarnu pricu o centru, prostoru, timu, trenerima, ambijentu i razlozima zasto korisnici biraju bas Arena SC.
-                    </p>
+                    <h1 class="hero-title-dark max-w-4xl">PROSTOR U KOME SE SPORT, AMBIJENT I ORGANIZACIJA SPOJE U JEDNO.</h1>
                 </div>
+            </div>
+        </section>
 
-                <div class="space-y-6">
-                    <div class="premium-card p-8">
-                        <span class="eyebrow-chip">Utisak prostora</span>
-                        <h2 class="section-title mt-5">Profesionalno, pregledno i dovoljno ozbiljno da ljudi veruju sistemu.</h2>
-                        <p class="hero-copy mt-5 text-sm">
-                            Korisnik ovde treba da oseti da je prostor moderan i pouzdan, da su termini jasni, pravila transparentna i da iza svega postoji ozbiljna organizacija za rezervacije, ligu i dogadjaje.
+        <section class="site-grid pb-10 sm:pb-14">
+            <div class="about-section-stack">
+                <div
+                    class="about-story-panel"
+                    style="background-image: linear-gradient(90deg, rgba(245, 245, 242, 0.96) 0%, rgba(245, 245, 242, 0.88) 42%, rgba(245, 245, 242, 0.16) 100%), url('{{ asset('media/home/about-story.png') }}');"
+                >
+                    <div class="about-story-panel__copy">
+                        <span class="eyebrow-chip">Sportski centar Arena</span>
+                        <h2 class="section-title mt-5">Ovde ide tekst o nama.</h2>
+                        <p class="about-story-panel__text mt-6">
+                            Ovde ide tekst o nama.
                         </p>
                     </div>
+                </div>
 
-                    <div class="grid gap-6 md:grid-cols-2">
-                        <div class="premium-card p-6">
-                            <p class="text-xs font-extrabold uppercase tracking-[0.3em] text-[color:var(--arena-forest-glow)]">Misija</p>
-                            <p class="mt-3 text-sm leading-7 text-[color:var(--arena-muted)]">Podrazumevani tekst koji kasnije zamenjujemo tvojim konkretnim sadrzajem i tonom komunikacije centra.</p>
-                        </div>
-                        <div class="premium-card p-6">
-                            <p class="text-xs font-extrabold uppercase tracking-[0.3em] text-[color:var(--arena-forest)]">Vizija</p>
-                            <p class="mt-3 text-sm leading-7 text-[color:var(--arena-muted)]">Ovde mozemo kasnije ubaciti plan razvoja centra, lige, turnira, clanstava i dodatnih programa za igrace.</p>
+                <div class="about-location-card">
+                    <div class="about-location-card__copy">
+                        <span class="eyebrow-chip">Lokacija</span>
+                        <h2 class="section-title-dark mt-5">Nalazimo se na jednoj lokaciji za padel, basket 3x3 i kompletan premium ambijent.</h2>
+                        <p class="about-location-card__text mt-6">
+                            Pogledaj gde se nalazimo i otvori direktnu navigaciju do sportskog centra.
+                        </p>
+
+                        <a
+                            href="https://maps.app.goo.gl/acaW8mYdBzuqCuuMA"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            class="arena-button-primary"
+                        >
+                            Otvori Google mapu
+                        </a>
+                    </div>
+
+                    <div class="about-location-card__map-shell">
+                        <iframe
+                            src="https://www.openstreetmap.org/export/embed.html?bbox=20.6583283%2C43.7362758%2C20.6783283%2C43.7462758&amp;layer=mapnik&amp;marker=43.7412758%2C20.6683283"
+                            loading="lazy"
+                            class="about-location-card__map"
+                            title="Lokacija sportskog centra Arena"
+                        ></iframe>
+
+                        <div class="about-location-card__map-meta">
+                            <div>
+                                <span class="dark-eyebrow-chip">Lokacija na mapi</span>
+                                <h3 class="card-title-dark mt-4">Sportski centar Arena</h3>
+                                <p class="about-location-card__map-text">Kraljevo, Srbija</p>
+                            </div>
+
+                            <a
+                                href="https://maps.app.goo.gl/acaW8mYdBzuqCuuMA"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                class="about-location-card__map-cta"
+                            >
+                                Otvori Google Maps
+                            </a>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
-    </section>
+        </section>
+    </div>
 @endsection

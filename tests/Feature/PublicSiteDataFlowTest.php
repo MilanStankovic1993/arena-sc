@@ -16,6 +16,11 @@ class PublicSiteDataFlowTest extends TestCase
 {
     use RefreshDatabase;
 
+    private function storageUrl(string $path): string
+    {
+        return rtrim(config('app.url'), '/') . '/storage/' . ltrim($path, '/');
+    }
+
     public function test_booking_availability_uses_admin_managed_sport_court_pricing_and_equipment_data(): void
     {
         $sport = Sport::query()->create([
@@ -77,13 +82,13 @@ class PublicSiteDataFlowTest extends TestCase
 
         $response->assertOk()
             ->assertJsonPath('sport.name', 'Padel')
-            ->assertJsonPath('sport.cover_image_url', 'http://localhost/storage/sports/padel-cover.jpg')
+            ->assertJsonPath('sport.cover_image_url', $this->storageUrl('sports/padel-cover.jpg'))
             ->assertJsonPath('pricingRules.0.name', 'Dnevni blok')
             ->assertJsonPath('pricingRules.0.price60', 2800)
             ->assertJsonPath('equipment.0.name', 'Padel reket')
-            ->assertJsonPath('equipment.0.image_url', 'http://localhost/storage/equipment/padel-reket.jpg')
+            ->assertJsonPath('equipment.0.image_url', $this->storageUrl('equipment/padel-reket.jpg'))
             ->assertJsonPath('days.0.times.0.durations.0.courts.0.name', $court->name)
-            ->assertJsonPath('days.0.times.0.durations.0.courts.0.image_url', 'http://localhost/storage/courts/padel-1.jpg');
+            ->assertJsonPath('days.0.times.0.durations.0.courts.0.image_url', $this->storageUrl('courts/padel-1.jpg'));
     }
 
     public function test_site_reservation_created_from_public_form_is_immediately_reserved(): void
@@ -165,7 +170,7 @@ class PublicSiteDataFlowTest extends TestCase
             'is_featured' => true,
         ]);
 
-        $this->assertSame('http://localhost/storage/events/padel-liga.jpg', $event->cover_image_url);
+        $this->assertSame($this->storageUrl('events/padel-liga.jpg'), $event->cover_image_url);
     }
 
     public function test_user_can_cancel_reserved_reservation_from_dashboard_flow(): void

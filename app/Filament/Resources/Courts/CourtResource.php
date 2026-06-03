@@ -51,10 +51,9 @@ class CourtResource extends Resource
                 TextInput::make('location')->label('Lokacija'),
                 TextInput::make('surface')->label('Podloga'),
                 TextInput::make('capacity')->label('Kapacitet')->numeric(),
-                TextInput::make('base_price')->label('Osnovna cena')->numeric()->prefix('RSD')->required(),
-                FileUpload::make('image')->label('Slika')->image()->directory('courts'),
+                TextInput::make('base_price')->label('Osnovna cena (fallback)')->numeric()->prefix('RSD')->required(),
+                FileUpload::make('image')->label('Slika')->image()->disk('public')->directory('courts'),
                 Textarea::make('description')->label('Opis')->rows(4)->columnSpanFull(),
-                Toggle::make('requires_approval')->label('Zahteva odobrenje')->default(true),
                 Toggle::make('is_active')->label('Aktivan teren')->default(true),
             ])->columns(2),
         ]);
@@ -68,9 +67,8 @@ class CourtResource extends Resource
                 TextColumn::make('name')->label('Teren')->searchable()->sortable(),
                 TextColumn::make('sport.name')->label('Sport')->badge(),
                 TextColumn::make('location')->label('Lokacija'),
-                TextColumn::make('base_price')->label('Cena')->money('RSD', divideBy: 1),
+                TextColumn::make('base_price')->label('Fallback cena')->money('RSD', divideBy: 1),
                 TextColumn::make('reservations_count')->label('Rezervacija')->counts('reservations'),
-                IconColumn::make('requires_approval')->label('Odobrenje')->boolean(),
                 IconColumn::make('is_active')->label('Aktivan')->boolean(),
             ])
             ->filters([

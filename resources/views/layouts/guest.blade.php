@@ -19,13 +19,7 @@
                     <div class="flex h-full flex-col justify-between gap-10">
                         <div>
                             <a href="{{ route('home') }}" class="premium-brand inline-flex">
-                                <span class="logo-badge">
-                                    <img src="{{ asset('brand/arena-sc-mark.svg') }}" alt="Arena SC logo" class="h-14 w-14 sm:h-16 sm:w-16">
-                                </span>
-                                <span class="premium-brand-copy">
-                                    <span class="block text-base font-black uppercase tracking-[0.28em] text-[color:var(--arena-paper)] sm:text-xl sm:tracking-[0.34em]">Sportski centar</span>
-                                    <span class="brand-script -mt-1 block text-[2.4rem] sm:text-[3rem]">Arena</span>
-                                </span>
+                                <img src="{{ asset('brand/arena-sc-mark.svg') }}" alt="Sportski centar Arena logo" class="brand-logo brand-logo--auth">
                             </a>
 
                             <div class="mt-14 max-w-xl space-y-6">

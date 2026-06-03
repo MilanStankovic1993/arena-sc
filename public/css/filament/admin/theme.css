@@ -12,6 +12,21 @@
     backdrop-filter: blur(14px);
 }
 
+.fi-logo {
+    height: 3.5rem;
+    width: auto;
+    max-width: min(20rem, 100%);
+    object-fit: contain;
+    image-rendering: -webkit-optimize-contrast;
+    mix-blend-mode: screen;
+    filter: brightness(1.08) contrast(1.08) saturate(1.02);
+}
+
+.fi-simple-layout .fi-logo {
+    height: 4.4rem;
+    max-width: min(24rem, 80vw);
+}
+
 .fi-sidebar,
 .fi-topbar {
     background: rgba(255, 255, 255, 0.88);
@@ -716,4 +731,31 @@
     .analytics-metric-card--wide {
         grid-column: span 2 / span 2;
     }
+}
+
+.fi-modal > .fi-modal-window-ctn {
+    padding-block: 1rem;
+}
+
+.fi-modal > .fi-modal-window-ctn > .fi-modal-window {
+    max-height: calc(100vh - 2rem);
+    overflow: hidden;
+}
+
+.fi-modal .fi-modal-content {
+    overflow-y: auto;
+    overscroll-behavior: contain;
+}
+
+.fi-modal.fi-modal-slide-over > .fi-modal-window-ctn {
+    padding-block: 0;
+}
+
+.fi-modal.fi-modal-slide-over > .fi-modal-window-ctn > .fi-modal-window {
+    height: 100vh;
+    max-height: 100vh;
+}
+
+.fi-modal.fi-modal-slide-over .fi-modal-content {
+    min-height: 0;
 }

@@ -62,7 +62,7 @@ class EventResource extends Resource
                 TextInput::make('cta_label')->label('CTA tekst'),
                 DatePicker::make('start_date')->label('Pocetak'),
                 DatePicker::make('end_date')->label('Kraj'),
-                FileUpload::make('cover_image')->label('Naslovna slika')->image()->directory('events'),
+                FileUpload::make('cover_image')->label('Naslovna slika')->image()->disk('public')->directory('events'),
                 Toggle::make('is_featured')->label('Izdvoji na sajtu'),
                 Textarea::make('summary')->label('Kratak opis')->rows(3)->columnSpanFull(),
                 Textarea::make('description')->label('Opis')->rows(5)->columnSpanFull(),
@@ -78,8 +78,14 @@ class EventResource extends Resource
             ->defaultSort('start_date', 'desc')
             ->columns([
                 TextColumn::make('title')->label('Dogadjaj')->searchable()->sortable(),
-                TextColumn::make('type')->label('Tip')->badge(),
-                TextColumn::make('status')->label('Status')->badge(),
+                TextColumn::make('type')
+                    ->label('Tip')
+                    ->badge()
+                    ->formatStateUsing(fn (?string $state): string => EventType::tryFrom($state ?? '')?->label() ?? (string) $state),
+                TextColumn::make('status')
+                    ->label('Status')
+                    ->badge()
+                    ->formatStateUsing(fn (?string $state): string => EventStatus::tryFrom($state ?? '')?->label() ?? (string) $state),
                 TextColumn::make('start_date')->label('Pocetak')->date(),
                 TextColumn::make('entries_count')->label('Timovi')->counts('entries'),
                 TextColumn::make('matches_count')->label('Mecevi')->counts('matches'),

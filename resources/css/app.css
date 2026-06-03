@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Great+Vibes&family=Manrope:wght@400;500;600;700;800&family=Sora:wght@500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Anton&family=Great+Vibes&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -29,13 +29,12 @@
     }
 
     body {
-        font-family: 'Manrope', sans-serif;
+        font-family: 'Inter', 'Segoe UI', sans-serif;
         background:
-            radial-gradient(circle at top right, rgba(245, 245, 242, 0.2), transparent 21rem),
-            radial-gradient(circle at left 18%, rgba(15, 42, 31, 0.12), transparent 25rem),
-            radial-gradient(circle at 82% 74%, rgba(15, 42, 31, 0.08), transparent 22rem),
-            linear-gradient(180deg, #c8b89a 0%, #c2b18f 44%, #b9a683 100%);
-        color: var(--arena-ink);
+            radial-gradient(circle at top right, rgba(200, 184, 154, 0.08), transparent 22rem),
+            radial-gradient(circle at left 20%, rgba(255, 255, 255, 0.04), transparent 25rem),
+            linear-gradient(180deg, #0f2a1f 0%, #10261d 52%, #0d1f18 100%);
+        color: var(--arena-paper);
         line-height: 1.65;
     }
 
@@ -45,9 +44,10 @@
     h4,
     h5,
     h6 {
-        font-family: 'Cormorant Garamond', serif;
-        font-weight: 600;
-        letter-spacing: -0.035em;
+        font-family: 'Anton', sans-serif;
+        font-weight: 400;
+        letter-spacing: 0.01em;
+        line-height: 0.95;
     }
 
     ::selection {
@@ -62,16 +62,16 @@
     }
 
     .site-grid {
-        @apply mx-auto w-full max-w-[100rem] px-4 sm:px-6 lg:px-10 xl:px-12;
+        @apply mx-auto w-full max-w-[112rem] px-4 sm:px-6 lg:px-10 xl:px-12;
     }
 
     .page-stack {
-        @apply space-y-10 sm:space-y-12 lg:space-y-16;
+        @apply space-y-16 sm:space-y-20 lg:space-y-24;
     }
 
     .site-link {
-        @apply text-sm font-semibold uppercase tracking-[0.18em] text-white/[0.74] transition hover:text-[color:var(--arena-sand)];
-        font-family: 'Sora', sans-serif;
+        @apply text-sm uppercase tracking-[0.12em] text-white/80 transition hover:text-[color:var(--arena-sand)];
+        font-family: 'Anton', sans-serif;
     }
 
     .site-link-active {
@@ -84,20 +84,20 @@
     }
 
     .site-card {
-        @apply rounded-[2rem] border bg-[rgba(245,245,242,0.78)] backdrop-blur;
+        @apply rounded-[1rem] border bg-[rgba(245,245,242,0.96)] backdrop-blur;
         border-color: var(--arena-border);
         box-shadow: var(--arena-shadow);
     }
 
     .site-card-dark {
-        @apply rounded-[2rem] border border-white/10 bg-[linear-gradient(155deg,rgba(8,38,28,0.97),rgba(18,63,48,0.95)_58%,rgba(11,32,24,0.98))] text-white shadow-[0_30px_80px_rgba(8,38,28,0.3)];
+        @apply rounded-[1rem] border border-white/10 bg-[linear-gradient(155deg,rgba(10,18,15,0.98),rgba(15,42,31,0.95)_52%,rgba(10,18,15,0.99))] text-white shadow-[0_24px_60px_rgba(0,0,0,0.26)];
     }
 
     .site-card-premium {
-        @apply relative overflow-hidden rounded-[2.25rem] border bg-[rgba(245,245,242,0.76)] p-6 sm:p-8;
+        @apply relative overflow-hidden rounded-[1rem] border bg-[rgba(245,245,242,0.94)] p-6 sm:p-8;
         border-color: rgba(245, 245, 242, 0.58);
         box-shadow:
-            0 40px 90px rgba(15, 42, 31, 0.16),
+            0 24px 60px rgba(0, 0, 0, 0.16),
             inset 0 1px 0 rgba(255, 255, 255, 0.32);
         backdrop-filter: blur(18px);
     }
@@ -112,14 +112,11 @@
     }
 
     .premium-nav-shell {
-        @apply rounded-[2rem] border px-4 py-3 sm:px-6;
-        border-color: rgba(200, 184, 154, 0.22);
-        background:
-            linear-gradient(180deg, rgba(15, 42, 31, 0.94) 0%, rgba(9, 23, 17, 0.88) 100%);
-        box-shadow:
-            0 28px 80px rgba(9, 23, 17, 0.24),
-            inset 0 1px 0 rgba(255, 255, 255, 0.04);
-        backdrop-filter: blur(20px);
+        @apply border-b;
+        border-color: rgba(255, 255, 255, 0.08);
+        background: rgba(6, 12, 10, 0.9);
+        box-shadow: 0 12px 28px rgba(0, 0, 0, 0.18);
+        backdrop-filter: blur(22px);
     }
 
     .premium-header {
@@ -127,12 +124,43 @@
     }
 
     .premium-brand {
-        @apply flex items-center gap-4;
+        @apply flex items-center py-3;
+    }
+
+    .brand-logo {
+        display: block;
+        width: auto;
+        height: auto;
+        object-fit: contain;
+        flex-shrink: 0;
+        image-rendering: -webkit-optimize-contrast;
+        mix-blend-mode: screen;
+        filter: brightness(1.08) contrast(1.1) saturate(1.02) drop-shadow(0 10px 24px rgba(0, 0, 0, 0.18));
+    }
+
+    .brand-logo--header {
+        max-height: 6.8rem;
+        max-width: min(30rem, 34vw);
+        transform: scale(1.16);
+        transform-origin: left center;
+    }
+
+    .brand-logo--footer {
+        max-height: 6.6rem;
+    }
+
+    .brand-logo--auth {
+        max-height: 7rem;
+    }
+
+    .brand-logo--hero {
+        max-height: 8rem;
+        filter: brightness(1.1) contrast(1.1) saturate(1.02) drop-shadow(0 18px 35px rgba(9, 23, 17, 0.24));
     }
 
     .brand-script {
         font-family: 'Great Vibes', cursive;
-        font-size: 1.95rem;
+        font-size: 2.2rem;
         line-height: 0.9;
         letter-spacing: 0.01em;
         color: var(--arena-sand);
@@ -143,24 +171,26 @@
     }
 
     .premium-nav-links {
-        @apply hidden items-center gap-2 xl:flex;
+        @apply hidden items-center gap-1 xl:flex;
     }
 
     .premium-nav-link {
-        @apply rounded-full px-4 py-3 text-[11px] font-extrabold uppercase tracking-[0.26em] text-white/[0.68] transition;
-        font-family: 'Sora', sans-serif;
+        @apply rounded-[0.8rem] px-4 py-3 text-[0.95rem] uppercase tracking-[0.04em] text-white transition;
+        font-family: 'Anton', sans-serif;
+        opacity: 0.82;
     }
 
     .premium-nav-link:hover,
     .premium-nav-link.is-active {
         color: var(--arena-sand);
-        background: rgba(200, 184, 154, 0.1);
+        background: rgba(200, 184, 154, 0.08);
     }
 
     .arena-button-primary {
-        @apply inline-flex items-center justify-center rounded-full px-6 py-3 text-sm font-extrabold uppercase tracking-[0.18em] text-[color:var(--arena-charcoal)] transition duration-200;
+        @apply inline-flex items-center justify-center rounded-[0.9rem] px-6 py-3 text-sm uppercase tracking-[0.08em] text-[color:var(--arena-charcoal)] transition duration-200;
+        font-family: 'Anton', sans-serif;
         background: linear-gradient(135deg, #d8cab0 0%, var(--arena-sand) 100%);
-        box-shadow: 0 16px 34px rgba(178, 157, 120, 0.32);
+        box-shadow: 0 14px 26px rgba(178, 157, 120, 0.24);
     }
 
     .arena-button-primary:hover {
@@ -175,15 +205,16 @@
     }
 
     .arena-button-secondary {
-        @apply inline-flex items-center justify-center rounded-full border px-6 py-3 text-sm font-extrabold uppercase tracking-[0.18em] transition duration-200;
+        @apply inline-flex items-center justify-center rounded-[0.9rem] border px-6 py-3 text-sm uppercase tracking-[0.08em] transition duration-200;
+        font-family: 'Anton', sans-serif;
         border-color: rgba(200, 184, 154, 0.22);
-        color: var(--arena-forest);
-        background: rgba(245, 245, 242, 0.56);
+        color: rgba(245, 245, 242, 0.9);
+        background: rgba(255, 255, 255, 0.04);
     }
 
     .arena-button-secondary:hover {
-        border-color: rgba(15, 42, 31, 0.34);
-        background: rgba(245, 245, 242, 0.88);
+        border-color: rgba(200, 184, 154, 0.42);
+        background: rgba(200, 184, 154, 0.12);
     }
 
     .hero-frame {
@@ -220,11 +251,6 @@
         z-index: -1;
     }
 
-    .logo-badge {
-        @apply inline-flex items-center justify-center rounded-[1.35rem] border border-white/10 bg-[rgba(255,255,255,0.04)] p-2 backdrop-blur;
-        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
-    }
-
     .stat-chip {
         @apply rounded-[1.4rem] border p-4;
         border-color: rgba(255, 255, 255, 0.1);
@@ -233,7 +259,7 @@
     }
 
     .mobile-sheet {
-        @apply rounded-[2rem] border p-5 shadow-[0_22px_60px_rgba(9,23,17,0.22)] backdrop-blur;
+        @apply rounded-[1rem] border p-5 shadow-[0_22px_60px_rgba(9,23,17,0.22)] backdrop-blur;
         border-color: rgba(200, 184, 154, 0.18);
         background: linear-gradient(180deg, rgba(15, 42, 31, 0.96), rgba(9, 23, 17, 0.92));
     }
@@ -244,12 +270,12 @@
     }
 
     .page-hero {
-        @apply relative overflow-hidden rounded-[2.4rem] border px-6 py-8 sm:px-8 sm:py-10 lg:px-10 lg:py-12;
+        @apply relative overflow-hidden rounded-[1rem] border px-6 py-8 sm:px-8 sm:py-10 lg:px-10 lg:py-12;
         border-color: rgba(245, 245, 242, 0.38);
         background:
-            linear-gradient(150deg, rgba(218, 205, 181, 0.84), rgba(213, 198, 172, 0.78) 46%, rgba(188, 170, 135, 0.86) 100%);
+            linear-gradient(160deg, rgba(255, 255, 255, 0.98), rgba(245, 245, 242, 0.92) 42%, rgba(233, 224, 208, 0.92) 100%);
         box-shadow:
-            0 44px 100px rgba(15, 42, 31, 0.18),
+            0 22px 44px rgba(0, 0, 0, 0.12),
             inset 0 1px 0 rgba(255, 255, 255, 0.28);
         backdrop-filter: blur(22px);
     }
@@ -279,11 +305,11 @@
     }
 
     .page-hero-dark {
-        @apply relative overflow-hidden rounded-[2.5rem] border px-6 py-8 text-white sm:px-8 sm:py-10 lg:px-10 lg:py-12;
+        @apply relative overflow-hidden rounded-[1rem] border px-6 py-10 text-white sm:px-8 sm:py-12 lg:px-10 lg:py-14;
         border-color: rgba(200, 184, 154, 0.14);
         background:
-            linear-gradient(135deg, rgba(9, 23, 17, 0.99), rgba(15, 42, 31, 0.97) 34%, rgba(26, 26, 26, 0.95) 100%);
-        box-shadow: 0 44px 110px rgba(9, 23, 17, 0.38);
+            linear-gradient(135deg, rgba(9, 23, 17, 0.98), rgba(15, 42, 31, 0.96) 42%, rgba(26, 26, 26, 0.96) 100%);
+        box-shadow: 0 26px 60px rgba(0, 0, 0, 0.24);
     }
 
     .page-hero-dark::before {
@@ -311,11 +337,748 @@
     }
 
     .hero-grid {
-        @apply relative z-[1] grid gap-8 xl:grid-cols-[1.08fr_0.92fr] xl:items-center xl:gap-12;
+        @apply relative z-[1] grid gap-10 xl:grid-cols-[1.08fr_0.92fr] xl:items-center xl:gap-14;
+    }
+
+    .home-page-stack {
+        @apply space-y-6 sm:space-y-8 lg:space-y-10;
+    }
+
+    .home-hero {
+        @apply relative overflow-hidden bg-cover bg-center bg-no-repeat;
+        min-height: calc(100vh - 6.5rem);
+    }
+
+    .home-hero::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        backdrop-filter: blur(4px);
+    }
+
+    .home-hero__inner {
+        @apply relative flex min-h-[calc(100vh-6.5rem)] items-end pb-16 pt-28 sm:pb-20 sm:pt-32 lg:pb-24;
+    }
+
+    .home-hero__content {
+        @apply max-w-3xl;
+    }
+
+    .home-hero__title {
+        @apply mt-5 text-[3.8rem] leading-[0.9] text-white sm:text-[5.5rem] lg:text-[7.5rem];
+    }
+
+    .home-split-feature {
+        @apply grid gap-0 overflow-hidden rounded-[1rem] border border-white/10 bg-[rgba(255,255,255,0.03)] lg:grid-cols-[0.88fr_1.12fr];
+        box-shadow: 0 22px 44px rgba(0, 0, 0, 0.14);
+    }
+
+    .home-split-feature__copy {
+        @apply flex flex-col justify-center px-6 py-10 sm:px-8 sm:py-12 lg:px-12;
+        background: linear-gradient(180deg, rgba(10, 18, 15, 0.98), rgba(15, 42, 31, 0.94));
+    }
+
+    .home-split-feature__copy .section-title {
+        color: var(--arena-paper);
+    }
+
+    .home-split-feature__visual {
+        @apply min-h-[22rem] bg-[rgba(255,255,255,0.02)];
+    }
+
+    .home-section-image {
+        @apply h-full w-full object-cover;
+    }
+
+    .home-courts-cta {
+        @apply relative overflow-hidden bg-cover bg-center bg-no-repeat;
+        min-height: 42rem;
+    }
+
+    .home-courts-cta__inner {
+        @apply relative flex min-h-[42rem] items-end pb-14 pt-16 sm:pb-20 sm:pt-20 lg:pb-24;
+    }
+
+    .home-courts-cta__content {
+        @apply max-w-3xl;
+    }
+
+    .sports-page-stack {
+        @apply space-y-6 sm:space-y-8 lg:space-y-10;
+    }
+
+    .sports-hero {
+        @apply relative overflow-hidden bg-cover bg-center bg-no-repeat;
+        min-height: 38rem;
+    }
+
+    .sports-hero__inner {
+        @apply relative flex min-h-[38rem] items-end pb-14 pt-16 sm:pb-20 sm:pt-20 lg:pb-20;
+    }
+
+    .sports-hero__content {
+        @apply max-w-4xl;
+    }
+
+    .sports-section-stack {
+        @apply space-y-8;
+    }
+
+    .sports-showcase {
+        @apply space-y-6;
+    }
+
+    .sports-showcase__intro {
+        @apply max-w-3xl;
+    }
+
+    .sports-showcase__title {
+        font-family: 'Anton', sans-serif;
+        font-size: clamp(2.8rem, 5vw, 4.6rem);
+        line-height: 0.94;
+        color: #ffffff;
+        text-shadow: 0 8px 26px rgba(0, 0, 0, 0.28);
+    }
+
+    .sports-showcase__copy {
+        color: rgba(245, 245, 242, 0.84);
+        font-size: 1rem;
+        line-height: 1.9;
+        max-width: 40rem;
+    }
+
+    .sports-cards-grid {
+        @apply grid gap-6 lg:grid-cols-2;
+    }
+
+    .sports-court-card {
+        @apply relative flex min-h-[34rem] overflow-hidden rounded-[1rem] border transition duration-200;
+        border-color: rgba(200, 184, 154, 0.14);
+        box-shadow: 0 20px 46px rgba(0, 0, 0, 0.2);
+        background:
+            linear-gradient(160deg, rgba(10, 18, 15, 0.98), rgba(15, 42, 31, 0.94));
+    }
+
+    .sports-court-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 28px 56px rgba(0, 0, 0, 0.24);
+    }
+
+    .sports-court-card__image,
+    .sports-court-card__fallback {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+    }
+
+    .sports-court-card__image {
+        object-fit: cover;
+        filter: brightness(0.92) contrast(1.06) saturate(1.03);
+        transform: scale(1.01);
+    }
+
+    .sports-court-card__fallback {
+        background:
+            radial-gradient(circle at top right, rgba(200, 184, 154, 0.18), transparent 26rem),
+            linear-gradient(160deg, rgba(10, 18, 15, 0.98), rgba(15, 42, 31, 0.94));
+    }
+
+    .sports-court-card__overlay {
+        @apply relative flex min-h-[34rem] w-full flex-col justify-between p-6 sm:p-8;
+        background:
+            linear-gradient(180deg, rgba(6, 12, 10, 0.08) 0%, rgba(6, 12, 10, 0.22) 28%, rgba(6, 12, 10, 0.82) 100%);
+    }
+
+    .sports-court-card__sport {
+        font-family: 'Anton', sans-serif;
+        font-size: 0.72rem;
+        letter-spacing: 0.22em;
+        text-transform: uppercase;
+        color: var(--arena-sand);
+    }
+
+    .sports-court-card__description {
+        max-width: 30rem;
+        color: rgba(255, 255, 255, 0.94);
+        font-size: 0.98rem;
+        line-height: 1.85;
+        text-shadow: 0 4px 18px rgba(0, 0, 0, 0.34);
+    }
+
+    .sports-court-card__cta {
+        font-family: 'Anton', sans-serif;
+        font-size: 0.92rem;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--arena-sand);
+    }
+
+    .court-hero {
+        @apply relative isolate overflow-hidden bg-cover bg-center bg-no-repeat;
+        min-height: calc(100vh - 5.5rem);
+        background:
+            linear-gradient(180deg, rgba(7, 16, 13, 0.64) 0%, rgba(7, 16, 13, 0.8) 46%, rgba(7, 16, 13, 0.92) 100%),
+            linear-gradient(160deg, rgba(10, 18, 15, 0.99), rgba(15, 42, 31, 0.96));
+    }
+
+    .court-hero::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background:
+            radial-gradient(circle at top right, rgba(200, 184, 154, 0.16), transparent 26rem),
+            linear-gradient(180deg, rgba(7, 16, 13, 0.08), transparent 24%, rgba(7, 16, 13, 0.5) 100%);
+        pointer-events: none;
+    }
+
+    .court-hero__inner {
+        @apply relative z-10 flex min-h-[calc(100vh-5.5rem)] items-end py-12 sm:py-16 lg:py-20;
+    }
+
+    .court-hero__content {
+        @apply max-w-4xl space-y-6;
+    }
+
+    .court-hero__title {
+        font-family: 'Anton', sans-serif;
+        font-size: clamp(3.6rem, 8vw, 7.8rem);
+        line-height: 0.92;
+        color: #ffffff;
+        text-shadow: 0 8px 30px rgba(0, 0, 0, 0.35);
+    }
+
+    .court-hero__chips {
+        @apply flex flex-wrap gap-3;
+    }
+
+    .court-hero__actions {
+        @apply flex flex-wrap gap-3 pt-2;
+    }
+
+    .equipment-hero {
+        @apply relative overflow-hidden bg-cover bg-center bg-no-repeat;
+        min-height: 30rem;
+        background:
+            linear-gradient(90deg, rgba(7, 16, 13, 0.86) 0%, rgba(7, 16, 13, 0.46) 44%, rgba(7, 16, 13, 0.82) 100%),
+            linear-gradient(160deg, rgba(10, 18, 15, 0.99), rgba(15, 42, 31, 0.96));
+    }
+
+    .equipment-hero__inner {
+        @apply flex min-h-[30rem] items-end py-12 sm:py-16;
+    }
+
+    .equipment-hero__content {
+        @apply max-w-4xl space-y-6;
+    }
+
+    .equipment-hero__chips {
+        @apply flex flex-wrap gap-3;
+    }
+
+    .equipment-cards-grid {
+        @apply grid gap-6 lg:grid-cols-2;
+    }
+
+    .equipment-feature-card {
+        @apply overflow-hidden rounded-[1rem] border;
+        border-color: rgba(200, 184, 154, 0.14);
+        background:
+            linear-gradient(180deg, rgba(255, 255, 255, 0.98) 0%, rgba(245, 245, 242, 0.96) 100%);
+        box-shadow:
+            0 18px 42px rgba(0, 0, 0, 0.14),
+            inset 0 1px 0 rgba(255, 255, 255, 0.24);
+    }
+
+    .equipment-feature-card__media {
+        @apply relative overflow-hidden;
+        min-height: 20rem;
+        background:
+            linear-gradient(160deg, rgba(10, 18, 15, 0.98), rgba(15, 42, 31, 0.94));
+    }
+
+    .equipment-feature-card__image,
+    .equipment-feature-card__fallback {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+    }
+
+    .equipment-feature-card__image {
+        object-fit: cover;
+        filter: brightness(0.94) contrast(1.04) saturate(1.04);
+        transform: scale(1.01);
+    }
+
+    .equipment-feature-card__fallback {
+        background:
+            radial-gradient(circle at top right, rgba(200, 184, 154, 0.18), transparent 24rem),
+            linear-gradient(160deg, rgba(10, 18, 15, 0.98), rgba(15, 42, 31, 0.94));
+    }
+
+    .equipment-feature-card__body {
+        @apply space-y-6 p-6 sm:p-7;
+    }
+
+    .equipment-feature-card__description {
+        color: var(--arena-muted);
+        font-size: 0.98rem;
+        line-height: 1.85;
+        max-width: 36rem;
+    }
+
+    .equipment-feature-card__prices {
+        @apply grid gap-3 sm:grid-cols-2;
+    }
+
+    .equipment-price-box {
+        @apply rounded-[1rem] border px-4 py-4;
+        border-color: rgba(15, 42, 31, 0.12);
+        background: rgba(245, 245, 242, 0.78);
+    }
+
+    .equipment-price-box--accent {
+        background: rgba(200, 184, 154, 0.22);
+        border-color: rgba(200, 184, 154, 0.24);
+    }
+
+    .equipment-price-box__label {
+        font-family: 'Anton', sans-serif;
+        font-size: 0.72rem;
+        letter-spacing: 0.22em;
+        text-transform: uppercase;
+        color: var(--arena-muted);
+    }
+
+    .equipment-price-box__value {
+        margin-top: 0.55rem;
+        font-family: 'Anton', sans-serif;
+        font-size: 1.7rem;
+        line-height: 1;
+        color: var(--arena-forest);
+    }
+
+    .events-page-stack {
+        @apply space-y-6 sm:space-y-8 lg:space-y-10;
+    }
+
+    .events-hero {
+        @apply relative overflow-hidden bg-cover bg-center bg-no-repeat;
+        min-height: 34rem;
+    }
+
+    .events-hero__inner {
+        @apply flex min-h-[34rem] items-end py-12 sm:py-16 lg:py-20;
+    }
+
+    .events-hero__content {
+        @apply max-w-4xl space-y-6;
+    }
+
+    .events-hero__chips {
+        @apply flex flex-wrap gap-3;
+    }
+
+    .events-section-stack {
+        @apply space-y-8;
+    }
+
+    .events-feature-card {
+        @apply grid overflow-hidden rounded-[1rem] border lg:grid-cols-[1.08fr_0.92fr];
+        border-color: rgba(200, 184, 154, 0.14);
+        background:
+            linear-gradient(180deg, rgba(255, 255, 255, 0.98) 0%, rgba(245, 245, 242, 0.96) 100%);
+        box-shadow:
+            0 18px 42px rgba(0, 0, 0, 0.14),
+            inset 0 1px 0 rgba(255, 255, 255, 0.24);
+    }
+
+    .events-feature-card__media {
+        @apply relative min-h-[22rem] overflow-hidden lg:min-h-[28rem];
+        background:
+            linear-gradient(160deg, rgba(10, 18, 15, 0.98), rgba(15, 42, 31, 0.94));
+    }
+
+    .events-feature-card__image,
+    .events-feature-card__fallback {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+    }
+
+    .events-feature-card__image {
+        object-fit: cover;
+        filter: brightness(0.94) contrast(1.04) saturate(1.03);
+        transform: scale(1.01);
+    }
+
+    .events-feature-card__fallback {
+        background:
+            radial-gradient(circle at top right, rgba(200, 184, 154, 0.18), transparent 24rem),
+            linear-gradient(160deg, rgba(10, 18, 15, 0.98), rgba(15, 42, 31, 0.94));
+    }
+
+    .events-feature-card__content {
+        @apply flex flex-col justify-between gap-8 p-6 sm:p-8 lg:p-10;
+    }
+
+    .events-feature-card__intro {
+        @apply flex flex-col gap-4;
+    }
+
+    .events-feature-card__body {
+        @apply space-y-5;
+    }
+
+    .events-feature-card__summary,
+    .events-card__summary,
+    .events-detail-copy {
+        color: var(--arena-muted);
+        font-size: 1rem;
+        line-height: 1.9;
+    }
+
+    .events-feature-card__stats {
+        @apply grid gap-3 sm:grid-cols-[1fr_1fr_auto] sm:items-end;
+    }
+
+    .events-feature-stat {
+        @apply rounded-[1rem] border px-4 py-4;
+        border-color: rgba(15, 42, 31, 0.12);
+        background: rgba(245, 245, 242, 0.72);
+    }
+
+    .events-feature-stat__label,
+    .events-card__meta-label,
+    .events-detail-summary-box__label {
+        font-family: 'Anton', sans-serif;
+        font-size: 0.72rem;
+        letter-spacing: 0.22em;
+        text-transform: uppercase;
+        color: rgba(15, 42, 31, 0.56);
+    }
+
+    .events-feature-stat__value,
+    .events-card__meta-value,
+    .events-detail-summary-box__value {
+        display: block;
+        margin-top: 0.55rem;
+        font-family: 'Anton', sans-serif;
+        font-size: 2.1rem;
+        line-height: 1;
+        color: var(--arena-forest);
+    }
+
+    .events-feature-card__cta,
+    .events-card__cta {
+        font-family: 'Anton', sans-serif;
+        font-size: 0.92rem;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--arena-forest-glow);
+    }
+
+    .events-grid {
+        @apply grid gap-6 lg:grid-cols-2 xl:grid-cols-3;
+    }
+
+    .events-card {
+        @apply overflow-hidden rounded-[1rem] border;
+        border-color: rgba(200, 184, 154, 0.14);
+        background:
+            linear-gradient(180deg, rgba(255, 255, 255, 0.98) 0%, rgba(245, 245, 242, 0.96) 100%);
+        box-shadow:
+            0 18px 42px rgba(0, 0, 0, 0.14),
+            inset 0 1px 0 rgba(255, 255, 255, 0.24);
+        transition: transform 200ms ease, box-shadow 200ms ease;
+    }
+
+    .events-card:hover {
+        transform: translateY(-3px);
+        box-shadow:
+            0 24px 48px rgba(0, 0, 0, 0.18),
+            inset 0 1px 0 rgba(255, 255, 255, 0.24);
+    }
+
+    .events-card__media {
+        @apply relative min-h-[17rem] overflow-hidden;
+        background:
+            linear-gradient(160deg, rgba(10, 18, 15, 0.98), rgba(15, 42, 31, 0.94));
+    }
+
+    .events-card__image,
+    .events-card__fallback {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+    }
+
+    .events-card__image {
+        object-fit: cover;
+        filter: brightness(0.95) contrast(1.04) saturate(1.03);
+        transform: scale(1.01);
+    }
+
+    .events-card__fallback {
+        background:
+            radial-gradient(circle at top right, rgba(200, 184, 154, 0.18), transparent 24rem),
+            linear-gradient(160deg, rgba(10, 18, 15, 0.98), rgba(15, 42, 31, 0.94));
+    }
+
+    .events-card__body {
+        @apply space-y-5 p-6;
+    }
+
+    .events-card__top {
+        @apply flex items-center justify-between gap-3;
+    }
+
+    .events-card__type {
+        font-family: 'Anton', sans-serif;
+        font-size: 0.72rem;
+        letter-spacing: 0.22em;
+        text-transform: uppercase;
+        color: var(--arena-forest-glow);
+    }
+
+    .events-card__meta {
+        @apply grid gap-3 sm:grid-cols-2;
+    }
+
+    .events-card__meta-box,
+    .events-detail-summary-box {
+        @apply rounded-[1rem] border px-4 py-4;
+        border-color: rgba(15, 42, 31, 0.12);
+        background: rgba(245, 245, 242, 0.72);
+    }
+
+    .event-detail-hero {
+        @apply relative isolate overflow-hidden bg-cover bg-center bg-no-repeat;
+        min-height: 34rem;
+    }
+
+    .event-detail-hero__inner {
+        @apply relative z-10 flex min-h-[34rem] items-end py-12 sm:py-16 lg:py-20;
+    }
+
+    .event-detail-hero__content {
+        @apply max-w-4xl space-y-6;
+    }
+
+    .event-detail-hero__chips {
+        @apply flex flex-wrap gap-3;
+    }
+
+    .events-detail-stack {
+        @apply space-y-8;
+    }
+
+    .events-detail-grid {
+        @apply grid gap-6 xl:grid-cols-2;
+    }
+
+    .events-detail-summary-grid {
+        @apply grid gap-4 sm:grid-cols-2;
+    }
+
+    .events-matches-stack {
+        @apply space-y-4;
+    }
+
+    .events-match-card {
+        @apply flex flex-col gap-4 rounded-[1rem] border p-5 sm:flex-row sm:items-start sm:justify-between;
+        border-color: rgba(15, 42, 31, 0.12);
+        background: rgba(245, 245, 242, 0.72);
+    }
+
+    .events-match-card__round {
+        font-family: 'Anton', sans-serif;
+        font-size: 0.72rem;
+        letter-spacing: 0.22em;
+        text-transform: uppercase;
+        color: rgba(15, 42, 31, 0.56);
+    }
+
+    .events-match-card__teams {
+        margin-top: 0.7rem;
+        font-family: 'Anton', sans-serif;
+        font-size: 1.65rem;
+        line-height: 1;
+        color: var(--arena-forest);
+    }
+
+    .events-match-card__time {
+        margin-top: 0.7rem;
+        color: var(--arena-muted);
+        font-size: 0.95rem;
+    }
+
+    .events-match-card__score-wrap {
+        @apply flex flex-col items-start gap-3 sm:items-end;
+    }
+
+    .events-match-card__score {
+        font-family: 'Anton', sans-serif;
+        font-size: 2.1rem;
+        line-height: 1;
+        color: var(--arena-forest-glow);
+    }
+
+    .events-empty-copy {
+        color: var(--arena-muted);
+        font-size: 0.98rem;
+        line-height: 1.8;
+    }
+
+    .about-hero {
+        @apply relative overflow-hidden bg-cover bg-center bg-no-repeat;
+        min-height: 32rem;
+        background:
+            linear-gradient(90deg, rgba(7, 16, 13, 0.86) 0%, rgba(7, 16, 13, 0.46) 42%, rgba(7, 16, 13, 0.78) 100%),
+            linear-gradient(160deg, rgba(10, 18, 15, 0.99), rgba(15, 42, 31, 0.96));
+    }
+
+    .about-hero__inner {
+        @apply flex min-h-[32rem] items-end py-12 sm:py-16;
+    }
+
+    .about-hero__content {
+        @apply max-w-4xl space-y-6;
+    }
+
+    .about-story-panel {
+        @apply overflow-hidden rounded-[1rem] border p-6 sm:p-8 lg:p-12;
+        border-color: rgba(200, 184, 154, 0.14);
+        background:
+            linear-gradient(180deg, rgba(255, 255, 255, 0.98) 0%, rgba(245, 245, 242, 0.96) 100%);
+        box-shadow:
+            0 18px 42px rgba(0, 0, 0, 0.14),
+            inset 0 1px 0 rgba(255, 255, 255, 0.24);
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        min-height: 34rem;
+        display: flex;
+        align-items: center;
+    }
+
+    .about-story-panel__copy {
+        @apply max-w-[42rem];
+    }
+
+    .about-story-panel__text {
+        color: var(--arena-muted);
+        font-size: 1.06rem;
+        line-height: 2;
+        max-width: 40rem;
+    }
+
+    .about-section-stack {
+        @apply space-y-6;
+    }
+
+    .about-location-card {
+        @apply grid gap-6 overflow-hidden rounded-[1rem] border p-6 sm:p-8 lg:grid-cols-[0.92fr_1.08fr] lg:items-stretch lg:p-10;
+        border-color: rgba(200, 184, 154, 0.14);
+        background:
+            linear-gradient(155deg, rgba(10, 18, 15, 0.98), rgba(15, 42, 31, 0.94) 56%, rgba(26, 26, 26, 0.96) 100%);
+        box-shadow: 0 18px 42px rgba(0, 0, 0, 0.18);
+    }
+
+    .about-location-card__copy {
+        @apply flex max-w-3xl flex-col justify-between;
+    }
+
+    .about-location-card__text {
+        color: rgba(245, 245, 242, 0.82);
+        font-size: 1rem;
+        line-height: 1.9;
+        max-width: 32rem;
+    }
+
+    .about-location-card__map-shell {
+        @apply overflow-hidden rounded-[1rem] border;
+        min-height: 24rem;
+        border-color: rgba(200, 184, 154, 0.14);
+        background:
+            linear-gradient(160deg, rgba(7, 16, 13, 0.98), rgba(15, 42, 31, 0.94) 58%, rgba(26, 26, 26, 0.96) 100%);
+        box-shadow:
+            0 18px 36px rgba(0, 0, 0, 0.18),
+            inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    }
+
+    .about-location-card__map {
+        width: 100%;
+        height: 22rem;
+        border: 0;
+        display: block;
+        filter: saturate(0.86) contrast(1.02) brightness(0.92);
+    }
+
+    .about-location-card__map-meta {
+        @apply flex flex-col gap-5 p-6 sm:p-8;
+        background:
+            linear-gradient(180deg, rgba(7, 16, 13, 0.98) 0%, rgba(15, 42, 31, 0.95) 100%);
+    }
+
+    .about-location-card__map-text {
+        color: rgba(245, 245, 242, 0.82);
+        font-size: 1rem;
+        line-height: 1.8;
+    }
+
+    .about-location-card__map-cta {
+        @apply inline-flex items-center justify-center rounded-[0.9rem] px-5 py-3 text-sm transition duration-200;
+        font-family: 'Anton', sans-serif;
+        font-size: 0.9rem;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--arena-charcoal);
+        background: linear-gradient(135deg, #d8cab0 0%, var(--arena-sand) 100%);
+        box-shadow: 0 14px 28px rgba(178, 157, 120, 0.24);
+        width: fit-content;
+    }
+
+    .about-location-card__map-cta:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 20px 34px rgba(178, 157, 120, 0.3);
+    }
+
+    .immersive-hero {
+        @apply relative overflow-hidden rounded-[1rem] border;
+        min-height: 42rem;
+        border-color: rgba(200, 184, 154, 0.14);
+        background:
+            linear-gradient(135deg, rgba(9, 23, 17, 0.98), rgba(15, 42, 31, 0.94) 44%, rgba(26, 26, 26, 0.96) 100%);
+        background-size: cover;
+        background-position: center;
+        box-shadow: 0 30px 68px rgba(0, 0, 0, 0.24);
+    }
+
+    .immersive-hero::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background:
+            radial-gradient(circle at top right, rgba(200, 184, 154, 0.18), transparent 24rem),
+            linear-gradient(180deg, rgba(8, 18, 15, 0.1), rgba(8, 18, 15, 0.3));
+        pointer-events: none;
+    }
+
+    .immersive-hero__inner {
+        @apply relative z-[1] grid h-full gap-10 p-6 sm:p-8 lg:p-12 xl:grid-cols-[1.08fr_0.92fr] xl:items-end;
+    }
+
+    .immersive-hero__aside {
+        @apply grid gap-4 sm:grid-cols-3 xl:grid-cols-1;
     }
 
     .eyebrow-chip {
-        @apply inline-flex items-center gap-2 rounded-full border px-4 py-2 text-[11px] font-extrabold uppercase tracking-[0.28em];
+        @apply inline-flex items-center gap-2 rounded-full border px-4 py-2 text-[11px] uppercase tracking-[0.2em];
+        font-family: 'Anton', sans-serif;
         border-color: rgba(15, 42, 31, 0.14);
         color: var(--arena-forest-soft);
         background: rgba(245, 245, 242, 0.48);
@@ -323,42 +1086,44 @@
     }
 
     .dark-eyebrow-chip {
-        @apply inline-flex items-center gap-2 rounded-full border px-4 py-2 text-[11px] font-extrabold uppercase tracking-[0.28em] text-[color:var(--arena-sand)];
+        @apply inline-flex items-center gap-2 rounded-full border px-4 py-2 text-[11px] uppercase tracking-[0.2em] text-[color:var(--arena-sand)];
+        font-family: 'Anton', sans-serif;
         border-color: rgba(200, 184, 154, 0.18);
         background: rgba(200, 184, 154, 0.08);
         backdrop-filter: blur(12px);
     }
 
     .hero-title {
-        @apply max-w-5xl text-[2.9rem] font-semibold leading-[0.94] text-[color:var(--arena-forest)] sm:text-[4rem] lg:text-[5.1rem];
+        @apply max-w-5xl text-[3rem] leading-[0.92] text-[color:var(--arena-forest)] sm:text-[4.5rem] lg:text-[6rem];
     }
 
     .hero-title-dark {
-        @apply max-w-5xl text-[2.9rem] font-semibold leading-[0.96] text-white sm:text-[4rem] lg:text-[5.1rem];
+        @apply max-w-5xl text-[3rem] leading-[0.92] text-white sm:text-[4.5rem] lg:text-[6rem];
     }
 
     .section-title {
-        @apply text-[2.2rem] font-semibold leading-[1] text-[color:var(--arena-forest)] sm:text-[3rem] lg:text-[3.6rem];
+        @apply text-[2.4rem] leading-[0.94] text-[color:var(--arena-forest)] sm:text-[3.4rem] lg:text-[4.35rem];
     }
 
     .section-title-dark {
-        @apply text-[2.2rem] font-semibold leading-[1] text-white sm:text-[3rem] lg:text-[3.6rem];
+        @apply text-[2.4rem] leading-[0.94] text-white sm:text-[3.4rem] lg:text-[4.35rem];
     }
 
     .card-title {
-        @apply text-[1.9rem] font-semibold leading-[1.02] text-[color:var(--arena-forest)] sm:text-[2.35rem];
+        @apply text-[2rem] leading-[0.96] text-[color:var(--arena-forest)] sm:text-[2.6rem];
     }
 
     .card-title-dark {
-        @apply text-[1.9rem] font-semibold leading-[1.02] text-white sm:text-[2.35rem];
+        @apply text-[2rem] leading-[0.96] text-white sm:text-[2.6rem];
     }
 
     .hero-copy {
-        @apply max-w-3xl text-[1rem] leading-8 text-[color:var(--arena-muted)] sm:text-[1.08rem];
+        @apply max-w-3xl text-[1rem] leading-8 text-[color:rgba(245,245,242,0.72)] sm:text-[1.08rem];
     }
 
     .hero-copy-dark {
-        @apply max-w-3xl text-[1rem] leading-8 text-white/[0.72] sm:text-[1.08rem];
+        @apply max-w-3xl text-[1rem] leading-8 text-white sm:text-[1.08rem];
+        opacity: 0.72;
     }
 
     .metric-ribbon {
@@ -366,24 +1131,24 @@
     }
 
     .metric-ribbon-card {
-        @apply rounded-[1.45rem] border p-4;
+        @apply rounded-[0.9rem] border p-4;
         border-color: rgba(15, 42, 31, 0.14);
-        background: rgba(245, 245, 242, 0.52);
+        background: rgba(245, 245, 242, 0.94);
         box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2);
     }
 
     .dark-metric-ribbon-card {
-        @apply rounded-[1.45rem] border p-4;
+        @apply rounded-[0.9rem] border p-4;
         border-color: rgba(200, 184, 154, 0.12);
-        background: rgba(200, 184, 154, 0.08);
+        background: rgba(255, 255, 255, 0.06);
         backdrop-filter: blur(10px);
     }
 
     .showcase-panel {
-        @apply relative overflow-hidden rounded-[2.2rem] border p-6 sm:p-8;
+        @apply relative overflow-hidden rounded-[1rem] border p-6 sm:p-8;
         border-color: rgba(200, 184, 154, 0.14);
         background:
-            linear-gradient(165deg, rgba(15, 42, 31, 0.92), rgba(9, 23, 17, 0.88) 40%, rgba(15, 42, 31, 0.92) 100%);
+            linear-gradient(165deg, rgba(10, 18, 15, 0.98), rgba(15, 42, 31, 0.95) 46%, rgba(10, 18, 15, 0.98) 100%);
         backdrop-filter: blur(14px);
     }
 
@@ -398,10 +1163,10 @@
     }
 
     .split-surface {
-        @apply relative overflow-hidden rounded-[2.4rem] border p-6 sm:p-8 lg:p-10;
-        border-color: rgba(245, 245, 242, 0.32);
-        background: linear-gradient(180deg, rgba(245, 245, 242, 0.38), rgba(234, 224, 204, 0.32));
-        box-shadow: 0 36px 86px rgba(15, 42, 31, 0.14);
+        @apply relative overflow-hidden rounded-[1rem] border p-6 sm:p-8 lg:p-10;
+        border-color: rgba(255, 255, 255, 0.08);
+        background: rgba(255, 255, 255, 0.03);
+        box-shadow: 0 22px 44px rgba(0, 0, 0, 0.12);
         backdrop-filter: blur(18px);
     }
 
@@ -410,29 +1175,29 @@
     }
 
     .premium-card {
-        @apply relative overflow-hidden rounded-[2rem] border p-6 transition duration-200;
-        border-color: rgba(245, 245, 242, 0.34);
+        @apply relative overflow-hidden rounded-[1rem] border p-6 transition duration-200;
+        border-color: rgba(255, 255, 255, 0.08);
         background:
-            linear-gradient(180deg, rgba(245, 245, 242, 0.6) 0%, rgba(234, 224, 204, 0.56) 100%);
+            linear-gradient(180deg, rgba(255, 255, 255, 0.98) 0%, rgba(245, 245, 242, 0.96) 100%);
         box-shadow:
-            0 30px 70px rgba(15, 42, 31, 0.14),
+            0 18px 36px rgba(0, 0, 0, 0.1),
             inset 0 1px 0 rgba(255, 255, 255, 0.18);
         backdrop-filter: blur(18px);
     }
 
     .premium-card:hover {
-        transform: translateY(-4px);
+        transform: translateY(-3px);
         box-shadow:
-            0 42px 84px rgba(15, 42, 31, 0.18),
+            0 28px 52px rgba(0, 0, 0, 0.14),
             inset 0 1px 0 rgba(255, 255, 255, 0.24);
     }
 
     .premium-card-dark {
-        @apply relative overflow-hidden rounded-[2rem] border p-6 text-white transition duration-200;
+        @apply relative overflow-hidden rounded-[1rem] border p-6 text-white transition duration-200;
         border-color: rgba(200, 184, 154, 0.12);
         background:
-            linear-gradient(155deg, rgba(9, 23, 17, 0.99), rgba(15, 42, 31, 0.96) 42%, rgba(26, 26, 26, 0.92) 100%);
-        box-shadow: 0 30px 84px rgba(9, 23, 17, 0.34);
+            linear-gradient(155deg, rgba(10, 18, 15, 0.99), rgba(15, 42, 31, 0.96) 44%, rgba(26, 26, 26, 0.96) 100%);
+        box-shadow: 0 18px 40px rgba(0, 0, 0, 0.2);
     }
 
     .premium-card-dark:hover {
@@ -444,28 +1209,46 @@
     }
 
     .info-chip {
-        @apply rounded-full px-3 py-2 text-[11px] font-extrabold uppercase tracking-[0.22em];
+        @apply rounded-full px-3 py-2 text-[11px] uppercase tracking-[0.18em];
+        font-family: 'Anton', sans-serif;
         background: rgba(15, 42, 31, 0.12);
         color: var(--arena-forest-deep);
     }
 
     .info-chip-soft {
-        @apply rounded-full px-3 py-2 text-[11px] font-extrabold uppercase tracking-[0.22em];
+        @apply rounded-full px-3 py-2 text-[11px] uppercase tracking-[0.18em];
+        font-family: 'Anton', sans-serif;
         background: rgba(200, 184, 154, 0.28);
         color: var(--arena-forest-deep);
     }
 
     .info-chip-soft-dark {
-        @apply rounded-full px-3 py-2 text-[11px] font-extrabold uppercase tracking-[0.22em];
+        @apply rounded-full px-3 py-2 text-[11px] uppercase tracking-[0.18em];
+        font-family: 'Anton', sans-serif;
         background: rgba(200, 184, 154, 0.16);
         color: var(--arena-sand);
     }
 
     .display-panel {
-        @apply rounded-[1.75rem] border p-5;
+        @apply rounded-[1rem] border p-5;
         border-color: rgba(200, 184, 154, 0.12);
         background: rgba(245, 245, 242, 0.1);
         backdrop-filter: blur(10px);
+    }
+
+    .media-card {
+        @apply relative flex min-h-[32rem] overflow-hidden rounded-[1rem] border bg-[linear-gradient(160deg,rgba(10,18,15,0.98),rgba(15,42,31,0.94))] bg-cover bg-center bg-no-repeat transition duration-200;
+        border-color: rgba(200, 184, 154, 0.14);
+        box-shadow: 0 20px 46px rgba(0, 0, 0, 0.2);
+    }
+
+    .media-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 28px 56px rgba(0, 0, 0, 0.24);
+    }
+
+    .media-card__overlay {
+        @apply relative flex min-h-[32rem] w-full flex-col justify-between p-6 sm:p-8;
     }
 
     .floating-orb {
@@ -509,6 +1292,28 @@
 
     .booking-shell {
         @apply space-y-8;
+    }
+
+    .booking-page-stack {
+        @apply space-y-6 sm:space-y-8;
+    }
+
+    .booking-intro-card {
+        @apply flex flex-col gap-6 rounded-[1rem] border p-6 sm:p-8 lg:flex-row lg:items-end lg:justify-between lg:p-10;
+        border-color: rgba(200, 184, 154, 0.14);
+        background:
+            linear-gradient(135deg, rgba(9, 23, 17, 0.98), rgba(15, 42, 31, 0.96) 48%, rgba(26, 26, 26, 0.96) 100%);
+        box-shadow: 0 24px 60px rgba(0, 0, 0, 0.22);
+    }
+
+    .booking-intro-card__title {
+        margin-top: 1.2rem;
+        max-width: 58rem;
+        font-size: clamp(2.6rem, 6vw, 5.2rem);
+    }
+
+    .booking-intro-card__chips {
+        @apply flex flex-wrap gap-3 lg:max-w-[22rem] lg:justify-end;
     }
 
     .booking-planner-grid {
@@ -563,6 +1368,121 @@
         box-shadow:
             0 18px 36px rgba(15, 42, 31, 0.08),
             inset 0 1px 0 rgba(255, 255, 255, 0.45);
+    }
+
+    .booking-equipment-item {
+        padding: 1rem;
+    }
+
+    .booking-equipment-item__grid {
+        display: grid;
+        gap: 0.9rem;
+        align-items: center;
+        grid-template-columns: 5rem minmax(0, 1fr);
+    }
+
+    .booking-equipment-item__image-shell {
+        overflow: hidden;
+        border-radius: 1rem;
+        border: 1px solid rgba(15, 42, 31, 0.1);
+        background: rgba(15, 42, 31, 0.08);
+    }
+
+    .booking-equipment-item__image,
+    .booking-equipment-item__image-fallback {
+        width: 100%;
+        height: 5rem;
+    }
+
+    .booking-equipment-item__image {
+        object-fit: cover;
+        display: block;
+    }
+
+    .booking-equipment-item__image-fallback {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(145deg, rgba(15, 42, 31, 0.96), rgba(26, 26, 26, 0.92));
+    }
+
+    .booking-equipment-item__copy {
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 0.35rem;
+    }
+
+    .booking-equipment-item__top {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 0.75rem;
+    }
+
+    .booking-equipment-item__name {
+        font-family: 'Anton', sans-serif;
+        font-size: 1.15rem;
+        line-height: 1.05;
+        color: var(--arena-forest);
+    }
+
+    .booking-equipment-item__price {
+        flex-shrink: 0;
+        font-family: 'Anton', sans-serif;
+        font-size: 0.92rem;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--arena-forest-glow);
+    }
+
+    .booking-equipment-item__description {
+        color: var(--arena-muted);
+        font-size: 0.95rem;
+        line-height: 1.55;
+    }
+
+    .booking-equipment-item__quantity {
+        grid-column: 1 / -1;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.9rem;
+        padding-top: 0.15rem;
+    }
+
+    .booking-equipment-item__quantity-label {
+        font-family: 'Anton', sans-serif;
+        font-size: 0.72rem;
+        letter-spacing: 0.22em;
+        text-transform: uppercase;
+        color: var(--arena-muted);
+    }
+
+    .booking-equipment-item__input {
+        width: 5.5rem;
+        border-radius: 1rem;
+        border: 1px solid rgba(15, 42, 31, 0.14);
+        background: #fff;
+        padding: 0.7rem 0.9rem;
+        color: var(--arena-forest);
+        font-size: 1rem;
+        font-weight: 700;
+        text-align: center;
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.45);
+    }
+
+    .booking-equipment-item__input:focus {
+        outline: none;
+        border-color: rgba(178, 157, 120, 0.75);
+        box-shadow:
+            0 0 0 3px rgba(200, 184, 154, 0.2),
+            inset 0 1px 0 rgba(255, 255, 255, 0.45);
+    }
+
+    .booking-equipment-item__input::-webkit-outer-spin-button,
+    .booking-equipment-item__input::-webkit-inner-spin-button {
+        margin: 0;
     }
 
     .booking-summary-grid {
@@ -726,6 +1646,37 @@
         @apply grid gap-10 lg:grid-cols-[1.1fr_0.9fr] lg:items-end;
     }
 
+    .premium-footer-shell {
+        @apply overflow-hidden rounded-[1rem] border px-6 py-8 sm:px-8 sm:py-10 lg:px-10 lg:py-12;
+        border-color: rgba(200, 184, 154, 0.14);
+        background:
+            linear-gradient(180deg, rgba(26, 26, 26, 0.98) 0%, rgba(15, 15, 15, 0.98) 100%);
+        box-shadow: 0 24px 54px rgba(0, 0, 0, 0.24);
+    }
+
+    .footer-kicker {
+        @apply inline-flex items-center rounded-full border px-4 py-2 text-[11px] uppercase tracking-[0.2em];
+        font-family: 'Anton', sans-serif;
+        color: var(--arena-sand);
+        border-color: rgba(200, 184, 154, 0.2);
+        background: rgba(200, 184, 154, 0.06);
+    }
+
+    .footer-links-grid {
+        @apply grid gap-3 text-sm sm:grid-cols-2;
+    }
+
+    .footer-links-grid a {
+        @apply text-sm uppercase tracking-[0.08em] text-white transition;
+        font-family: 'Anton', sans-serif;
+        opacity: 0.76;
+    }
+
+    .footer-links-grid a:hover {
+        color: var(--arena-sand);
+        opacity: 1;
+    }
+
     .account-shell {
         @apply site-shell min-h-screen;
     }
@@ -751,14 +1702,16 @@
     }
 
     .account-nav-link {
-        @apply rounded-full px-4 py-3 text-[11px] font-extrabold uppercase tracking-[0.26em] text-white/[0.68] transition;
-        font-family: 'Sora', sans-serif;
+        @apply rounded-[0.8rem] px-4 py-3 text-sm uppercase tracking-[0.08em] text-white transition;
+        font-family: 'Anton', sans-serif;
+        opacity: 0.72;
     }
 
     .account-nav-link:hover,
     .account-nav-link.is-active {
         color: var(--arena-sand);
         background: rgba(200, 184, 154, 0.1);
+        opacity: 1;
     }
 
     .auth-shell {
@@ -872,6 +1825,20 @@
     }
 
     @media (max-width: 767px) {
+        .brand-logo--header {
+            max-height: 4.1rem;
+            max-width: 13.5rem;
+        }
+
+        .brand-logo--footer {
+            max-height: 5rem;
+        }
+
+        .brand-logo--auth,
+        .brand-logo--hero {
+            max-height: 5.4rem;
+        }
+
         .page-hero,
         .page-hero-dark,
         .split-surface,
@@ -879,29 +1846,151 @@
         .premium-card-dark,
         .site-card,
         .site-card-dark {
-            border-radius: 1.75rem;
+            border-radius: 1rem;
+        }
+
+        .immersive-hero,
+        .media-card,
+        .media-card__overlay {
+            min-height: auto;
         }
 
         .hero-title,
         .hero-title-dark {
-            font-size: clamp(2.45rem, 12vw, 3.2rem);
+            font-size: clamp(2.8rem, 12vw, 3.8rem);
             line-height: 0.98;
         }
 
         .section-title,
         .section-title-dark {
-            font-size: clamp(2rem, 10vw, 2.6rem);
+            font-size: clamp(2.2rem, 10vw, 3rem);
             line-height: 1;
         }
 
         .card-title,
         .card-title-dark {
-            font-size: clamp(1.55rem, 8vw, 2rem);
+            font-size: clamp(1.8rem, 8vw, 2.2rem);
+        }
+
+        .immersive-hero__inner {
+            gap: 2rem;
+            padding: 1.5rem;
+        }
+
+        .immersive-hero {
+            min-height: 36rem;
+        }
+
+        .home-hero {
+            min-height: 34rem;
+        }
+
+        .home-hero__inner {
+            min-height: 34rem;
+            padding-top: 7rem;
+            padding-bottom: 3.5rem;
+        }
+
+        .home-hero__title {
+            font-size: clamp(3rem, 15vw, 4.5rem);
+        }
+
+        .home-courts-cta {
+            min-height: 28rem;
+        }
+
+        .home-courts-cta__inner {
+            min-height: 28rem;
+            padding-top: 4rem;
+            padding-bottom: 3rem;
+        }
+
+        .sports-hero {
+            min-height: 28rem;
+        }
+
+        .sports-hero__inner {
+            min-height: 28rem;
+            padding-top: 4rem;
+            padding-bottom: 3rem;
+        }
+
+        .sports-court-card,
+        .sports-court-card__overlay {
+            min-height: 24rem;
+        }
+
+        .sports-showcase__copy {
+            font-size: 0.96rem;
+            line-height: 1.8;
+        }
+
+        .sports-showcase__title {
+            font-size: clamp(2.3rem, 11vw, 3.4rem);
+        }
+
+        .court-hero {
+            min-height: 32rem;
+        }
+
+        .court-hero__inner {
+            min-height: 32rem;
+            padding-top: 8rem;
+            padding-bottom: 3rem;
+        }
+
+        .court-hero__title {
+            font-size: clamp(2.9rem, 14vw, 4.7rem);
+        }
+
+        .equipment-hero {
+            min-height: 24rem;
+        }
+
+        .equipment-hero__inner {
+            min-height: 24rem;
+            padding-top: 7rem;
+            padding-bottom: 3rem;
+        }
+
+        .equipment-feature-card__media {
+            min-height: 16rem;
+        }
+
+        .about-hero {
+            min-height: 24rem;
+        }
+
+        .about-hero__inner {
+            min-height: 24rem;
+            padding-top: 7rem;
+            padding-bottom: 3rem;
+        }
+
+        .about-story-panel {
+            min-height: 26rem;
+            background-position: center right;
+        }
+
+        .about-story-panel__copy {
+            max-width: 100%;
+        }
+
+        .about-location-card__map-shell {
+            min-height: 18rem;
+        }
+
+        .about-location-card__map {
+            height: 18rem;
         }
 
         .booking-option,
         .booking-option-soft {
             border-radius: 1.15rem;
+        }
+
+        .booking-intro-card__title {
+            font-size: clamp(2.2rem, 11vw, 3.6rem);
         }
 
         .booking-day-strip {
@@ -918,6 +2007,15 @@
 
         .booking-time-grid-compact {
             grid-template-columns: repeat(3, minmax(0, 1fr));
+        }
+
+        .booking-equipment-item__grid {
+            grid-template-columns: 4.75rem minmax(0, 1fr);
+        }
+
+        .booking-equipment-item__top {
+            flex-direction: column;
+            gap: 0.35rem;
         }
     }
 }
