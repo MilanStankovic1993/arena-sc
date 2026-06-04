@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Event;
+use App\Services\EventStatisticsService;
 use Illuminate\View\View;
 
 class EventController extends Controller
@@ -19,15 +20,22 @@ class EventController extends Controller
         ]);
     }
 
-    public function show(Event $event): View
+    public function show(Event $event, EventStatisticsService $statisticsService): View
     {
         $event->load([
-            'entries' => fn ($query) => $query->orderByDesc('points')->orderByDesc('score_for'),
-            'matches' => fn ($query) => $query->with(['homeEntry', 'awayEntry'])->orderBy('scheduled_at'),
+            'entries.user',
+            'matches' => fn ($query) => $query->with(['homeEntry.user', 'awayEntry.user'])->orderBy('scheduled_at'),
         ]);
+
+        $standings = $statisticsService->buildStandings($event);
+        $summary = $statisticsService->buildSummary($event, $standings);
+        $matchGroups = $statisticsService->groupMatchesByRound($event);
 
         return view('events.show', [
             'event' => $event,
+            'standings' => $standings,
+            'summary' => $summary,
+            'matchGroups' => $matchGroups,
         ]);
     }
 }

@@ -1,6 +1,12 @@
 @extends('layouts.site', ['title' => 'O nama | Arena SC'])
 
 @section('content')
+    @php
+        $locationName = config('arena.location.name');
+        $locationLabel = config('arena.location.label');
+        $mapsUrl = config('arena.location.maps_url');
+        $mapEmbedUrl = config('arena.location.map_embed_url');
+    @endphp
     <div class="page-stack about-page-stack">
         <section
             class="about-hero"
@@ -38,7 +44,7 @@
                         </p>
 
                         <a
-                            href="https://maps.app.goo.gl/acaW8mYdBzuqCuuMA"
+                            href="{{ $mapsUrl }}"
                             target="_blank"
                             rel="noopener noreferrer"
                             class="arena-button-primary"
@@ -49,21 +55,21 @@
 
                     <div class="about-location-card__map-shell">
                         <iframe
-                            src="https://www.openstreetmap.org/export/embed.html?bbox=20.6583283%2C43.7362758%2C20.6783283%2C43.7462758&amp;layer=mapnik&amp;marker=43.7412758%2C20.6683283"
+                            src="{{ $mapEmbedUrl }}"
                             loading="lazy"
                             class="about-location-card__map"
-                            title="Lokacija sportskog centra Arena"
+                            title="Lokacija {{ $locationName }}"
                         ></iframe>
 
                         <div class="about-location-card__map-meta">
                             <div>
                                 <span class="dark-eyebrow-chip">Lokacija na mapi</span>
-                                <h3 class="card-title-dark mt-4">Sportski centar Arena</h3>
-                                <p class="about-location-card__map-text">Kraljevo, Srbija</p>
+                                <h3 class="card-title-dark mt-4">{{ $locationName }}</h3>
+                                <p class="about-location-card__map-text">{{ $locationLabel }}</p>
                             </div>
 
                             <a
-                                href="https://maps.app.goo.gl/acaW8mYdBzuqCuuMA"
+                                href="{{ $mapsUrl }}"
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 class="about-location-card__map-cta"

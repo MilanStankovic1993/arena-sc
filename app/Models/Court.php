@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Storage;
 
 class Court extends Model
@@ -23,7 +24,6 @@ class Court extends Model
         'capacity',
         'image',
         'description',
-        'base_price',
         'requires_approval',
         'is_active',
     ];
@@ -31,10 +31,18 @@ class Court extends Model
     protected function casts(): array
     {
         return [
-            'base_price' => 'decimal:2',
             'requires_approval' => 'boolean',
             'is_active' => 'boolean',
         ];
+    }
+
+    protected static function booted(): void
+    {
+        static::saving(function (Court $court): void {
+            if (filled($court->name)) {
+                $court->slug = Str::slug($court->name);
+            }
+        });
     }
 
     public function sport(): BelongsTo

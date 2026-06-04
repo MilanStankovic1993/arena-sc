@@ -7,6 +7,7 @@ use App\Enums\EventType;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Storage;
 
 class Event extends Model
@@ -42,6 +43,15 @@ class Event extends Model
         ];
     }
 
+    protected static function booted(): void
+    {
+        static::saving(function (Event $event): void {
+            if (filled($event->title)) {
+                $event->slug = Str::slug($event->title);
+            }
+        });
+    }
+
     public function entries(): HasMany
     {
         return $this->hasMany(EventEntry::class);
@@ -50,6 +60,16 @@ class Event extends Model
     public function matches(): HasMany
     {
         return $this->hasMany(EventMatch::class);
+    }
+
+    public function isLeague(): bool
+    {
+        return $this->type === EventType::League;
+    }
+
+    public function isTournament(): bool
+    {
+        return $this->type === EventType::Tournament;
     }
 
     protected function coverImageUrl(): Attribute

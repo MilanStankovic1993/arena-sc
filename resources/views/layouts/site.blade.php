@@ -11,9 +11,9 @@
     </head>
     <body class="min-h-screen">
         @php
-            $contactEmail = config('services.contact.address', 'info@scarena.rs');
-            $contactPhone = config('services.contact.phone', '+381 60 111 222');
-            $contactInstagram = config('services.contact.instagram', 'https://www.instagram.com/scarena.rs/');
+            $contactEmail = config('arena.contact.email');
+            $contactPhone = config('arena.contact.phone');
+            $contactInstagram = config('arena.contact.instagram');
         @endphp
         <div class="site-shell">
             <div class="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[38rem] bg-[radial-gradient(circle_at_top_left,rgba(245,245,242,0.16),transparent_30%),radial-gradient(circle_at_top_right,rgba(15,42,31,0.2),transparent_28%),linear-gradient(180deg,rgba(9,23,17,0.12),transparent_74%)]"></div>

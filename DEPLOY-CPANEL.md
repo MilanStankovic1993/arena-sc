@@ -85,7 +85,7 @@ REDIS_PORT=6379
 
 MAIL_MAILER=smtp
 MAIL_SCHEME=ssl
-MAIL_HOST=OVDE_UNESI_SMTP_HOST
+MAIL_HOST=mail.scarena.rs
 MAIL_PORT=465
 MAIL_USERNAME=info@scarena.rs
 MAIL_PASSWORD=OVDE_UNESI_MAIL_LOZINKU
@@ -93,6 +93,13 @@ MAIL_FROM_ADDRESS="info@scarena.rs"
 MAIL_FROM_NAME="${APP_NAME}"
 CONTACT_MAIL_TO="info@scarena.rs"
 CONTACT_MAIL_NAME="Arena SC"
+CONTACT_PHONE="+381 60 111 222"
+CONTACT_INSTAGRAM="https://www.instagram.com/scarena.rs/"
+LOCATION_NAME="Sportski centar Arena"
+LOCATION_ADDRESS="Adranska 114, Kraljevo"
+LOCATION_LABEL="Kraljevo, Srbija"
+LOCATION_MAPS_URL="https://maps.app.goo.gl/acaW8mYdBzuqCuuMA"
+LOCATION_MAP_EMBED_URL="https://www.openstreetmap.org/export/embed.html?bbox=20.6583283%2C43.7362758%2C20.6783283%2C43.7462758&amp;layer=mapnik&amp;marker=43.7412758%2C20.6683283"
 
 AWS_ACCESS_KEY_ID=
 AWS_SECRET_ACCESS_KEY=
@@ -107,6 +114,7 @@ Napomena:
 - koristi tačne SMTP podatke iz cPanel email naloga `info@scarena.rs`
 - ako host traži `tls` umesto `ssl`, promeni `MAIL_SCHEME`
 - `CONTACT_MAIL_TO` je adresa na koju stižu poruke sa kontakt forme i admin obaveštenja o rezervacijama
+- `CONTACT_PHONE`, `CONTACT_INSTAGRAM` i `LOCATION_*` menjaju kontakt i mapu na jednom mestu kroz ceo sajt
 
 ## 4. Mail funkcionalnosti koje sada postoje
 
@@ -232,14 +240,17 @@ php artisan route:cache
 php artisan view:cache
 ```
 
-## 10. Seed admin nalog
+## 10. Seed podaci
 
-Ako koristiš seed na produkciji:
-- email: `admin@arena-sc.test`
-- password: `password`
+Ako koristiš `php artisan migrate:fresh --seed` ili `php artisan db:seed`, sistem kreira jedan superadmin nalog:
+- email: `milan.stankovic@radijator.rs`
+- password: `28Januar`
 
-Ako ovo ostaje u produkciji, odmah promeni:
-- email
-- lozinku
+Seeder dodatno ubacuje osnovni produkcioni katalog:
+- sportove `Padel` i `Basket 3x3`
+- 3 padel terena i 1 basket 3x3 teren
+- osnovni cenovnik za radne dane i vikend
 
-Po mogućstvu napravi produkcioni admin nalog i ukloni demo podatke.
+Seeder ne ubacuje demo korisnike, demo rezervacije, demo opremu ni demo događaje.
+
+Posle deploy-a kroz admin panel dopuni slike, opremu, događaje i eventualno koriguj cene ako se promene.

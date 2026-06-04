@@ -105,8 +105,13 @@ Proveri:
 
 ## Seed admin nalog
 
-Ako koristiš seed podatke:
-- email: `admin@arena-sc.test`
-- password: `password`
+Posle `php artisan migrate:fresh --seed` sistem kreira samo jedan superadmin nalog:
+- email: `milan.stankovic@radijator.rs`
+- password: `28Januar`
 
-Odmah promeni pristupne podatke pre produkcije.
+Seeder dodatno kreira osnovni katalog za produkciju:
+- sportove `Padel` i `Basket 3x3`
+- 3 padel terena i 1 basket 3x3 teren
+- 8 osnovnih cenovnih pravila za radne dane i vikend
+
+Seeder ne kreira demo korisnike, demo rezervacije, demo opremu ni demo događaje.

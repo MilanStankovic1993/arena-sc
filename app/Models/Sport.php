@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Storage;
 
 class Sport extends Model
@@ -30,6 +31,15 @@ class Sport extends Model
             'supports_online_booking' => 'boolean',
             'is_active' => 'boolean',
         ];
+    }
+
+    protected static function booted(): void
+    {
+        static::saving(function (Sport $sport): void {
+            if (filled($sport->name)) {
+                $sport->slug = Str::slug($sport->name);
+            }
+        });
     }
 
     public function courts(): HasMany

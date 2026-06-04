@@ -4,22 +4,27 @@
     <div class="page-stack events-page-stack">
         <section
             class="events-hero"
-            style="background-image: linear-gradient(90deg, rgba(7, 16, 13, 0.86) 0%, rgba(7, 16, 13, 0.42) 44%, rgba(7, 16, 13, 0.82) 100%), url('{{ asset('media/home/events-hero.png') }}');"
+            style="background-image: linear-gradient(90deg, rgba(7, 16, 13, 0.88) 0%, rgba(7, 16, 13, 0.46) 48%, rgba(7, 16, 13, 0.82) 100%), url('{{ asset('media/home/sports-hero.png') }}');"
         >
             <div class="site-grid events-hero__inner">
                 <div class="events-hero__content">
                     <span class="dark-eyebrow-chip">Dogadjaji</span>
-                    <h1 class="hero-title-dark max-w-5xl">TURNIRI, LIGE I SPORTSKE PRICE NA JEDNOM MESTU.</h1>
+                    <h1 class="hero-title-dark max-w-5xl">TURNIRI I LIGE U JEDNOM PREMIUM SPORTSKOM PROSTORU.</h1>
                     <div class="events-hero__chips">
                         <span class="info-chip-soft-dark">Padel</span>
                         <span class="info-chip-soft-dark">Basket 3x3</span>
-                        <span class="info-chip-soft-dark">Rezultati i tabela</span>
+                        <span class="info-chip-soft-dark">Tabela i rezultati</span>
+                    </div>
+
+                    <div class="hero-actions">
+                        <a href="#dogadjaji-lista" class="arena-button">Pogledaj dogadjaje</a>
+                        <a href="{{ route('booking.index') }}" class="arena-button-secondary">Rezervisi termin</a>
                     </div>
                 </div>
             </div>
         </section>
 
-        <section class="site-grid pb-10 sm:pb-14">
+        <section id="dogadjaji-lista" class="site-grid pb-10 sm:pb-14">
             <div class="events-section-stack">
                 @if ($featuredEvent)
                     <a href="{{ route('events.show', ['event' => $featuredEvent->slug]) }}" class="events-feature-card">
@@ -47,6 +52,8 @@
                                 <h2 class="section-title">{{ $featuredEvent->title }}</h2>
                                 @if ($featuredEvent->summary)
                                     <p class="events-feature-card__summary">{{ $featuredEvent->summary }}</p>
+                                @else
+                                    <p class="events-feature-card__summary">Izdvojen dogadjaj sa rasporedom, rezultatima i kompletnim pregledom ucesnika.</p>
                                 @endif
                             </div>
 
@@ -66,7 +73,7 @@
                 @endif
 
                 <div class="events-grid">
-                    @foreach ($events as $event)
+                    @forelse ($events as $event)
                         <a href="{{ route('events.show', ['event' => $event->slug]) }}" class="events-card">
                             <div class="events-card__media">
                                 @if ($event->cover_image_url)
@@ -86,6 +93,8 @@
 
                                 @if ($event->summary)
                                     <p class="events-card__summary">{{ $event->summary }}</p>
+                                @else
+                                    <p class="events-card__summary">Pregled ucesnika, rasporeda, rezultata i kompletne statistike na jednom mestu.</p>
                                 @endif
 
                                 <div class="events-card__meta">
@@ -102,7 +111,13 @@
                                 <span class="events-card__cta">Pogledaj detalje</span>
                             </div>
                         </a>
-                    @endforeach
+                    @empty
+                        <div class="premium-card p-8 sm:p-10 lg:col-span-3">
+                            <span class="eyebrow-chip">Dogadjaji</span>
+                            <h2 class="section-title mt-5">Trenutno nema aktivnih dogadjaja.</h2>
+                            <p class="events-detail-copy mt-5">Kada kroz admin dodas ligu ili turnir, ovde ce se pojaviti kompletan pregled, tabela i raspored meceva.</p>
+                        </div>
+                    @endforelse
                 </div>
             </div>
         </section>

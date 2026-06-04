@@ -47,7 +47,6 @@ class EquipmentResource extends Resource
             Section::make('Artikal')->schema([
                 Select::make('sport_id')->label('Sport')->relationship('sport', 'name')->searchable()->preload(),
                 TextInput::make('name')->label('Naziv')->required(),
-                TextInput::make('slug')->required()->unique(ignoreRecord: true),
                 TextInput::make('sku')->label('Sifra artikla')->unique(ignoreRecord: true),
                 FileUpload::make('image')->label('Slika')->image()->disk('public')->directory('equipment'),
                 Textarea::make('short_description')->label('Kratak opis')->rows(2)->columnSpanFull(),

@@ -21,7 +21,6 @@ return new class extends Migration
             $table->unsignedInteger('capacity')->nullable();
             $table->string('image')->nullable();
             $table->text('description')->nullable();
-            $table->decimal('base_price', 10, 2)->default(0);
             $table->boolean('requires_approval')->default(true);
             $table->boolean('is_active')->default(true);
             $table->timestamps();

@@ -13,6 +13,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
+use RuntimeException;
 
 class ReservationController extends Controller
 {
@@ -45,7 +46,14 @@ class ReservationController extends Controller
         }
 
         $equipmentItems = $pricingService->hydrateEquipmentPricing($request->input('equipment', []));
-        $courtPrice = $pricingService->calculateCourtPrice($court, $startsAt, $endsAt);
+        try {
+            $courtPrice = $pricingService->calculateCourtPrice($court, $startsAt, $endsAt);
+        } catch (RuntimeException $exception) {
+            return back()->withErrors([
+                'starts_at' => $exception->getMessage(),
+            ])->withInput();
+        }
+
         $equipmentPrice = $pricingService->calculateEquipmentPrice($equipmentItems);
         $status = ReservationStatus::Reserved;
 

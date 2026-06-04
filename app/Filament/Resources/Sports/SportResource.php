@@ -43,8 +43,7 @@ class SportResource extends Resource
     {
         return $schema->components([
             Section::make('Osnovni podaci')->schema([
-                TextInput::make('name')->label('Naziv')->required()->live(onBlur: true),
-                TextInput::make('slug')->required()->unique(ignoreRecord: true),
+                TextInput::make('name')->label('Naziv')->required(),
                 Textarea::make('short_description')->label('Kratak opis')->rows(2),
                 Textarea::make('description')->label('Opis')->rows(5)->columnSpanFull(),
                 FileUpload::make('cover_image')->label('Naslovna slika')->image()->disk('public')->directory('sports'),

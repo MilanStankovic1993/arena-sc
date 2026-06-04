@@ -12,6 +12,7 @@ use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
+use RuntimeException;
 
 class BookingController extends Controller
 {
@@ -58,8 +59,8 @@ class BookingController extends Controller
                 'equipment' => [],
                 'contact_only' => true,
                 'contact_message' => "Za sport {$sport->name} online rezervacija nije dostupna. Kontaktirajte nas i zakazacemo termin.",
-                'contact_phone' => config('services.contact.phone', '+381 60 111 222'),
-                'contact_email' => config('services.contact.address', 'info@scarena.rs'),
+                'contact_phone' => config('arena.contact.phone'),
+                'contact_email' => config('arena.contact.email'),
             ]);
         }
 
@@ -92,18 +93,27 @@ class BookingController extends Controller
 
                                 $availableCourts = $courts
                                     ->filter(fn (Court $court): bool => $availabilityService->isAvailable($court, $startsAt, $endsAt))
-                                    ->map(fn (Court $court): array => [
-                                        'id' => $court->id,
-                                        'name' => $court->name,
-                                        'slug' => $court->slug,
-                                        'location' => $court->location,
-                                        'surface' => $court->surface,
-                                        'description' => $court->description,
-                                        'image_url' => $court->image_url,
-                                        'price' => $pricingService->calculateCourtPrice($court, $startsAt, $endsAt),
-                                        'starts_at' => $startsAt->format('Y-m-d H:i:s'),
-                                        'ends_at' => $endsAt->format('Y-m-d H:i:s'),
-                                    ])
+                                    ->map(function (Court $court) use ($pricingService, $startsAt, $endsAt): ?array {
+                                        try {
+                                            $price = $pricingService->calculateCourtPrice($court, $startsAt, $endsAt);
+                                        } catch (RuntimeException) {
+                                            return null;
+                                        }
+
+                                        return [
+                                            'id' => $court->id,
+                                            'name' => $court->name,
+                                            'slug' => $court->slug,
+                                            'location' => $court->location,
+                                            'surface' => $court->surface,
+                                            'description' => $court->description,
+                                            'image_url' => $court->image_url,
+                                            'price' => $price,
+                                            'starts_at' => $startsAt->format('Y-m-d H:i:s'),
+                                            'ends_at' => $endsAt->format('Y-m-d H:i:s'),
+                                        ];
+                                    })
+                                    ->filter()
                                     ->values();
 
                                 if ($availableCourts->isEmpty()) {

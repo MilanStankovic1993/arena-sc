@@ -16,8 +16,8 @@
         data-initial='@json($initialState)'
         data-availability-url="{{ route('booking.availability') }}"
         data-authenticated="{{ auth()->check() ? '1' : '0' }}"
-        data-contact-phone="{{ config('services.contact.phone', '+381 60 111 222') }}"
-        data-contact-email="{{ config('services.contact.address', 'info@scarena.rs') }}"
+        data-contact-phone="{{ config('arena.contact.phone') }}"
+        data-contact-email="{{ config('arena.contact.email') }}"
     >
         <div class="page-stack booking-page-stack">
             <div class="booking-intro-card">
@@ -127,11 +127,11 @@
 
                             <div class="booking-mini-card">
                                 <div class="grid gap-3 sm:grid-cols-2">
-                                    <a href="tel:{{ preg_replace('/[^0-9+]/', '', config('services.contact.phone', '+381 60 111 222')) }}" class="arena-button-secondary-light w-full justify-center text-center leading-tight" data-contact-phone-link>
-                                        {{ config('services.contact.phone', '+381 60 111 222') }}
+                                    <a href="tel:{{ preg_replace('/[^0-9+]/', '', config('arena.contact.phone')) }}" class="arena-button-secondary-light w-full justify-center text-center leading-tight" data-contact-phone-link>
+                                        {{ config('arena.contact.phone') }}
                                     </a>
-                                    <a href="mailto:{{ config('services.contact.address', 'info@scarena.rs') }}" class="arena-button-secondary-light w-full justify-center break-words text-center leading-tight" data-contact-email-link>
-                                        {{ config('services.contact.address', 'info@scarena.rs') }}
+                                    <a href="mailto:{{ config('arena.contact.email') }}" class="arena-button-secondary-light w-full justify-center break-words text-center leading-tight" data-contact-email-link>
+                                        {{ config('arena.contact.email') }}
                                     </a>
                                 </div>
                             </div>

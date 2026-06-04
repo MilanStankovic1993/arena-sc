@@ -14,7 +14,7 @@ class ContactMessageController extends Controller
     {
         $payload = $request->validated();
 
-        Mail::to(config('services.contact.address'))
+        Mail::to(config('arena.contact.email'))
             ->send(new ContactMessageReceivedMail($payload));
 
         Mail::to($payload['email'])

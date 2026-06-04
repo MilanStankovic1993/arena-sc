@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Storage;
 
 class Equipment extends Model
@@ -41,6 +42,15 @@ class Equipment extends Model
             'is_sellable' => 'boolean',
             'is_active' => 'boolean',
         ];
+    }
+
+    protected static function booted(): void
+    {
+        static::saving(function (Equipment $equipment): void {
+            if (filled($equipment->name)) {
+                $equipment->slug = Str::slug($equipment->name);
+            }
+        });
     }
 
     public function sport(): BelongsTo

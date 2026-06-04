@@ -7,6 +7,7 @@ use App\Models\Equipment;
 use App\Models\PricingRule;
 use Carbon\CarbonInterface;
 use Illuminate\Support\Collection;
+use RuntimeException;
 
 class ReservationPricingService
 {
@@ -20,6 +21,7 @@ class ReservationPricingService
             ->where(function ($query) use ($startsAt) {
                 $query
                     ->whereNull('days_of_week')
+                    ->orWhereJsonLength('days_of_week', 0)
                     ->orWhereJsonContains('days_of_week', (int) $startsAt->dayOfWeek);
             })
             ->whereTime('start_time', '<=', $startsAt->format('H:i:s'))
@@ -33,9 +35,7 @@ class ReservationPricingService
             return $rule->priceForDuration($durationMinutes);
         }
 
-        $hours = max(1, (float) ($durationMinutes / 60));
-
-        return (float) $court->base_price * $hours;
+        throw new RuntimeException('Cenovnik termina nije definisan za izabrani sport, dan, vreme i trajanje.');
     }
 
     public function hydrateEquipmentPricing(array $equipmentSelections): Collection

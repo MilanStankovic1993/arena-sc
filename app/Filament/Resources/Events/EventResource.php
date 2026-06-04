@@ -6,7 +6,9 @@ use App\Enums\EventStatus;
 use App\Enums\EventType;
 use App\Filament\Resources\Events\Pages\ManageEvents;
 use App\Models\Event;
+use App\Services\EventStatisticsService;
 use BackedEnum;
+use Filament\Actions\Action;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
@@ -20,6 +22,7 @@ use Filament\Forms\Components\Toggle;
 use Filament\Resources\Resource;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
+use Filament\Notifications\Notification;
 use Filament\Support\Enums\Width;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\IconColumn;
@@ -48,8 +51,7 @@ class EventResource extends Resource
     {
         return $schema->components([
             Section::make('Osnovni podaci')->schema([
-                TextInput::make('title')->label('Naziv')->required()->live(onBlur: true),
-                TextInput::make('slug')->required()->unique(ignoreRecord: true),
+                TextInput::make('title')->label('Naziv')->required(),
                 Select::make('type')
                     ->label('Tip')
                     ->options(collect(EventType::cases())->mapWithKeys(fn (EventType $type) => [$type->value => $type->label()])->all())
@@ -81,11 +83,15 @@ class EventResource extends Resource
                 TextColumn::make('type')
                     ->label('Tip')
                     ->badge()
-                    ->formatStateUsing(fn (?string $state): string => EventType::tryFrom($state ?? '')?->label() ?? (string) $state),
+                    ->formatStateUsing(fn ($state): string => $state instanceof EventType
+                        ? $state->label()
+                        : (EventType::tryFrom((string) $state)?->label() ?? (string) $state)),
                 TextColumn::make('status')
                     ->label('Status')
                     ->badge()
-                    ->formatStateUsing(fn (?string $state): string => EventStatus::tryFrom($state ?? '')?->label() ?? (string) $state),
+                    ->formatStateUsing(fn ($state): string => $state instanceof EventStatus
+                        ? $state->label()
+                        : (EventStatus::tryFrom((string) $state)?->label() ?? (string) $state)),
                 TextColumn::make('start_date')->label('Pocetak')->date(),
                 TextColumn::make('entries_count')->label('Timovi')->counts('entries'),
                 TextColumn::make('matches_count')->label('Mecevi')->counts('matches'),
@@ -104,6 +110,22 @@ class EventResource extends Resource
                 ]),
             ])
             ->recordActions([
+                Action::make('generateLeague')
+                    ->label('Generisi ligu')
+                    ->icon(Heroicon::OutlinedSparkles)
+                    ->visible(fn (Event $record): bool => $record->type === EventType::League)
+                    ->requiresConfirmation()
+                    ->modalHeading('Generisi raspored lige')
+                    ->modalDescription('Kreirace se raspored "svako sa svakim" za sve unete ucesnike, samo ako dogadjaj jos nema meceve.')
+                    ->action(function (Event $record, EventStatisticsService $statisticsService): void {
+                        $created = $statisticsService->generateLeagueSchedule($record);
+
+                        Notification::make()
+                            ->title($created > 0 ? "Generisano {$created} meceva." : 'Raspored nije generisan.')
+                            ->body($created > 0 ? 'Liga je automatski popunjena rasporedom po kolima.' : 'Proveri da li postoje bar 2 ucesnika i da li dogadjaj vec nema meceve.')
+                            ->success()
+                            ->send();
+                    }),
                 EditAction::make()->modalWidth(Width::Screen),
                 DeleteAction::make(),
             ])

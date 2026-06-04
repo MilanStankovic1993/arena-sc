@@ -14,9 +14,9 @@
     </head>
     <body>
         @php
-            $contactEmail = config('services.contact.address', 'info@scarena.rs');
-            $contactPhone = config('services.contact.phone', '+381 60 111 222');
-            $contactInstagram = config('services.contact.instagram', 'https://www.instagram.com/scarena.rs/');
+            $contactEmail = config('arena.contact.email');
+            $contactPhone = config('arena.contact.phone');
+            $contactInstagram = config('arena.contact.instagram');
         @endphp
 
         <div class="account-shell">

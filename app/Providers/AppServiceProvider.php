@@ -28,11 +28,11 @@ class AppServiceProvider extends ServiceProvider
 
         VerifyEmail::toMailUsing(function (object $notifiable, string $url) {
             return (new MailMessage())
-                ->subject('Potvrdite svoju email adresu | Arena SC')
-                ->greeting('Dobrodosli u Arena SC!')
-                ->line('Da biste aktivirali nalog i koristili rezervacije termina, potvrdite svoju email adresu.')
-                ->action('Potvrdi email adresu', $url)
-                ->line('Ako niste kreirali nalog, slobodno zanemarite ovu poruku.');
+                ->subject('Potvrdite email adresu | Sportski Centar Arena')
+                ->view('emails.auth.verify-email', [
+                    'url' => $url,
+                    'user' => $notifiable,
+                ]);
         });
 
         ResetPassword::toMailUsing(function (object $notifiable, string $url) {

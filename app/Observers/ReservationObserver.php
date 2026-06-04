@@ -42,12 +42,12 @@ class ReservationObserver
 
         if ($reservation->wasRecentlyCreated && $reservation->status === ReservationStatus::Reserved) {
             Mail::to($reservation->user->email)->send(new ReservationConfirmedMail($reservation));
-            Mail::to(config('services.contact.address'))->send(new AdminReservationNotificationMail($reservation, 'created'));
+            Mail::to(config('arena.contact.email'))->send(new AdminReservationNotificationMail($reservation, 'created'));
         }
 
         if ($reservation->wasChanged('status') && $reservation->status === ReservationStatus::Cancelled) {
             Mail::to($reservation->user->email)->send(new ReservationCancelledMail($reservation));
-            Mail::to(config('services.contact.address'))->send(new AdminReservationNotificationMail($reservation, 'cancelled'));
+            Mail::to(config('arena.contact.email'))->send(new AdminReservationNotificationMail($reservation, 'cancelled'));
         }
     }
 

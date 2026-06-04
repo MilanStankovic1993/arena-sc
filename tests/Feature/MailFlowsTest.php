@@ -24,7 +24,7 @@ class MailFlowsTest extends TestCase
     public function test_contact_form_sends_admin_and_customer_emails(): void
     {
         Mail::fake();
-        Config::set('services.contact.address', 'info@scarena.rs');
+        Config::set('arena.contact.email', 'info@scarena.rs');
 
         $response = $this->post(route('contact.store'), [
             'name' => 'Milan Stankovic',
@@ -48,7 +48,7 @@ class MailFlowsTest extends TestCase
     public function test_reservation_creation_sends_customer_and_admin_emails(): void
     {
         Mail::fake();
-        Config::set('services.contact.address', 'info@scarena.rs');
+        Config::set('arena.contact.email', 'info@scarena.rs');
 
         $user = User::factory()->create();
 
@@ -69,7 +69,6 @@ class MailFlowsTest extends TestCase
             'surface' => 'Sinteticka trava',
             'capacity' => 4,
             'description' => 'Glavni teren',
-            'base_price' => 2800,
             'is_active' => true,
         ]);
 
@@ -111,7 +110,7 @@ class MailFlowsTest extends TestCase
     public function test_reservation_cancellation_sends_customer_and_admin_emails(): void
     {
         Mail::fake();
-        Config::set('services.contact.address', 'info@scarena.rs');
+        Config::set('arena.contact.email', 'info@scarena.rs');
 
         $user = User::factory()->create();
 
@@ -132,7 +131,6 @@ class MailFlowsTest extends TestCase
             'surface' => 'Sinteticka trava',
             'capacity' => 4,
             'description' => 'Glavni teren',
-            'base_price' => 2800,
             'is_active' => true,
         ]);
 

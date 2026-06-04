@@ -42,7 +42,6 @@ class PublicSiteDataFlowTest extends TestCase
             'capacity' => 4,
             'image' => 'courts/padel-1.jpg',
             'description' => 'Glavni teren',
-            'base_price' => 2800,
             'requires_approval' => false,
             'is_active' => true,
         ]);
@@ -112,7 +111,6 @@ class PublicSiteDataFlowTest extends TestCase
             'surface' => 'Sinteticka trava',
             'capacity' => 4,
             'description' => 'Glavni teren',
-            'base_price' => 2800,
             'requires_approval' => false,
             'is_active' => true,
         ]);
@@ -152,6 +150,81 @@ class PublicSiteDataFlowTest extends TestCase
             'court_price' => 2800,
             'total_price' => 2800,
         ]);
+    }
+
+    public function test_booking_availability_requires_pricing_rule_for_public_slots(): void
+    {
+        $sport = Sport::query()->create([
+            'name' => 'Padel',
+            'slug' => 'padel',
+            'short_description' => 'Padel sport',
+            'description' => 'Padel opis',
+            'is_active' => true,
+            'sort_order' => 1,
+        ]);
+
+        Court::query()->create([
+            'sport_id' => $sport->id,
+            'name' => 'Padel teren 1',
+            'slug' => 'padel-teren-1',
+            'location' => 'Hala A',
+            'surface' => 'Sinteticka trava',
+            'capacity' => 4,
+            'description' => 'Glavni teren',
+            'requires_approval' => false,
+            'is_active' => true,
+        ]);
+
+        $response = $this->getJson(route('booking.availability', [
+            'sport' => $sport->slug,
+            'date' => now()->addDay()->toDateString(),
+        ]));
+
+        $response->assertOk()
+            ->assertJsonPath('pricingRules', [])
+            ->assertJsonPath('days.0.times', []);
+    }
+
+    public function test_site_reservation_requires_pricing_rule_before_creating_reservation(): void
+    {
+        $user = User::factory()->create();
+
+        $sport = Sport::query()->create([
+            'name' => 'Padel',
+            'slug' => 'padel',
+            'short_description' => 'Padel sport',
+            'description' => 'Padel opis',
+            'is_active' => true,
+            'sort_order' => 1,
+        ]);
+
+        $court = Court::query()->create([
+            'sport_id' => $sport->id,
+            'name' => 'Padel teren 1',
+            'slug' => 'padel-teren-1',
+            'location' => 'Hala A',
+            'surface' => 'Sinteticka trava',
+            'capacity' => 4,
+            'description' => 'Glavni teren',
+            'requires_approval' => false,
+            'is_active' => true,
+        ]);
+
+        $startsAt = now()->addDay()->setTime(10, 0, 0);
+
+        $response = $this
+            ->actingAs($user)
+            ->post(route('reservations.store'), [
+                'court_id' => $court->id,
+                'starts_at' => $startsAt->format('Y-m-d H:i:s'),
+                'duration_minutes' => 60,
+                'customer_note' => 'Test napomena',
+                'equipment' => [],
+            ]);
+
+        $response->assertSessionHasErrors('starts_at');
+
+        $this->assertDatabaseCount('reservations', 0);
     }
 
     public function test_non_bookable_sport_returns_contact_only_booking_payload(): void
@@ -220,7 +293,6 @@ class PublicSiteDataFlowTest extends TestCase
             'surface' => 'Sinteticka trava',
             'capacity' => 4,
             'description' => 'Glavni teren',
-            'base_price' => 2800,
             'requires_approval' => false,
             'is_active' => true,
         ]);

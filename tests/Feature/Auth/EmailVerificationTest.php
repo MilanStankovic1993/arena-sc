@@ -41,6 +41,44 @@ class EmailVerificationTest extends TestCase
         $response->assertRedirect(route('dashboard', absolute: false).'?verified=1');
     }
 
+    public function test_email_can_be_verified_from_signed_link_without_current_user_session(): void
+    {
+        $user = User::factory()->unverified()->create();
+
+        Event::fake();
+
+        $verificationUrl = URL::temporarySignedRoute(
+            'verification.verify',
+            now()->addMinutes(60),
+            ['id' => $user->id, 'hash' => sha1($user->email)]
+        );
+
+        $response = $this->get($verificationUrl);
+
+        Event::assertDispatched(Verified::class);
+        $this->assertAuthenticatedAs($user);
+        $this->assertTrue($user->fresh()->hasVerifiedEmail());
+        $response->assertRedirect(route('dashboard', absolute: false).'?verified=1');
+    }
+
+    public function test_email_verification_link_switches_to_the_link_owner_when_another_user_is_logged_in(): void
+    {
+        $loggedInUser = User::factory()->create();
+        $linkOwner = User::factory()->unverified()->create();
+
+        $verificationUrl = URL::temporarySignedRoute(
+            'verification.verify',
+            now()->addMinutes(60),
+            ['id' => $linkOwner->id, 'hash' => sha1($linkOwner->email)]
+        );
+
+        $response = $this->actingAs($loggedInUser)->get($verificationUrl);
+
+        $this->assertAuthenticatedAs($linkOwner);
+        $this->assertTrue($linkOwner->fresh()->hasVerifiedEmail());
+        $response->assertRedirect(route('dashboard', absolute: false).'?verified=1');
+    }
+
     public function test_email_is_not_verified_with_invalid_hash(): void
     {
         $user = User::factory()->unverified()->create();
@@ -51,7 +89,7 @@ class EmailVerificationTest extends TestCase
             ['id' => $user->id, 'hash' => sha1('wrong-email')]
         );
 
-        $this->actingAs($user)->get($verificationUrl);
+        $this->actingAs($user)->get($verificationUrl)->assertForbidden();
 
         $this->assertFalse($user->fresh()->hasVerifiedEmail());
     }
