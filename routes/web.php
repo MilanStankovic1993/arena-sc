@@ -6,6 +6,7 @@ use App\Http\Controllers\CourtController;
 use App\Http\Controllers\EquipmentController;
 use App\Http\Controllers\EventController;
 use App\Http\Controllers\LandingPageController;
+use App\Http\Controllers\ContactMessageController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ReservationController;
 use App\Http\Controllers\SportController;
@@ -20,6 +21,7 @@ Route::get('/tereni/{court:slug}', [CourtController::class, 'show'])->name('cour
 Route::get('/oprema', [EquipmentController::class, 'index'])->name('equipment.index');
 Route::get('/dogadjaji', [EventController::class, 'index'])->name('events.index');
 Route::get('/dogadjaji/{event:slug}', [EventController::class, 'show'])->name('events.show');
+Route::post('/kontakt', ContactMessageController::class)->name('contact.store');
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/dashboard', [ReservationController::class, 'index'])->name('dashboard');

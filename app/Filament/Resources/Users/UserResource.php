@@ -3,11 +3,14 @@
 namespace App\Filament\Resources\Users;
 
 use App\Enums\UserRole;
+use App\Models\EmailCampaign;
 use App\Filament\Resources\Users\Pages\ManageUsers;
 use App\Models\User;
+use App\Services\EmailCampaignService;
 use App\Services\UserStatisticsService;
 use BackedEnum;
 use Filament\Actions\Action;
+use Filament\Actions\BulkAction;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
@@ -17,6 +20,7 @@ use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
+use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
@@ -134,7 +138,51 @@ class UserResource extends Resource
                 DeleteAction::make()->visible(fn (User $record): bool => $record->role !== UserRole::SuperAdmin),
             ])
             ->toolbarActions([
+                Action::make('posaljiSvima')
+                    ->label('Posalji svim korisnicima')
+                    ->icon(Heroicon::OutlinedPaperAirplane)
+                    ->color('success')
+                    ->schema([
+                        Select::make('campaign_id')
+                            ->label('Mail kampanja')
+                            ->options(fn (): array => EmailCampaign::query()->where('is_active', true)->orderByDesc('created_at')->pluck('name', 'id')->all())
+                            ->required()
+                            ->searchable(),
+                    ])
+                    ->action(function (array $data): void {
+                        $campaign = EmailCampaign::query()->findOrFail($data['campaign_id']);
+                        $sent = app(EmailCampaignService::class)->sendToUsers($campaign, app(EmailCampaignService::class)->allCustomers());
+
+                        Notification::make()
+                            ->title('Kampanja je poslata svim korisnicima.')
+                            ->body("Poslato korisnicima: {$sent}.")
+                            ->success()
+                            ->send();
+                    }),
+            ])
+            ->bulkActions([
                 BulkActionGroup::make([
+                    BulkAction::make('posaljiOdabranima')
+                        ->label('Posalji odabranima')
+                        ->icon(Heroicon::OutlinedPaperAirplane)
+                        ->color('success')
+                        ->schema([
+                            Select::make('campaign_id')
+                                ->label('Mail kampanja')
+                                ->options(fn (): array => EmailCampaign::query()->where('is_active', true)->orderByDesc('created_at')->pluck('name', 'id')->all())
+                                ->required()
+                                ->searchable(),
+                        ])
+                        ->action(function ($records, array $data): void {
+                            $campaign = EmailCampaign::query()->findOrFail($data['campaign_id']);
+                            $sent = app(EmailCampaignService::class)->sendToUsers($campaign, $records);
+
+                            Notification::make()
+                                ->title('Kampanja je poslata odabranim korisnicima.')
+                                ->body("Poslato korisnicima: {$sent}.")
+                            ->success()
+                            ->send();
+                        }),
                     DeleteBulkAction::make(),
                 ]),
             ]);

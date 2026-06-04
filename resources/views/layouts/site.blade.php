@@ -10,6 +10,11 @@
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     </head>
     <body class="min-h-screen">
+        @php
+            $contactEmail = config('services.contact.address', 'info@scarena.rs');
+            $contactPhone = config('services.contact.phone', '+381 60 111 222');
+            $contactInstagram = config('services.contact.instagram', 'https://www.instagram.com/scarena.rs/');
+        @endphp
         <div class="site-shell">
             <div class="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[38rem] bg-[radial-gradient(circle_at_top_left,rgba(245,245,242,0.16),transparent_30%),radial-gradient(circle_at_top_right,rgba(15,42,31,0.2),transparent_28%),linear-gradient(180deg,rgba(9,23,17,0.12),transparent_74%)]"></div>
             <span class="floating-orb floating-orb--sand absolute -left-16 top-24 -z-10 h-52 w-52"></span>
@@ -17,50 +22,55 @@
 
             <header class="premium-header">
                 <div class="premium-nav-shell">
-                    <div class="site-grid flex items-center justify-between gap-4">
-                    <a href="{{ route('home') }}" class="premium-brand">
-                        <img src="{{ asset('brand/arena-sc-mark.svg') }}" alt="Sportski centar Arena logo" class="brand-logo brand-logo--header">
-                    </a>
+                    <div class="site-grid premium-nav-layout">
+                        <a href="{{ route('home') }}" class="premium-brand">
+                            <img src="{{ asset('brand/arena-sc-mark.svg') }}" alt="Sportski centar Arena logo" class="brand-logo brand-logo--header">
+                        </a>
 
-                    <nav class="premium-nav-links">
-                        <a href="{{ route('home') }}" class="premium-nav-link {{ request()->routeIs('home') ? 'is-active' : '' }}">Pocetna</a>
-                        <a href="{{ route('about') }}" class="premium-nav-link {{ request()->routeIs('about') ? 'is-active' : '' }}">O nama</a>
-                        <a href="{{ route('sports.index') }}" class="premium-nav-link {{ request()->routeIs('sports.*') || request()->routeIs('courts.*') ? 'is-active' : '' }}">Tereni</a>
-                        <a href="{{ route('equipment.index') }}" class="premium-nav-link {{ request()->routeIs('equipment.*') ? 'is-active' : '' }}">Oprema</a>
-                        <a href="{{ route('events.index') }}" class="premium-nav-link {{ request()->routeIs('events.*') ? 'is-active' : '' }}">Dogadjaji</a>
-                        @auth
-                            <a href="{{ route('dashboard') }}" class="arena-button-primary">Moj nalog</a>
-                        @else
-                            <a href="{{ route('login') }}" class="site-link">Prijava</a>
-                            <a href="{{ route('register') }}" class="arena-button-primary">Registracija</a>
-                        @endauth
-                    </nav>
+                        <nav class="premium-nav-links premium-nav-links--center">
+                            <a href="{{ route('home') }}" class="premium-nav-link {{ request()->routeIs('home') ? 'is-active' : '' }}">Pocetna</a>
+                            <a href="{{ route('about') }}" class="premium-nav-link {{ request()->routeIs('about') ? 'is-active' : '' }}">O nama</a>
+                            <a href="{{ route('sports.index') }}" class="premium-nav-link {{ request()->routeIs('sports.*') || request()->routeIs('courts.*') ? 'is-active' : '' }}">Tereni</a>
+                            <a href="{{ route('equipment.index') }}" class="premium-nav-link {{ request()->routeIs('equipment.*') ? 'is-active' : '' }}">Oprema</a>
+                            <a href="{{ route('events.index') }}" class="premium-nav-link {{ request()->routeIs('events.*') ? 'is-active' : '' }}">Dogadjaji</a>
+                        </nav>
 
-                    <details class="relative xl:hidden">
-                        <summary class="flex h-12 w-12 cursor-pointer items-center justify-center rounded-full border border-[color:var(--arena-sand-glow)] bg-[rgba(245,245,242,0.08)] text-[color:var(--arena-sand)] marker:content-none">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M4 7h16M4 12h16M4 17h16" />
-                            </svg>
-                        </summary>
-                        <div class="mobile-sheet absolute right-0 top-[calc(100%+0.9rem)] z-20 w-[min(18rem,86vw)]">
-                            <div class="grid gap-3">
-                                <a href="{{ route('home') }}" class="site-link">Pocetna</a>
-                                <a href="{{ route('about') }}" class="site-link">O nama</a>
-                                <a href="{{ route('sports.index') }}" class="site-link">Tereni</a>
-                                <a href="{{ route('equipment.index') }}" class="site-link">Oprema</a>
-                                <a href="{{ route('events.index') }}" class="site-link">Dogadjaji</a>
-                            </div>
-
-                            <div class="mt-5 grid gap-3">
+                        <div class="premium-nav-actions">
+                            <div class="hidden items-center gap-3 xl:flex">
                                 @auth
-                                    <a href="{{ route('dashboard') }}" class="arena-button-primary w-full">Moj nalog</a>
+                                    <a href="{{ route('dashboard') }}" class="arena-button-primary">Moj nalog</a>
                                 @else
-                                    <a href="{{ route('login') }}" class="arena-button-secondary w-full">Prijava</a>
-                                    <a href="{{ route('register') }}" class="arena-button-primary w-full">Registracija</a>
+                                    <a href="{{ route('login') }}" class="site-link">Prijava</a>
+                                    <a href="{{ route('register') }}" class="arena-button-primary">Registracija</a>
                                 @endauth
                             </div>
+
+                            <details class="relative xl:hidden">
+                                <summary class="flex h-12 w-12 cursor-pointer items-center justify-center rounded-full border border-[color:var(--arena-sand-glow)] bg-[rgba(245,245,242,0.08)] text-[color:var(--arena-sand)] marker:content-none">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M4 7h16M4 12h16M4 17h16" />
+                                    </svg>
+                                </summary>
+                                <div class="mobile-sheet absolute right-0 top-[calc(100%+0.9rem)] z-20 w-[min(18rem,86vw)]">
+                                    <div class="grid gap-3">
+                                        <a href="{{ route('home') }}" class="site-link">Pocetna</a>
+                                        <a href="{{ route('about') }}" class="site-link">O nama</a>
+                                        <a href="{{ route('sports.index') }}" class="site-link">Tereni</a>
+                                        <a href="{{ route('equipment.index') }}" class="site-link">Oprema</a>
+                                        <a href="{{ route('events.index') }}" class="site-link">Dogadjaji</a>
+                                    </div>
+
+                                    <div class="mt-5 grid gap-3">
+                                        @auth
+                                            <a href="{{ route('dashboard') }}" class="arena-button-primary w-full">Moj nalog</a>
+                                        @else
+                                            <a href="{{ route('login') }}" class="arena-button-secondary w-full">Prijava</a>
+                                            <a href="{{ route('register') }}" class="arena-button-primary w-full">Registracija</a>
+                                        @endauth
+                                    </div>
+                                </div>
+                            </details>
                         </div>
-                    </details>
                     </div>
                 </div>
             </header>
@@ -87,6 +97,24 @@
                             @else
                                 <a href="{{ route('register') }}">Registracija</a>
                             @endauth
+                        </div>
+                    </div>
+
+                    <div class="footer-contact-grid">
+                        <div class="footer-contact-card">
+                            <span class="footer-kicker">Kontaktiraj nas</span>
+                            <div class="footer-contact-list">
+                                <a href="tel:{{ preg_replace('/[^0-9+]/', '', $contactPhone) }}">{{ $contactPhone }}</a>
+                                <a href="mailto:{{ $contactEmail }}">{{ $contactEmail }}</a>
+                                <a href="{{ $contactInstagram }}" target="_blank" rel="noopener noreferrer">Instagram</a>
+                            </div>
+                        </div>
+
+                        <div class="footer-contact-card footer-contact-card--action">
+                            <span class="footer-kicker">Direktan kontakt</span>
+                            <div class="footer-contact-actions">
+                                <a href="{{ route('home') }}#kontaktiraj-nas" class="arena-button-primary">Kontaktiraj nas</a>
+                            </div>
                         </div>
                     </div>
                 </div>

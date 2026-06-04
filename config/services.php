@@ -35,4 +35,11 @@ return [
         ],
     ],
 
+    'contact' => [
+        'address' => env('CONTACT_MAIL_TO', env('MAIL_FROM_ADDRESS')),
+        'name' => env('CONTACT_MAIL_NAME', env('APP_NAME')),
+        'phone' => env('CONTACT_PHONE', '+381 60 111 222'),
+        'instagram' => env('CONTACT_INSTAGRAM', 'https://www.instagram.com/scarena.rs/'),
+    ],
+
 ];

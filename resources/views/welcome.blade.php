@@ -7,8 +7,9 @@
                 <div class="home-hero__content">
                     <span class="dark-eyebrow-chip">Sportski centar Arena</span>
                     <h1 class="home-hero__title">REZERVISI TERMIN</h1>
-                    <div class="mt-6">
+                    <div class="mt-6 flex flex-wrap gap-3">
                         <a href="{{ route('booking.index') }}" class="arena-button-primary">Rezervisi termin</a>
+                        <a href="#kontaktiraj-nas" class="arena-button-secondary">Kontaktiraj nas</a>
                     </div>
                 </div>
             </div>
@@ -35,6 +36,59 @@
                     <div class="mt-7">
                         <a href="{{ route('sports.index') }}" class="arena-button-primary">Pogledaj terene</a>
                     </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="kontaktiraj-nas" class="site-grid">
+            <div class="home-contact-panel">
+                <div class="home-contact-panel__copy">
+                    <span class="eyebrow-chip">Kontaktiraj nas</span>
+                    <h2 class="section-title mt-5">PITAJ ZA TERMIN, DOGADJAJ ILI SARADNJU.</h2>
+                </div>
+
+                <div class="home-contact-panel__form-shell">
+                    @if (session('status'))
+                        <div class="auth-status mb-5">
+                            {{ session('status') }}
+                        </div>
+                    @endif
+
+                    <form action="{{ route('contact.store') }}" method="POST" class="home-contact-form">
+                        @csrf
+
+                        <div class="home-contact-form__grid">
+                            <div class="auth-field">
+                                <x-input-label for="contact_name" value="Ime i prezime" />
+                                <x-text-input id="contact_name" type="text" name="name" :value="old('name')" required />
+                                <x-input-error :messages="$errors->get('name')" />
+                            </div>
+
+                            <div class="auth-field">
+                                <x-input-label for="contact_phone" value="Telefon" />
+                                <x-text-input id="contact_phone" type="text" name="phone" :value="old('phone')" />
+                                <x-input-error :messages="$errors->get('phone')" />
+                            </div>
+                        </div>
+
+                        <div class="home-contact-form__grid">
+                            <div class="auth-field">
+                                <x-input-label for="contact_email" value="Email adresa" />
+                                <x-text-input id="contact_email" type="email" name="email" :value="old('email')" required />
+                                <x-input-error :messages="$errors->get('email')" />
+                            </div>
+                        </div>
+
+                        <div class="auth-field">
+                            <x-input-label for="contact_message" value="Poruka" />
+                            <textarea id="contact_message" name="message" rows="5" class="auth-textarea" required>{{ old('message') }}</textarea>
+                            <x-input-error :messages="$errors->get('message')" />
+                        </div>
+
+                        <div class="mt-6">
+                            <button type="submit" class="arena-button-primary">Posalji poruku</button>
+                        </div>
+                    </form>
                 </div>
             </div>
         </section>

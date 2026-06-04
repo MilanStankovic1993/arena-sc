@@ -1,58 +1,112 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Arena SC
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Laravel + Filament sistem za:
+- javni sajt sportskog centra
+- online rezervacije termina
+- opremu za iznajmljivanje i prodaju
+- događaje, lige i turnire
+- admin analitiku i upravljanje sadržajem
 
-## About Laravel
+## Lokalni razvoj
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+Projekat je podešen za lokalni Laragon domen:
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
-
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
-
-## Learning Laravel
-
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
-
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
-
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
-
-## Agentic Development
-
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
-
-```bash
-composer require laravel/boost --dev
-
-php artisan boost:install
+```env
+APP_URL=http://arena-sc.test
+DB_CONNECTION=mysql
+DB_DATABASE=arena_sc
+FILESYSTEM_DISK=public
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+Pokretanje iz čistog stanja:
 
-## Contributing
+```bash
+composer install
+copy .env.example .env
+php artisan key:generate
+php artisan migrate:fresh --seed
+php artisan storage:link
+npm install
+npm run build
+php artisan test
+```
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+## Glavne funkcionalnosti
 
-## Code of Conduct
+- premium javni sajt u zeleno-zlatnoj paleti
+- registracija i prijava korisnika
+- email verifikacija naloga
+- reset lozinke
+- rezervacija termina po sportu, danu, vremenu, trajanju i terenu
+- otkazivanje rezervacije od strane korisnika i admina
+- oprema uz termin
+- kontakt forma sa mejl potvrdom
+- događaji sa listingom i detaljima
+- Filament admin panel na srpskom
+- statistika i analitika rezervacija, korisnika i terena
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+## Mail tokovi
 
-## Security Vulnerabilities
+Sistem trenutno šalje mejlove za:
+- potvrdu email adrese pri registraciji
+- ponovno slanje verifikacionog linka
+- reset lozinke
+- kontakt formu:
+  - poruka adminu
+  - potvrda korisniku
+- novu rezervaciju:
+  - potvrda korisniku
+  - obaveštenje adminu
+- otkazivanje rezervacije:
+  - obaveštenje korisniku
+  - obaveštenje adminu
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+## Slike i storage
 
-## License
+Postoje 2 vrste slika:
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+1. Statičke projektne slike
+- nalaze se u `public/`
+- idu preko Git-a
+
+2. Slike uploadovane iz admin panela
+- čuvaju se u `storage/app/public`
+- ne idu preko Git-a
+- zahtevaju `php artisan storage:link`
+
+## Produkcija
+
+Za produkciju pogledaj:
+- [DEPLOY-CPANEL.md](C:\laragon\www\arena-sc\DEPLOY-CPANEL.md)
+- [\.env.production.example](C:\laragon\www\arena-sc\.env.production.example)
+
+Ključne produkcione stvari:
+- `APP_URL=https://scarena.rs`
+- `FILESYSTEM_DISK=public`
+- ispravan SMTP za `info@scarena.rs`
+- `storage/app/public` writable
+- `public/storage -> storage/app/public`
+- `composer install --no-dev --optimize-autoloader`
+
+## Brzi QA pre live puštanja
+
+Proveri:
+- početnu
+- `Tereni`
+- `Oprema`
+- `O nama`
+- `Dogadjaji`
+- `Rezervisi termin`
+- registraciju i verifikaciju emaila
+- reset lozinke
+- upload slika iz admina
+- rezervaciju i otkazivanje termina
+- admin statistiku
+
+## Seed admin nalog
+
+Ako koristiš seed podatke:
+- email: `admin@arena-sc.test`
+- password: `password`
+
+Odmah promeni pristupne podatke pre produkcije.

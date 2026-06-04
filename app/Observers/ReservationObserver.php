@@ -3,7 +3,11 @@
 namespace App\Observers;
 
 use App\Enums\ReservationStatus;
+use App\Mail\AdminReservationNotificationMail;
+use App\Mail\ReservationCancelledMail;
+use App\Mail\ReservationConfirmedMail;
 use App\Models\Reservation;
+use Illuminate\Support\Facades\Mail;
 
 class ReservationObserver
 {
@@ -24,6 +28,8 @@ class ReservationObserver
 
     public function saved(Reservation $reservation): void
     {
+        $reservation->loadMissing(['user', 'sport', 'court']);
+
         $user = $reservation->user;
 
         $user->forceFill([
@@ -33,6 +39,16 @@ class ReservationObserver
                 ->count(),
             'last_reservation_at' => $user->reservations()->max('starts_at'),
         ])->saveQuietly();
+
+        if ($reservation->wasRecentlyCreated && $reservation->status === ReservationStatus::Reserved) {
+            Mail::to($reservation->user->email)->send(new ReservationConfirmedMail($reservation));
+            Mail::to(config('services.contact.address'))->send(new AdminReservationNotificationMail($reservation, 'created'));
+        }
+
+        if ($reservation->wasChanged('status') && $reservation->status === ReservationStatus::Cancelled) {
+            Mail::to($reservation->user->email)->send(new ReservationCancelledMail($reservation));
+            Mail::to(config('services.contact.address'))->send(new AdminReservationNotificationMail($reservation, 'cancelled'));
+        }
     }
 
     public function deleted(Reservation $reservation): void

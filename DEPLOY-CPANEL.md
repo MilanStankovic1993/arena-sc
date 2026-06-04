@@ -1,33 +1,60 @@
-# Arena SC deploy na cPanel
+# Arena SC deploy na cPanel / shared hosting
 
-## 1. Potrebni podaci
+Ovaj dokument je usklađen sa trenutnim stanjem projekta:
+- Laravel 13
+- Filament admin panel
+- javni uploadovi slika preko `public` diska
+- email verifikacija registracije
+- reset lozinke
+- kontakt forma na početnoj
+- mail potvrde za rezervacije i otkazivanja
 
-- domen ili poddomen koji pokazuje na projekat
-- MySQL baza: `scarenar_arena_sc`
-- MySQL user: `scarenar_arena_user`
-- lozinka za MySQL user
-- putanja do projekta na hostingu
+## 1. Šta mora da radi na serveru
 
-## 2. Važno pre deploy-a
+Pre produkcije server mora da ima:
+- PHP kompatibilan sa projektom
+- MySQL bazu
+- mogućnost pokretanja `composer install`
+- Laravel `public` folder kao document root
+- `storage/app/public` writable
+- `public/storage` link ka `storage/app/public`
 
-- `filament/filament` mora biti instaliran kao produkcioni paket
-- `public` folder mora biti web root
-- ako cPanel ne dozvoljava da document root pokazuje direktno na Laravel `public`, onda treba podesiti addon domain/subdomain da root bude Laravel `public`
+Bez ova 3 uslova mail i slike neće raditi kako treba:
+- ispravan `APP_URL`
+- `FILESYSTEM_DISK=public`
+- `php artisan storage:link`
 
-## 3. Preporučeni `.env` za produkciju
+## 2. Preporučeni document root
+
+Najčistije rešenje:
+
+- projekat: `/home/scarenar/arena-sc`
+- web root domena: `/home/scarenar/arena-sc/public`
+
+Ako hosting to još nije prebacio, traži od podrške da primarni domen `scarena.rs` pokazuje direktno na Laravel `public` folder.
+
+## 3. Produkcioni `.env`
+
+Koristi ovo kao osnovu i zameni stvarne vrednosti:
 
 ```env
 APP_NAME="Arena SC"
 APP_ENV=production
 APP_KEY=
 APP_DEBUG=false
-APP_URL=https://tvoj-domen.rs
+APP_URL=https://scarena.rs
 
 APP_LOCALE=sr
 APP_FALLBACK_LOCALE=sr
 APP_FAKER_LOCALE=sr_RS
 
+APP_MAINTENANCE_DRIVER=file
+
+BCRYPT_ROUNDS=12
+
 LOG_CHANNEL=stack
+LOG_STACK=single
+LOG_DEPRECATIONS_CHANNEL=null
 LOG_LEVEL=error
 
 DB_CONNECTION=mysql
@@ -35,7 +62,7 @@ DB_HOST=localhost
 DB_PORT=3306
 DB_DATABASE=scarenar_arena_sc
 DB_USERNAME=scarenar_arena_user
-DB_PASSWORD=OVDE_IDE_LOZINKA
+DB_PASSWORD=OVDE_UNESI_LOZINKU_BAZE
 
 SESSION_DRIVER=file
 SESSION_LIFETIME=120
@@ -49,87 +76,170 @@ QUEUE_CONNECTION=sync
 
 CACHE_STORE=file
 
+MEMCACHED_HOST=127.0.0.1
+
+REDIS_CLIENT=phpredis
+REDIS_HOST=127.0.0.1
+REDIS_PASSWORD=null
+REDIS_PORT=6379
+
 MAIL_MAILER=smtp
-MAIL_HOST=localhost
+MAIL_SCHEME=ssl
+MAIL_HOST=OVDE_UNESI_SMTP_HOST
 MAIL_PORT=465
-MAIL_USERNAME=null
-MAIL_PASSWORD=null
-MAIL_ENCRYPTION=ssl
-MAIL_FROM_ADDRESS="no-reply@tvoj-domen.rs"
+MAIL_USERNAME=info@scarena.rs
+MAIL_PASSWORD=OVDE_UNESI_MAIL_LOZINKU
+MAIL_FROM_ADDRESS="info@scarena.rs"
 MAIL_FROM_NAME="${APP_NAME}"
+CONTACT_MAIL_TO="info@scarena.rs"
+CONTACT_MAIL_NAME="Arena SC"
+
+AWS_ACCESS_KEY_ID=
+AWS_SECRET_ACCESS_KEY=
+AWS_DEFAULT_REGION=us-east-1
+AWS_BUCKET=
+AWS_USE_PATH_STYLE_ENDPOINT=false
 
 VITE_APP_NAME="${APP_NAME}"
 ```
 
-## 4. Prvi deploy komande
+Napomena:
+- koristi tačne SMTP podatke iz cPanel email naloga `info@scarena.rs`
+- ako host traži `tls` umesto `ssl`, promeni `MAIL_SCHEME`
+- `CONTACT_MAIL_TO` je adresa na koju stižu poruke sa kontakt forme i admin obaveštenja o rezervacijama
 
-Pokreni u root folderu projekta na serveru:
+## 4. Mail funkcionalnosti koje sada postoje
+
+Na produkciji će slati mejlove za:
+- potvrdu email adrese posle registracije
+- slanje novog verifikacionog linka
+- reset lozinke
+- kontakt formu:
+  - poruka adminu
+  - potvrda korisniku
+- novu rezervaciju:
+  - potvrda korisniku
+  - obaveštenje adminu
+- otkazivanje rezervacije:
+  - obaveštenje korisniku
+  - obaveštenje adminu
+
+Zato je ispravan SMTP obavezan pre puštanja sajta uživo.
+
+## 5. Deploy redosled
+
+Ako postoji terminal / SSH:
 
 ```bash
-composer install --no-dev --optimize-autoloader
-cp .env.example .env
-php artisan key:generate
-php artisan migrate --force
-php artisan db:seed --force
-php artisan storage:link
-php artisan optimize:clear
-php artisan config:cache
-php artisan route:cache
-php artisan view:cache
-npm install
-npm run build
-```
-
-Ako na hostingu nema Node.js:
-
-- build uradi lokalno
-- pa pushuj `public/build` manifest i assete na git ili uploaduj build fajlove ručno
-
-## 5. Git deploy redosled
-
-Ako si već povezao server sa git-om:
-
-```bash
+cd /home/scarenar/arena-sc
 git pull
 composer install --no-dev --optimize-autoloader
-php artisan migrate --force
-php artisan db:seed --force
 php artisan optimize:clear
+php artisan key:generate
+php artisan migrate --force
+php artisan storage:link
 php artisan config:cache
 php artisan route:cache
 php artisan view:cache
 ```
 
-Ako imaš Node na serveru, dodaj:
+Ako nema Node.js na serveru:
+- `npm run build` radiš lokalno
+- `public/build` i manifest idu kroz Git
+
+Ako server ima Node.js:
 
 ```bash
 npm ci
 npm run build
 ```
 
-## 6. cPanel / domen
+## 6. Šta ne ide preko Git-a
 
-Najčistije rešenje:
+Ne idu preko Git-a:
+- slike koje uploaduješ kroz admin panel
 
-- domen ili poddomen treba da pokazuje na `.../arena-sc/public`
+One se čuvaju na serveru u:
+- `storage/app/public`
 
-Ako domen trenutno pokazuje na root projekta umesto na `public`:
+Zato je bitno:
+- da `storage` bude writable
+- da postoji `public/storage` link
 
-- promeni document root u cPanel-u
-- nemoj da Laravel bude serviran iz root foldera bez `public`
+## 7. Dozvole
 
-## 7. Posle deploy-a proveri
+Proveri da server može da piše u:
+- `storage`
+- `bootstrap/cache`
 
-- početna strana radi
-- `/login` radi
+Tipično:
+- folderi `755` ili `775`
+- fajlovi `644`
+
+## 8. Produkcioni QA posle deploy-a
+
+Obavezno proveri:
+
+### Javni sajt
+- početna radi
+- `Tereni` radi
+- detalj terena radi
+- `Oprema` radi
+- `O nama` radi
+- `Dogadjaji` radi
+- `Rezervisi termin` radi
+- slike iz `public/media/...` rade
+- slike iz admin uploadova rade
+
+### Auth
+- registracija radi
+- stiže verifikacioni email
+- potvrda emaila radi
+- login radi
+- forgot password šalje mejl
+- reset lozinke radi
+
+### Rezervacije
+- rezervacija sa sajta se kreira kao `Rezervisana`
+- korisnik dobija mejl potvrde
+- admin dobija mejl o novoj rezervaciji
+- korisnik može da otkaže
+- otkazivanje šalje mejlove
+
+### Admin
 - `/admin/login` radi
-- možeš da se uloguješ sa seed admin nalogom
-- upload slike radi iz admin panela
-- rezervacija termina se upisuje u bazu
+- upload slika radi za:
+  - sportove
+  - terene
+  - opremu
+  - događaje
+- statistika radi
+- kalendar radi
+- dugi `create/edit` modali skroluju normalno
 
-## 8. Seed admin nalog
+## 9. Ako server nema terminal
 
+Ako nemaš terminal i `composer install` ne možeš da pokreneš ručno:
+- traži od hostinga da pokrene `composer install --no-dev --optimize-autoloader`
+- neka urade i:
+
+```bash
+php artisan migrate --force
+php artisan storage:link
+php artisan optimize:clear
+php artisan config:cache
+php artisan route:cache
+php artisan view:cache
+```
+
+## 10. Seed admin nalog
+
+Ako koristiš seed na produkciji:
 - email: `admin@arena-sc.test`
 - password: `password`
 
-Odmah posle prvog logina promeni lozinku u admin panelu ili direktno kroz bazu.
+Ako ovo ostaje u produkciji, odmah promeni:
+- email
+- lozinku
+
+Po mogućstvu napravi produkcioni admin nalog i ukloni demo podatke.
