@@ -154,6 +154,32 @@ class PublicSiteDataFlowTest extends TestCase
         ]);
     }
 
+    public function test_non_bookable_sport_returns_contact_only_booking_payload(): void
+    {
+        $sport = Sport::query()->create([
+            'name' => 'Pikado',
+            'slug' => 'pikado',
+            'short_description' => 'Pikado termin',
+            'description' => 'Pikado opis',
+            'supports_online_booking' => false,
+            'is_active' => true,
+            'sort_order' => 3,
+        ]);
+
+        $response = $this->getJson(route('booking.availability', [
+            'sport' => $sport->slug,
+            'date' => now()->addDay()->toDateString(),
+        ]));
+
+        $response->assertOk()
+            ->assertJsonPath('sport.name', 'Pikado')
+            ->assertJsonPath('sport.supports_online_booking', false)
+            ->assertJsonPath('contact_only', true)
+            ->assertJsonPath('pricingRules', [])
+            ->assertJsonPath('days', [])
+            ->assertJsonPath('equipment', []);
+    }
+
     public function test_event_model_exposes_cover_image_url_for_site_usage(): void
     {
         $event = Event::query()->create([

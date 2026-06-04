@@ -18,6 +18,7 @@ class StoreContactMessageRequest extends FormRequest
             'email' => ['required', 'email', 'max:255'],
             'phone' => ['nullable', 'string', 'max:255'],
             'message' => ['required', 'string', 'max:2000'],
+            'redirect_to' => ['nullable', 'string', 'in:home,booking'],
         ];
     }
 }

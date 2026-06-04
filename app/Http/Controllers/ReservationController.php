@@ -38,6 +38,12 @@ class ReservationController extends Controller
             ])->withInput();
         }
 
+        if (! $court->sport?->supports_online_booking) {
+            return redirect()
+                ->route('booking.index', ['sport' => $court->sport->slug])
+                ->with('status', 'Za izabrani sport online rezervacija nije dostupna. Posaljite upit i kontaktiracemo vas.');
+        }
+
         $equipmentItems = $pricingService->hydrateEquipmentPricing($request->input('equipment', []));
         $courtPrice = $pricingService->calculateCourtPrice($court, $startsAt, $endsAt);
         $equipmentPrice = $pricingService->calculateEquipmentPrice($equipmentItems);
@@ -72,7 +78,7 @@ class ReservationController extends Controller
             }
         });
 
-        return redirect()->route('dashboard')->with('status', 'Rezervacija je uspesno potvrdena.');
+        return redirect()->route('dashboard')->with('status', 'Uspesno ste rezervisali termin.');
     }
 
     public function cancel(Reservation $reservation): RedirectResponse
@@ -80,7 +86,7 @@ class ReservationController extends Controller
         abort_unless($reservation->user_id === Auth::id(), 403);
 
         if ($reservation->status === ReservationStatus::Cancelled) {
-            return redirect()->route('dashboard')->with('status', 'Rezervacija je vec otkazana.');
+            return redirect()->route('dashboard')->with('status', 'Termin je vec otkazan.');
         }
 
         $reservation->update([
@@ -88,6 +94,6 @@ class ReservationController extends Controller
             'cancellation_reason' => 'Otkazano od korisnika.',
         ]);
 
-        return redirect()->route('dashboard')->with('status', 'Rezervacija je uspesno otkazana.');
+        return redirect()->route('dashboard')->with('status', 'Uspesno ste otkazali termin.');
     }
 }

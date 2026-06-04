@@ -48,12 +48,6 @@
                 </div>
 
                 <div class="home-contact-panel__form-shell">
-                    @if (session('status'))
-                        <div class="auth-status mb-5">
-                            {{ session('status') }}
-                        </div>
-                    @endif
-
                     <form action="{{ route('contact.store') }}" method="POST" class="home-contact-form">
                         @csrf
 

@@ -32,12 +32,6 @@
             </div>
 
             <div class="account-card">
-                @if (session('status'))
-                    <div class="auth-status mb-6">
-                        {{ session('status') }}
-                    </div>
-                @endif
-
                 <h3 class="account-section-title">Istorija rezervacija</h3>
                 <div class="mt-5 space-y-4">
                     @forelse ($reservations as $reservation)
@@ -53,7 +47,7 @@
                             @if ($reservation->status === \App\Enums\ReservationStatus::Reserved && $reservation->starts_at->isFuture())
                                 <form method="POST" action="{{ route('reservations.cancel', $reservation) }}" class="mt-4">
                                     @csrf
-                                    <button type="submit" class="arena-button-secondary">Otkazi termin</button>
+                                    <button type="submit" class="arena-button-secondary-light">Otkazi termin</button>
                                 </form>
                             @elseif ($reservation->status === \App\Enums\ReservationStatus::Cancelled && $reservation->cancellation_reason)
                                 <p class="mt-3 text-sm text-slate-500">Razlog: {{ $reservation->cancellation_reason }}</p>

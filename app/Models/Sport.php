@@ -19,6 +19,7 @@ class Sport extends Model
         'short_description',
         'description',
         'cover_image',
+        'supports_online_booking',
         'is_active',
         'sort_order',
     ];
@@ -26,6 +27,7 @@ class Sport extends Model
     protected function casts(): array
     {
         return [
+            'supports_online_booking' => 'boolean',
             'is_active' => 'boolean',
         ];
     }

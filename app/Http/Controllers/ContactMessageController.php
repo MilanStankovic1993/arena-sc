@@ -20,8 +20,13 @@ class ContactMessageController extends Controller
         Mail::to($payload['email'])
             ->send(new ContactMessageConfirmationMail($payload));
 
+        $route = match ($payload['redirect_to'] ?? 'home') {
+            'booking' => 'booking.index',
+            default => 'home',
+        };
+
         return redirect()
-            ->route('home')
-            ->with('status', 'Poruka je uspesno poslata. Javicemo vam se uskoro.');
+            ->route($route)
+            ->with('status', 'Uspesno ste poslali poruku. Javicemo vam se uskoro.');
     }
 }

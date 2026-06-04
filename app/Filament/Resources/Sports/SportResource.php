@@ -49,6 +49,7 @@ class SportResource extends Resource
                 Textarea::make('description')->label('Opis')->rows(5)->columnSpanFull(),
                 FileUpload::make('cover_image')->label('Naslovna slika')->image()->disk('public')->directory('sports'),
                 TextInput::make('sort_order')->label('Redosled')->numeric()->default(0),
+                Toggle::make('supports_online_booking')->label('Omogucena online rezervacija')->default(true),
                 Toggle::make('is_active')->label('Aktivan sport')->default(true),
             ])->columns(2),
         ]);
@@ -63,6 +64,7 @@ class SportResource extends Resource
                 TextColumn::make('name')->label('Sport')->searchable()->sortable(),
                 TextColumn::make('courts_count')->label('Terena')->counts('courts'),
                 TextColumn::make('equipment_count')->label('Artikala')->counts('equipment'),
+                IconColumn::make('supports_online_booking')->label('Online rezervacija')->boolean(),
                 IconColumn::make('is_active')->label('Aktivan')->boolean(),
             ])
             ->filters([])

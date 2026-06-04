@@ -45,6 +45,24 @@ class BookingController extends Controller
 
         abort_unless($sport, 404);
 
+        if (! $sport->supports_online_booking) {
+            return response()->json([
+                'sport' => [
+                    'id' => $sport->id,
+                    'name' => $sport->name,
+                    'cover_image_url' => $sport->cover_image_url,
+                    'supports_online_booking' => false,
+                ],
+                'pricingRules' => [],
+                'days' => [],
+                'equipment' => [],
+                'contact_only' => true,
+                'contact_message' => "Za sport {$sport->name} online rezervacija nije dostupna. Kontaktirajte nas i zakazacemo termin.",
+                'contact_phone' => config('services.contact.phone', '+381 60 111 222'),
+                'contact_email' => config('services.contact.address', 'info@scarena.rs'),
+            ]);
+        }
+
         $courts = Court::query()
             ->where('sport_id', $sport->id)
             ->where('is_active', true)
@@ -150,6 +168,7 @@ class BookingController extends Controller
                 'id' => $sport->id,
                 'name' => $sport->name,
                 'cover_image_url' => $sport->cover_image_url,
+                'supports_online_booking' => true,
             ],
             'pricingRules' => $pricingRules->map(fn ($rule): array => [
                 'name' => $rule->name,

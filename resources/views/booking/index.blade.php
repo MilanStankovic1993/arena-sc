@@ -5,6 +5,7 @@
         $sportsPayload = $sports->map(fn ($sport) => [
             'name' => $sport->name,
             'slug' => $sport->slug,
+            'supports_online_booking' => (bool) $sport->supports_online_booking,
         ])->values();
     @endphp
 
@@ -15,6 +16,8 @@
         data-initial='@json($initialState)'
         data-availability-url="{{ route('booking.availability') }}"
         data-authenticated="{{ auth()->check() ? '1' : '0' }}"
+        data-contact-phone="{{ config('services.contact.phone', '+381 60 111 222') }}"
+        data-contact-email="{{ config('services.contact.address', 'info@scarena.rs') }}"
     >
         <div class="page-stack booking-page-stack">
             <div class="booking-intro-card">
@@ -47,7 +50,7 @@
                             </div>
                         </div>
 
-                        <div class="booking-day-strip">
+                        <div class="booking-day-strip" data-day-strip>
                             <button type="button" class="booking-nav-button self-center" data-window-prev aria-label="Prethodni dani">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="m15 18-6-6 6-6" />
@@ -63,11 +66,13 @@
                             </button>
                         </div>
 
-                        <div class="mt-3 text-center text-xs font-extrabold uppercase tracking-[0.24em] text-[color:var(--arena-muted)]" data-window-label>
-                            Termin prozor
+                        <div class="mt-3 text-center text-xs font-extrabold uppercase tracking-[0.24em] text-[color:var(--arena-muted)]" data-window-label-row>
+                            <span data-window-label>
+                                Termin prozor
+                            </span>
                         </div>
 
-                        <div class="mt-7 flex items-center justify-between gap-3">
+                        <div class="mt-7 flex items-center justify-between gap-3" data-time-header>
                             <p class="text-sm font-extrabold uppercase tracking-[0.3em] text-[color:var(--arena-forest-glow)]">Vreme</p>
                             <span class="info-chip-soft">Samo slobodni slotovi</span>
                         </div>
@@ -75,6 +80,8 @@
                         <div class="mt-5 booking-time-grid-compact" data-time-list></div>
 
                         <div class="mt-5" data-booking-feedback hidden></div>
+
+                        <div class="soft-message mt-5" data-contact-inline hidden></div>
 
                         <div class="booking-chooser-grid" data-chooser-row hidden>
                             <div class="booking-mini-card">
@@ -110,6 +117,55 @@
                 </div>
 
                 <aside class="booking-sidebar">
+                    <div class="premium-card p-6 sm:p-7 booking-section" data-contact-card hidden>
+                        <div class="space-y-5">
+                            <div>
+                                <span class="eyebrow-chip">Kontakt rezervacija</span>
+                                <h3 class="section-title mt-4 text-[2rem] sm:text-[2.5rem]" data-contact-title>Kontaktirajte nas</h3>
+                                <p class="mt-3 text-sm leading-7 text-[color:var(--arena-muted)]" data-contact-copy></p>
+                            </div>
+
+                            <div class="booking-mini-card">
+                                <div class="grid gap-3 sm:grid-cols-2">
+                                    <a href="tel:{{ preg_replace('/[^0-9+]/', '', config('services.contact.phone', '+381 60 111 222')) }}" class="arena-button-secondary-light w-full justify-center text-center leading-tight" data-contact-phone-link>
+                                        {{ config('services.contact.phone', '+381 60 111 222') }}
+                                    </a>
+                                    <a href="mailto:{{ config('services.contact.address', 'info@scarena.rs') }}" class="arena-button-secondary-light w-full justify-center break-words text-center leading-tight" data-contact-email-link>
+                                        {{ config('services.contact.address', 'info@scarena.rs') }}
+                                    </a>
+                                </div>
+                            </div>
+
+                            <form method="POST" action="{{ route('contact.store') }}" class="space-y-4">
+                                @csrf
+                                <input type="hidden" name="redirect_to" value="booking">
+
+                                <div class="grid gap-4 sm:grid-cols-2">
+                                    <div>
+                                        <label class="text-sm font-semibold text-slate-700">Ime i prezime</label>
+                                        <input type="text" name="name" value="{{ old('name', auth()->user()?->name) }}" class="mt-2 booking-select" required>
+                                    </div>
+                                    <div>
+                                        <label class="text-sm font-semibold text-slate-700">Email</label>
+                                        <input type="email" name="email" value="{{ old('email', auth()->user()?->email) }}" class="mt-2 booking-select" required>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label class="text-sm font-semibold text-slate-700">Telefon</label>
+                                    <input type="text" name="phone" value="{{ old('phone', auth()->user()?->phone) }}" class="mt-2 booking-select">
+                                </div>
+
+                                <div>
+                                    <label class="text-sm font-semibold text-slate-700">Poruka</label>
+                                    <textarea name="message" rows="4" class="booking-textarea mt-2" data-contact-message required>{{ old('message') }}</textarea>
+                                </div>
+
+                                <button class="arena-button-primary w-full justify-center">Posalji upit</button>
+                            </form>
+                        </div>
+                    </div>
+
                     <div class="premium-card p-6 sm:p-7 booking-section" data-summary-box hidden>
                         <div class="booking-mini-card" data-court-preview hidden>
                             <div class="grid gap-4 sm:grid-cols-[7rem_minmax(0,1fr)] sm:items-center">
@@ -126,7 +182,7 @@
                                 <p class="text-sm leading-7 text-[color:var(--arena-ink)]">Za potvrdu termina prijavi se ili napravi nalog.</p>
                                 <div class="mt-4 flex flex-wrap gap-3">
                                     <a href="{{ route('register') }}" class="arena-button-primary">Registruj se</a>
-                                    <a href="{{ route('login') }}" class="arena-button-secondary">Prijavi se</a>
+                                    <a href="{{ route('login') }}" class="arena-button-secondary-light">Prijavi se</a>
                                 </div>
                             </div>
                         @else
@@ -150,7 +206,7 @@
 
                                 <div>
                                     <label class="text-sm font-semibold text-slate-700">Napomena</label>
-                                    <textarea name="customer_note" rows="3" class="mt-2 w-full rounded-[1.25rem] border-[color:var(--arena-border)] bg-white px-4 py-3">{{ old('customer_note') }}</textarea>
+                                    <textarea name="customer_note" rows="3" class="booking-textarea mt-2">{{ old('customer_note') }}</textarea>
                                 </div>
 
                                 <button class="arena-button-primary w-full justify-center">Potvrdi rezervaciju</button>
@@ -183,12 +239,18 @@
             const sports = JSON.parse(app.dataset.sports ?? '[]');
             const initial = JSON.parse(app.dataset.initial ?? '{}');
             const availabilityUrl = app.dataset.availabilityUrl;
+            const contactPhone = app.dataset.contactPhone;
+            const contactEmail = app.dataset.contactEmail;
 
             const sportSelect = app.querySelector('[data-booking-sport]');
             const prevWindowButton = app.querySelector('[data-window-prev]');
             const nextWindowButton = app.querySelector('[data-window-next]');
             const windowLabel = app.querySelector('[data-window-label]');
+            const windowLabelRow = app.querySelector('[data-window-label-row]');
+            const dayStrip = app.querySelector('[data-day-strip]');
+            const timeHeader = app.querySelector('[data-time-header]');
             const feedbackBox = app.querySelector('[data-booking-feedback]');
+            const contactInline = app.querySelector('[data-contact-inline]');
             const dayList = app.querySelector('[data-day-list]');
             const timeList = app.querySelector('[data-time-list]');
             const chooserRow = app.querySelector('[data-chooser-row]');
@@ -210,6 +272,12 @@
             const courtPreviewImage = app.querySelector('[data-court-preview-image]');
             const courtPreviewName = app.querySelector('[data-court-preview-name]');
             const courtPreviewMeta = app.querySelector('[data-court-preview-meta]');
+            const contactCard = app.querySelector('[data-contact-card]');
+            const contactTitle = app.querySelector('[data-contact-title]');
+            const contactCopy = app.querySelector('[data-contact-copy]');
+            const contactPhoneLink = app.querySelector('[data-contact-phone-link]');
+            const contactEmailLink = app.querySelector('[data-contact-email-link]');
+            const contactMessage = app.querySelector('[data-contact-message]');
 
             const today = new Date();
             today.setHours(0, 0, 0, 0);
@@ -224,6 +292,7 @@
             let selectedTime = null;
             let selectedDuration = null;
             let selectedCourt = null;
+            let selectedSportMeta = null;
 
             const formatMoney = (amount) => `${new Intl.NumberFormat('sr-RS').format(Number(amount || 0))} RSD`;
 
@@ -255,6 +324,53 @@
                 feedbackBox.innerHTML = '';
             };
 
+            const hideContactMode = () => {
+                contactInline.hidden = true;
+                contactInline.innerHTML = '';
+                if (contactCard) {
+                    contactCard.hidden = true;
+                }
+            };
+
+            const showOnlineMode = () => {
+                dayStrip.hidden = false;
+                windowLabelRow.hidden = false;
+                timeHeader.hidden = false;
+                timeList.hidden = false;
+                hideContactMode();
+            };
+
+            const showContactMode = (sport, message) => {
+                clearFlow();
+                clearFeedback();
+                pricingCard.hidden = true;
+                summaryCard.hidden = true;
+                summaryBox.hidden = true;
+                dayStrip.hidden = true;
+                windowLabelRow.hidden = true;
+                timeHeader.hidden = true;
+                timeList.hidden = true;
+                chooserRow.hidden = true;
+
+                const copy = message || `Za sport ${sport.name} online rezervacija trenutno nije dostupna. Posaljite upit ili nas pozovite i zakazacemo termin.`;
+
+                contactInline.hidden = false;
+                contactInline.innerHTML = `<p class="text-sm leading-7 text-[color:var(--arena-ink)]">${copy}</p>`;
+
+                if (contactCard) {
+                    contactCard.hidden = false;
+                    contactTitle.textContent = `Kontakt za ${sport.name}`;
+                    contactCopy.textContent = copy;
+                    contactPhoneLink.textContent = contactPhone;
+                    contactPhoneLink.href = `tel:${contactPhone.replace(/[^0-9+]/g, '')}`;
+                    contactEmailLink.textContent = contactEmail;
+                    contactEmailLink.href = `mailto:${contactEmail}`;
+                    if (contactMessage && !contactMessage.value.trim()) {
+                        contactMessage.value = `Zelim da rezervisem termin za sport ${sport.name}. Molim vas da me kontaktirate sa vise informacija.`;
+                    }
+                }
+            };
+
             const updateWindowLabel = () => {
                 const end = new Date(windowStart);
                 end.setDate(end.getDate() + 4);
@@ -276,6 +392,7 @@
                 summaryCard.hidden = true;
                 summaryBox.hidden = true;
                 if (courtPreview) courtPreview.hidden = true;
+                if (equipmentBox) equipmentBox.hidden = true;
             };
 
             const fillSports = () => {
@@ -504,12 +621,22 @@
 
             const loadAvailability = async () => {
                 const sport = sportSelect.value;
+                selectedSportMeta = sports.find((item) => item.slug === sport) ?? null;
 
                 if (!sport) {
                     clearFlow();
+                    hideContactMode();
+                    showOnlineMode();
                     setFeedback('Prvo izaberi sport da bismo ucitali slobodne termine.', 'error');
                     return;
                 }
+
+                if (selectedSportMeta && !selectedSportMeta.supports_online_booking) {
+                    showContactMode(selectedSportMeta);
+                    return;
+                }
+
+                showOnlineMode();
 
                 prevWindowButton.disabled = true;
                 nextWindowButton.disabled = true;
@@ -533,6 +660,12 @@
                     }
 
                     availabilityPayload = await response.json();
+
+                    if (availabilityPayload.contact_only) {
+                        showContactMode(availabilityPayload.sport, availabilityPayload.contact_message);
+                        return;
+                    }
+
                     renderPricing(availabilityPayload.pricingRules ?? []);
                     renderDays(availabilityPayload.days ?? []);
                     setFeedback('Izaberi dan, vreme, trajanje i teren.', 'info');
@@ -556,6 +689,7 @@
                 if (sportSelect.value) {
                     loadAvailability();
                 } else {
+                    showOnlineMode();
                     clearFeedback();
                 }
             });
