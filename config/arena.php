@@ -18,4 +18,8 @@ return [
             'https://www.openstreetmap.org/export/embed.html?bbox=20.6583283%2C43.7362758%2C20.6783283%2C43.7462758&amp;layer=mapnik&amp;marker=43.7412758%2C20.6683283'
         ),
     ],
+
+    'memberships' => [
+        'expiry_reminder_days' => (int) env('MEMBERSHIP_EXPIRY_REMINDER_DAYS', 3),
+    ],
 ];

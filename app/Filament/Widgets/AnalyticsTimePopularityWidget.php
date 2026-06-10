@@ -19,7 +19,7 @@ class AnalyticsTimePopularityWidget extends Widget
         'xl' => 6,
     ];
 
-    protected static ?int $sort = 5;
+    protected static ?int $sort = 6;
 
     protected static bool $isLazy = false;
 

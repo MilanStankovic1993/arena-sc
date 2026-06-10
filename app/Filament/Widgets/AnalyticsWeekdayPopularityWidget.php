@@ -19,7 +19,7 @@ class AnalyticsWeekdayPopularityWidget extends Widget
         'xl' => 6,
     ];
 
-    protected static ?int $sort = 4;
+    protected static ?int $sort = 5;
 
     protected static bool $isLazy = false;
 

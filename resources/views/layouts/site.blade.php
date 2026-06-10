@@ -32,6 +32,7 @@
                             <a href="{{ route('about') }}" class="premium-nav-link {{ request()->routeIs('about') ? 'is-active' : '' }}">O nama</a>
                             <a href="{{ route('sports.index') }}" class="premium-nav-link {{ request()->routeIs('sports.*') || request()->routeIs('courts.*') ? 'is-active' : '' }}">Tereni</a>
                             <a href="{{ route('equipment.index') }}" class="premium-nav-link {{ request()->routeIs('equipment.*') ? 'is-active' : '' }}">Oprema</a>
+                            <a href="{{ route('price-list.index') }}" class="premium-nav-link {{ request()->routeIs('price-list.*') ? 'is-active' : '' }}">Cenovnik</a>
                             <a href="{{ route('events.index') }}" class="premium-nav-link {{ request()->routeIs('events.*') ? 'is-active' : '' }}">Dogadjaji</a>
                         </nav>
 
@@ -57,6 +58,7 @@
                                         <a href="{{ route('about') }}" class="site-link">O nama</a>
                                         <a href="{{ route('sports.index') }}" class="site-link">Tereni</a>
                                         <a href="{{ route('equipment.index') }}" class="site-link">Oprema</a>
+                                        <a href="{{ route('price-list.index') }}" class="site-link">Cenovnik</a>
                                         <a href="{{ route('events.index') }}" class="site-link">Dogadjaji</a>
                                     </div>
 
@@ -98,6 +100,7 @@
                             <a href="{{ route('booking.index') }}">Rezervisi termin</a>
                             <a href="{{ route('sports.index') }}">Tereni</a>
                             <a href="{{ route('equipment.index') }}">Oprema</a>
+                            <a href="{{ route('price-list.index') }}">Cenovnik</a>
                             <a href="{{ route('events.index') }}">Dogadjaji</a>
                             <a href="{{ route('about') }}">O nama</a>
                             @auth

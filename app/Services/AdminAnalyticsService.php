@@ -9,6 +9,8 @@ use App\Models\User;
 use Carbon\Carbon;
 use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Query\Builder as QueryBuilder;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Collection;
 
 class AdminAnalyticsService
@@ -46,6 +48,7 @@ class AdminAnalyticsService
             'endDate' => $endDate,
             'sportId' => filled($filters['sportId'] ?? null) ? (int) $filters['sportId'] : null,
             'courtId' => filled($filters['courtId'] ?? null) ? (int) $filters['courtId'] : null,
+            'userId' => filled($filters['userId'] ?? null) ? (int) $filters['userId'] : null,
         ];
     }
 
@@ -54,6 +57,17 @@ class AdminAnalyticsService
         $resolved = $this->resolveFilters($filters);
 
         return $resolved['startDate']->format('d.m.Y') . ' - ' . $resolved['endDate']->format('d.m.Y');
+    }
+
+    public function selectedUserLabel(array $filters = []): ?string
+    {
+        $resolved = $this->resolveFilters($filters);
+
+        if (! $resolved['userId']) {
+            return null;
+        }
+
+        return User::query()->whereKey($resolved['userId'])->value('name');
     }
 
     public function todaySnapshot(array $filters = []): array
@@ -84,6 +98,9 @@ class AdminAnalyticsService
         $revenue = (clone $query)
             ->whereIn('status', $this->revenueStatuses())
             ->sum('total_price');
+        $participantQuery = $this->participantQueryForReservations($query, $filters);
+        $participantVisits = (clone $participantQuery)->count();
+        $uniqueParticipants = (clone $participantQuery)->distinct('user_id')->count('user_id');
 
         return [
             'total' => $total,
@@ -91,6 +108,8 @@ class AdminAnalyticsService
             'cancelled' => $cancelled,
             'revenue' => $revenue,
             'averagePrice' => $total > 0 ? $revenue / $total : 0,
+            'participantVisits' => $participantVisits,
+            'uniqueParticipants' => $uniqueParticipants,
         ];
     }
 
@@ -292,6 +311,7 @@ class AdminAnalyticsService
         array $filters = [],
         ?CarbonInterface $startDate = null,
         ?CarbonInterface $endDate = null,
+        bool $applyUserFilter = true,
     ): Builder {
         $resolved = $this->resolveFilters($filters);
         $startDate ??= $resolved['startDate'];
@@ -300,7 +320,23 @@ class AdminAnalyticsService
         return $query
             ->when($resolved['sportId'], fn (Builder $builder, int $sportId) => $builder->where('sport_id', $sportId))
             ->when($resolved['courtId'], fn (Builder $builder, int $courtId) => $builder->where('court_id', $courtId))
+            ->when($applyUserFilter && $resolved['userId'], fn (Builder $builder) => $builder->whereHas('participants', fn (Builder $participants) => $participants->whereKey($resolved['userId'])))
             ->whereBetween('starts_at', [$startDate, $endDate]);
+    }
+
+    public function constrainUserPerformanceReservationQuery(Builder $query, array $filters = []): Builder
+    {
+        return $this->constrainReservationQuery($query, $filters, applyUserFilter: false);
+    }
+
+    protected function participantQueryForReservations(Builder $reservationQuery, array $filters = []): QueryBuilder
+    {
+        $resolved = $this->resolveFilters($filters);
+        $reservationIds = (clone $reservationQuery)->select('reservations.id');
+
+        return DB::table('reservation_participants')
+            ->whereIn('reservation_id', $reservationIds)
+            ->when($resolved['userId'], fn (QueryBuilder $query, int $userId) => $query->where('user_id', $userId));
     }
 
     public function revenueStatuses(): array

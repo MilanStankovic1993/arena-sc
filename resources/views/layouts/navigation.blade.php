@@ -9,6 +9,7 @@
                         <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">Moje rezervacije</x-nav-link>
                         <x-nav-link :href="route('sports.index')" :active="request()->routeIs('sports.*') || request()->routeIs('courts.*')">Tereni</x-nav-link>
                         <x-nav-link :href="route('equipment.index')" :active="request()->routeIs('equipment.*')">Oprema</x-nav-link>
+                        <x-nav-link :href="route('price-list.index')" :active="request()->routeIs('price-list.*')">Cenovnik</x-nav-link>
                         <x-nav-link :href="route('events.index')" :active="request()->routeIs('events.*')">Dogadjaji</x-nav-link>
                     </div>
                 </div>
@@ -62,6 +63,7 @@
             <x-responsive-nav-link :href="route('about')" :active="request()->routeIs('about')">O nama</x-responsive-nav-link>
             <x-responsive-nav-link :href="route('sports.index')" :active="request()->routeIs('sports.*')">Sportovi</x-responsive-nav-link>
             <x-responsive-nav-link :href="route('equipment.index')" :active="request()->routeIs('equipment.*')">Oprema</x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('price-list.index')" :active="request()->routeIs('price-list.*')">Cenovnik</x-responsive-nav-link>
             <x-responsive-nav-link :href="route('events.index')" :active="request()->routeIs('events.*')">Dogadjaji</x-responsive-nav-link>
             <x-responsive-nav-link :href="route('profile.edit')">Profil</x-responsive-nav-link>
         </div>

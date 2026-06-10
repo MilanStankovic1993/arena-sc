@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Enums\ReservationStatus;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Reservation extends Model
@@ -58,5 +59,10 @@ class Reservation extends Model
     public function equipmentItems(): HasMany
     {
         return $this->hasMany(ReservationEquipment::class);
+    }
+
+    public function participants(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'reservation_participants')->withTimestamps();
     }
 }

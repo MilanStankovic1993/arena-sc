@@ -7,6 +7,7 @@ use App\Http\Requests\StoreReservationRequest;
 use App\Models\Court;
 use App\Models\Reservation;
 use App\Services\ReservationAvailabilityService;
+use App\Services\MembershipReservationLimitService;
 use App\Services\ReservationPricingService;
 use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
@@ -19,14 +20,24 @@ class ReservationController extends Controller
 {
     public function index(): View
     {
+        $user = Auth::user();
+
         return view('dashboard', [
-            'reservations' => Auth::user()->reservations()->with(['sport', 'court', 'equipmentItems.equipment'])->latest('starts_at')->get(),
+            'reservations' => $user->participatedReservations()->with(['user', 'sport', 'court', 'equipmentItems.equipment'])->latest('starts_at')->get(),
+            'memberships' => $user->memberships()
+                ->with('membershipPlan.sport')
+                ->where('is_active', true)
+                ->whereDate('starts_at', '<=', now()->toDateString())
+                ->whereDate('ends_at', '>=', now()->toDateString())
+                ->orderByDesc('ends_at')
+                ->get(),
         ]);
     }
 
     public function store(
         StoreReservationRequest $request,
         ReservationAvailabilityService $availabilityService,
+        MembershipReservationLimitService $membershipLimitService,
         ReservationPricingService $pricingService,
     ): RedirectResponse {
         $court = Court::query()->with('sport')->findOrFail($request->integer('court_id'));
@@ -43,6 +54,14 @@ class ReservationController extends Controller
             return redirect()
                 ->route('booking.index', ['sport' => $court->sport->slug])
                 ->with('status', 'Za izabrani sport online rezervacija nije dostupna. Posaljite upit i kontaktiracemo vas.');
+        }
+
+        $user = Auth::user();
+
+        if (! $membershipLimitService->canReserve($user, $court->sport_id, $startsAt)) {
+            return back()->withErrors([
+                'starts_at' => $membershipLimitService->message($user, $court->sport_id, $startsAt),
+            ])->withInput();
         }
 
         $equipmentItems = $pricingService->hydrateEquipmentPricing($request->input('equipment', []));

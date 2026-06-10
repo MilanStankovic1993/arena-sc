@@ -9,6 +9,9 @@
 
                 <div class="analytics-filter-pill">
                     Period: {{ $filterSummary }}
+                    @if ($selectedUser)
+                        | Korisnik: {{ $selectedUser }}
+                    @endif
                 </div>
             </div>
         </x-filament::section>
@@ -42,7 +45,7 @@
         <x-filament::section>
             <div class="analytics-section-title">Rezervacije - izabrani period</div>
 
-            <div class="analytics-card-grid analytics-card-grid--compact" style="grid-template-columns: repeat(2, minmax(0, 1fr));">
+            <div class="analytics-card-grid analytics-card-grid--compact" style="grid-template-columns: repeat(3, minmax(0, 1fr));">
                 <div class="analytics-metric-card">
                     <span class="analytics-metric-label">Ukupno rezervacija</span>
                     <strong class="analytics-metric-value">{{ number_format($period['total'], 0, ',', '.') }}</strong>
@@ -56,6 +59,12 @@
                 <div class="analytics-metric-card">
                     <span class="analytics-metric-label">Otkazanih</span>
                     <strong class="analytics-metric-value analytics-metric-value--danger">{{ number_format($period['cancelled'], 0, ',', '.') }}</strong>
+                </div>
+
+                <div class="analytics-metric-card">
+                    <span class="analytics-metric-label">Ucesnickih termina</span>
+                    <strong class="analytics-metric-value analytics-metric-value--blue">{{ number_format($period['participantVisits'], 0, ',', '.') }}</strong>
+                    <span class="analytics-metric-meta">{{ number_format($period['uniqueParticipants'], 0, ',', '.') }} razlicitih korisnika</span>
                 </div>
 
                 <div class="analytics-metric-card analytics-metric-card--wide">

@@ -37,6 +37,7 @@
                             <a href="{{ route('profile.edit') }}" class="account-nav-link {{ request()->routeIs('profile.*') ? 'is-active' : '' }}">Profil</a>
                             <a href="{{ route('sports.index') }}" class="account-nav-link {{ request()->routeIs('sports.*') || request()->routeIs('courts.*') ? 'is-active' : '' }}">Tereni</a>
                             <a href="{{ route('equipment.index') }}" class="account-nav-link {{ request()->routeIs('equipment.*') ? 'is-active' : '' }}">Oprema</a>
+                            <a href="{{ route('price-list.index') }}" class="account-nav-link {{ request()->routeIs('price-list.*') ? 'is-active' : '' }}">Cenovnik</a>
                             <a href="{{ route('events.index') }}" class="account-nav-link {{ request()->routeIs('events.*') ? 'is-active' : '' }}">Dogadjaji</a>
                         </nav>
 
@@ -58,6 +59,7 @@
                                         <a href="{{ route('profile.edit') }}" class="site-link">Profil</a>
                                         <a href="{{ route('sports.index') }}" class="site-link">Tereni</a>
                                         <a href="{{ route('equipment.index') }}" class="site-link">Oprema</a>
+                                        <a href="{{ route('price-list.index') }}" class="site-link">Cenovnik</a>
                                         <a href="{{ route('events.index') }}" class="site-link">Dogadjaji</a>
                                         @if(auth()->user()?->canAccessPanel(app(\Filament\PanelRegistry::class)->get('admin')))
                                             <a href="{{ url('/admin') }}" class="site-link">Admin panel</a>
@@ -117,6 +119,7 @@
                             <a href="{{ route('booking.index') }}">Rezervisi termin</a>
                             <a href="{{ route('sports.index') }}">Tereni</a>
                             <a href="{{ route('equipment.index') }}">Oprema</a>
+                            <a href="{{ route('price-list.index') }}">Cenovnik</a>
                             <a href="{{ route('events.index') }}">Dogadjaji</a>
                         </div>
                     </div>

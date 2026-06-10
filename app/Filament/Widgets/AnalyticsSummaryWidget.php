@@ -27,6 +27,7 @@ class AnalyticsSummaryWidget extends Widget
 
         return [
             'filterSummary' => $service->getFilterSummary($filters),
+            'selectedUser' => $service->selectedUserLabel($filters),
             'today' => $service->todaySnapshot($filters),
             'period' => $service->periodSnapshot($filters),
             'health' => $service->systemHealthSnapshot($filters),

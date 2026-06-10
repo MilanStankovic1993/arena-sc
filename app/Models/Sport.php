@@ -62,6 +62,11 @@ class Sport extends Model
         return $this->hasMany(PricingRule::class);
     }
 
+    public function membershipPlans(): HasMany
+    {
+        return $this->hasMany(MembershipPlan::class);
+    }
+
     protected function coverImageUrl(): Attribute
     {
         return Attribute::get(fn (): ?string => $this->cover_image ? Storage::disk('public')->url($this->cover_image) : null);

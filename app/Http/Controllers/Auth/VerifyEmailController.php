@@ -18,12 +18,16 @@ class VerifyEmailController extends Controller
     {
         $user = User::query()->findOrFail($id);
 
-        abort_unless(hash_equals($hash, sha1($user->getEmailForVerification())), 403);
+        if (! hash_equals($hash, sha1($user->getEmailForVerification()))) {
+            return redirect()
+                ->route('login')
+                ->with('status', 'Verifikacioni link nije vazeci za ovaj nalog. Posaljite novi link ili pokusajte ponovo.');
+        }
 
         if ($user->hasVerifiedEmail()) {
             Auth::login($user);
 
-            return redirect()->intended(route('dashboard', absolute: false).'?verified=1');
+            return redirect(route('dashboard', ['verified' => 1], false));
         }
 
         if ($user->markEmailAsVerified()) {
@@ -33,7 +37,7 @@ class VerifyEmailController extends Controller
         Auth::login($user);
 
         return redirect()
-            ->intended(route('dashboard', absolute: false).'?verified=1')
+            ->to(route('dashboard', ['verified' => 1], false))
             ->with('status', 'Email adresa je uspesno potvrdjena.');
     }
 }

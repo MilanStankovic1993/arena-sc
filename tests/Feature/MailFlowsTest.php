@@ -5,13 +5,17 @@ namespace Tests\Feature;
 use App\Mail\AdminReservationNotificationMail;
 use App\Mail\ContactMessageConfirmationMail;
 use App\Mail\ContactMessageReceivedMail;
+use App\Mail\MembershipActivatedMail;
+use App\Mail\MembershipExpiringSoonMail;
 use App\Mail\ReservationCancelledMail;
 use App\Mail\ReservationConfirmedMail;
 use App\Models\Court;
+use App\Models\MembershipPlan;
 use App\Models\PricingRule;
 use App\Models\Reservation;
 use App\Models\Sport;
 use App\Models\User;
+use App\Models\UserMembership;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Mail;
@@ -162,5 +166,97 @@ class MailFlowsTest extends TestCase
         Mail::assertSent(AdminReservationNotificationMail::class, function (AdminReservationNotificationMail $mail) {
             return $mail->mode === 'cancelled' && $mail->hasTo('info@scarena.rs');
         });
+    }
+
+    public function test_membership_activation_sends_customer_email(): void
+    {
+        Mail::fake();
+
+        $user = User::factory()->create(['email' => 'clan@example.com']);
+        $sport = Sport::query()->create([
+            'name' => 'Padel',
+            'slug' => 'padel',
+            'short_description' => 'Padel sport',
+            'description' => 'Padel opis',
+            'is_active' => true,
+            'sort_order' => 1,
+        ]);
+
+        $plan = MembershipPlan::query()->create([
+            'sport_id' => $sport->id,
+            'name' => 'Padel mesec',
+            'period_label' => 'Mesec dana',
+            'duration_days' => 30,
+            'reservation_limit' => 3,
+            'price' => 12000,
+            'is_active' => true,
+        ]);
+
+        UserMembership::query()->create([
+            'user_id' => $user->id,
+            'membership_plan_id' => $plan->id,
+            'starts_at' => now()->toDateString(),
+            'ends_at' => now()->addDays(29)->toDateString(),
+            'is_active' => true,
+        ]);
+
+        Mail::assertSent(MembershipActivatedMail::class, function (MembershipActivatedMail $mail) use ($user) {
+            return $mail->hasTo($user->email)
+                && $mail->membership->membershipPlan->name === 'Padel mesec';
+        });
+    }
+
+    public function test_membership_expiry_command_sends_single_reminder_email(): void
+    {
+        Mail::fake();
+
+        $user = User::factory()->create(['email' => 'istek@example.com']);
+        $sport = Sport::query()->create([
+            'name' => 'Padel',
+            'slug' => 'padel',
+            'short_description' => 'Padel sport',
+            'description' => 'Padel opis',
+            'is_active' => true,
+            'sort_order' => 1,
+        ]);
+
+        $plan = MembershipPlan::query()->create([
+            'sport_id' => $sport->id,
+            'name' => 'Padel mesec',
+            'period_label' => 'Mesec dana',
+            'duration_days' => 30,
+            'reservation_limit' => 3,
+            'price' => 12000,
+            'is_active' => true,
+        ]);
+
+        $membership = UserMembership::query()->create([
+            'user_id' => $user->id,
+            'membership_plan_id' => $plan->id,
+            'starts_at' => now()->subDays(27)->toDateString(),
+            'ends_at' => now()->addDays(3)->toDateString(),
+            'is_active' => true,
+        ]);
+
+        Mail::fake();
+
+        $this->artisan('memberships:send-expiry-reminders')
+            ->expectsOutput('Poslato podsetnika za istek članarine: 1.')
+            ->assertExitCode(0);
+
+        Mail::assertSent(MembershipExpiringSoonMail::class, function (MembershipExpiringSoonMail $mail) use ($user) {
+            return $mail->hasTo($user->email)
+                && $mail->daysBeforeExpiry === 3;
+        });
+
+        $this->assertNotNull($membership->fresh()->last_expiry_reminder_sent_at);
+
+        Mail::fake();
+
+        $this->artisan('memberships:send-expiry-reminders')
+            ->expectsOutput('Poslato podsetnika za istek članarine: 0.')
+            ->assertExitCode(0);
+
+        Mail::assertNothingSent();
     }
 }

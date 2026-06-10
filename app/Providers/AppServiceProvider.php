@@ -3,10 +3,13 @@
 namespace App\Providers;
 
 use App\Models\Reservation;
+use App\Models\UserMembership;
 use App\Observers\ReservationObserver;
+use App\Observers\UserMembershipObserver;
 use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Auth\Notifications\VerifyEmail;
 use Illuminate\Notifications\Messages\MailMessage;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -25,6 +28,21 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Reservation::observe(ReservationObserver::class);
+        UserMembership::observe(UserMembershipObserver::class);
+
+        VerifyEmail::createUrlUsing(function (object $notifiable): string {
+            $path = URL::temporarySignedRoute(
+                'verification.verify',
+                now()->addMinutes(config('auth.verification.expire', 60)),
+                [
+                    'id' => $notifiable->getKey(),
+                    'hash' => sha1($notifiable->getEmailForVerification()),
+                ],
+                absolute: false,
+            );
+
+            return url($path);
+        });
 
         VerifyEmail::toMailUsing(function (object $notifiable, string $url) {
             return (new MailMessage())

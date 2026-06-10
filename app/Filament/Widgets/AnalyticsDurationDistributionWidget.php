@@ -16,7 +16,7 @@ class AnalyticsDurationDistributionWidget extends Widget
 
     protected int | string | array $columnSpan = 'full';
 
-    protected static ?int $sort = 6;
+    protected static ?int $sort = 7;
 
     protected static bool $isLazy = false;
 

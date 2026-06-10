@@ -7,6 +7,7 @@ use App\Http\Controllers\EquipmentController;
 use App\Http\Controllers\EventController;
 use App\Http\Controllers\LandingPageController;
 use App\Http\Controllers\ContactMessageController;
+use App\Http\Controllers\PriceListController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ReservationController;
 use App\Http\Controllers\SportController;
@@ -18,6 +19,7 @@ Route::get('/rezervisi-termin/pregled', [BookingController::class, 'availability
 Route::get('/o-nama', AboutController::class)->name('about');
 Route::get('/sportovi', [SportController::class, 'index'])->name('sports.index');
 Route::get('/tereni/{court:slug}', [CourtController::class, 'show'])->name('courts.show');
+Route::get('/cenovnik', PriceListController::class)->name('price-list.index');
 Route::get('/oprema', [EquipmentController::class, 'index'])->name('equipment.index');
 Route::get('/dogadjaji', [EventController::class, 'index'])->name('events.index');
 Route::get('/dogadjaji/{event:slug}', [EventController::class, 'show'])->name('events.show');

@@ -4,6 +4,7 @@ namespace App\Filament\Widgets;
 
 use App\Models\User;
 use App\Services\AdminAnalyticsService;
+use App\Enums\ReservationStatus;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Filament\Widgets\Concerns\InteractsWithPageFilters;
@@ -16,11 +17,11 @@ class AnalyticsTopCustomersTable extends TableWidget
 
     protected static bool $isDiscovered = false;
 
-    protected static ?string $heading = 'Top korisnici';
+    protected static ?string $heading = 'Ucinak korisnika';
 
     protected int | string | array $columnSpan = 'full';
 
-    protected static ?int $sort = 7;
+    protected static ?int $sort = 8;
 
     protected static bool $isLazy = false;
 
@@ -28,20 +29,33 @@ class AnalyticsTopCustomersTable extends TableWidget
     {
         $service = app(AdminAnalyticsService::class);
         $filters = $this->pageFilters ?? [];
+        $resolved = $service->resolveFilters($filters);
 
         return $table
             ->query(
                 User::query()
                     ->where('role', 'customer')
+                    ->when($resolved['userId'], fn (Builder $query, int $userId) => $query->whereKey($userId))
                     ->withCount([
-                        'reservations as filtered_reservations_count' => fn (Builder $query) => $service->constrainReservationQuery($query, $filters),
+                        'participatedReservations as filtered_reservations_count' => fn (Builder $query) => $service->constrainUserPerformanceReservationQuery($query, $filters),
+                        'participatedReservations as filtered_reserved_count' => fn (Builder $query) => $service
+                            ->constrainUserPerformanceReservationQuery($query, $filters)
+                            ->where('status', ReservationStatus::Reserved->value),
+                        'participatedReservations as filtered_cancelled_count' => fn (Builder $query) => $service
+                            ->constrainUserPerformanceReservationQuery($query, $filters)
+                            ->where('status', ReservationStatus::Cancelled->value),
                     ])
                     ->withSum([
-                        'reservations as filtered_revenue' => fn (Builder $query) => $service
-                            ->constrainReservationQuery($query, $filters)
+                        'participatedReservations as filtered_revenue' => fn (Builder $query) => $service
+                            ->constrainUserPerformanceReservationQuery($query, $filters)
                             ->whereIn('status', $service->revenueStatuses()),
                     ], 'total_price')
-                    ->whereHas('reservations', fn (Builder $query) => $service->constrainReservationQuery($query, $filters))
+                    ->withSum([
+                        'participatedReservations as filtered_duration_minutes' => fn (Builder $query) => $service
+                            ->constrainUserPerformanceReservationQuery($query, $filters)
+                            ->whereIn('status', $service->revenueStatuses()),
+                    ], 'duration_minutes')
+                    ->whereHas('participatedReservations', fn (Builder $query) => $service->constrainUserPerformanceReservationQuery($query, $filters))
             )
             ->columns([
                 TextColumn::make('name')
@@ -52,14 +66,30 @@ class AnalyticsTopCustomersTable extends TableWidget
                     ->label('Email')
                     ->searchable(),
                 TextColumn::make('filtered_reservations_count')
-                    ->label('Termina')
+                    ->label('Ukupno')
+                    ->sortable(),
+                TextColumn::make('filtered_reserved_count')
+                    ->label('Rezervisani')
+                    ->sortable(),
+                TextColumn::make('filtered_cancelled_count')
+                    ->label('Otkazani')
+                    ->sortable(),
+                TextColumn::make('filtered_duration_minutes')
+                    ->label('Sati')
+                    ->formatStateUsing(fn (int|string|null $state): string => number_format(((int) $state) / 60, 1, ',', '.') . ' h')
                     ->sortable(),
                 TextColumn::make('filtered_revenue')
-                    ->label('Prihod')
+                    ->label('Vrednost termina')
                     ->money('RSD', divideBy: 1)
                     ->sortable(),
+                TextColumn::make('filtered_average_value')
+                    ->label('Prosek')
+                    ->state(fn (User $record): float => ((int) $record->filtered_reservations_count) > 0
+                        ? ((float) $record->filtered_revenue / (int) $record->filtered_reservations_count)
+                        : 0)
+                    ->money('RSD', divideBy: 1),
             ])
-            ->defaultSort('filtered_revenue', 'desc')
+            ->defaultSort('filtered_reservations_count', 'desc')
             ->paginated([5, 10, 25]);
     }
 }

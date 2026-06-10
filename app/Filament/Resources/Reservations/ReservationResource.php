@@ -5,7 +5,10 @@ namespace App\Filament\Resources\Reservations;
 use App\Enums\ReservationStatus;
 use App\Filament\Resources\Reservations\Pages\ManageReservations;
 use App\Models\Reservation;
+use App\Models\User;
+use App\Services\ReservationParticipantService;
 use BackedEnum;
+use Filament\Actions\Action;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
@@ -15,6 +18,7 @@ use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
+use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
@@ -102,6 +106,7 @@ class ReservationResource extends Resource
                     ->formatStateUsing(fn (ReservationStatus|string|null $state): string => $state instanceof ReservationStatus ? $state->label() : (ReservationStatus::tryFrom((string) $state)?->label() ?? (string) $state)),
                 TextColumn::make('starts_at')->label('Pocetak')->dateTime()->sortable(),
                 TextColumn::make('ends_at')->label('Kraj')->dateTime(),
+                TextColumn::make('participants_count')->counts('participants')->label('Ucesnika'),
                 TextColumn::make('total_price')->label('Ukupno')->money('RSD', divideBy: 1)->sortable(),
             ])
             ->filters([
@@ -119,6 +124,29 @@ class ReservationResource extends Resource
                     }),
             ])
             ->recordActions([
+                Action::make('ucesnici')
+                    ->label('Ucesnici')
+                    ->icon(Heroicon::OutlinedUsers)
+                    ->color('info')
+                    ->modalWidth(Width::Large)
+                    ->schema([
+                        Select::make('participant_ids')
+                            ->label('Korisnici u terminu')
+                            ->multiple()
+                            ->options(fn (): array => User::query()->orderBy('name')->pluck('name', 'id')->all())
+                            ->searchable()
+                            ->preload()
+                            ->default(fn (Reservation $record): array => $record->participants()->pluck('users.id')->all())
+                            ->helperText('Nosioc rezervacije se automatski zadrzava kao ucesnik termina.'),
+                    ])
+                    ->action(function (Reservation $record, array $data): void {
+                        app(ReservationParticipantService::class)->syncUsers($record, $data['participant_ids'] ?? []);
+
+                        Notification::make()
+                            ->title('Ucesnici termina su sacuvani.')
+                            ->success()
+                            ->send();
+                    }),
                 EditAction::make()->modalWidth(Width::Screen),
                 DeleteAction::make(),
             ])

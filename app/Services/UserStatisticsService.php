@@ -10,12 +10,14 @@ class UserStatisticsService
 {
     public function summary(User $user): array
     {
-        $reservations = $user->reservations()
+        $reservations = $user->participatedReservations()
             ->with(['sport:id,name', 'court:id,name'])
             ->orderBy('starts_at')
             ->get();
 
         $total = $reservations->count();
+        $owned = $reservations->where('user_id', $user->id)->count();
+        $joined = max($total - $owned, 0);
         $reserved = $reservations->where('status', ReservationStatus::Reserved)->count();
         $cancelled = $reservations->where('status', ReservationStatus::Cancelled)->count();
         $revenue = (float) $reservations
@@ -27,6 +29,8 @@ class UserStatisticsService
 
         return [
             'total' => $total,
+            'owned' => $owned,
+            'joined' => $joined,
             'reserved' => $reserved,
             'cancelled' => $cancelled,
             'revenue' => $revenue,

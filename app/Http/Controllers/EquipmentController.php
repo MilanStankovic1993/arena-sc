@@ -10,7 +10,12 @@ class EquipmentController extends Controller
     public function index(): View
     {
         return view('equipment.index', [
-            'equipment' => Equipment::query()->where('is_active', true)->with('sport')->orderByDesc('is_sellable')->get(),
+            'equipment' => Equipment::query()
+                ->where('is_active', true)
+                ->with('sport')
+                ->orderByDesc('is_sellable')
+                ->orderBy('name')
+                ->get(),
         ]);
     }
 }

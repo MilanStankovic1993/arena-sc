@@ -17,7 +17,7 @@
 
         <div class="analytics-card-grid analytics-card-grid--four analytics-card-grid--compact">
             <div class="analytics-metric-card">
-                <span class="analytics-metric-label">Ukupno rezervacija</span>
+                <span class="analytics-metric-label">Ukupno termina</span>
                 <strong class="analytics-metric-value">{{ number_format($stats['total'], 0, ',', '.') }}</strong>
             </div>
 
@@ -39,7 +39,23 @@
     </x-filament::section>
 
     <x-filament::section>
-        <div class="analytics-section-title">Status rezervacija</div>
+        <div class="analytics-section-title">Uloga u terminima</div>
+
+        <div class="analytics-card-grid analytics-card-grid--compact" style="grid-template-columns: repeat(2, minmax(0, 1fr));">
+            <div class="analytics-metric-card">
+                <span class="analytics-metric-label">Licno rezervisao</span>
+                <strong class="analytics-metric-value analytics-metric-value--blue">{{ number_format($stats['owned'], 0, ',', '.') }}</strong>
+            </div>
+
+            <div class="analytics-metric-card">
+                <span class="analytics-metric-label">Pridruzen kao ucesnik</span>
+                <strong class="analytics-metric-value">{{ number_format($stats['joined'], 0, ',', '.') }}</strong>
+            </div>
+        </div>
+    </x-filament::section>
+
+    <x-filament::section>
+        <div class="analytics-section-title">Status termina</div>
 
         <div class="analytics-card-grid analytics-card-grid--compact" style="grid-template-columns: repeat(2, minmax(0, 1fr));">
             <div class="analytics-metric-card">

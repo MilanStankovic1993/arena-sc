@@ -7,10 +7,14 @@ use App\Mail\AdminReservationNotificationMail;
 use App\Mail\ReservationCancelledMail;
 use App\Mail\ReservationConfirmedMail;
 use App\Models\Reservation;
+use App\Services\UserReservationStatsService;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Mail;
 
 class ReservationObserver
 {
+    protected array $deletingParticipantIds = [];
+
     public function saving(Reservation $reservation): void
     {
         if ($reservation->status === ReservationStatus::Cancelled) {
@@ -29,16 +33,9 @@ class ReservationObserver
     public function saved(Reservation $reservation): void
     {
         $reservation->loadMissing(['user', 'sport', 'court']);
+        $reservation->participants()->syncWithoutDetaching([$reservation->user_id]);
 
-        $user = $reservation->user;
-
-        $user->forceFill([
-            'total_reservations' => $user->reservations()->count(),
-            'cancelled_reservations' => $user->reservations()
-                ->where('status', ReservationStatus::Cancelled->value)
-                ->count(),
-            'last_reservation_at' => $user->reservations()->max('starts_at'),
-        ])->saveQuietly();
+        app(UserReservationStatsService::class)->recalculateMany($this->affectedUserIds($reservation));
 
         if ($reservation->wasRecentlyCreated && $reservation->status === ReservationStatus::Reserved) {
             Mail::to($reservation->user->email)->send(new ReservationConfirmedMail($reservation));
@@ -51,8 +48,27 @@ class ReservationObserver
         }
     }
 
+    public function deleting(Reservation $reservation): void
+    {
+        $this->deletingParticipantIds[$reservation->id] = $this->affectedUserIds($reservation)->all();
+    }
+
     public function deleted(Reservation $reservation): void
     {
-        $this->saved($reservation);
+        app(UserReservationStatsService::class)->recalculateMany($this->deletingParticipantIds[$reservation->id] ?? [$reservation->user_id]);
+
+        unset($this->deletingParticipantIds[$reservation->id]);
+    }
+
+    protected function affectedUserIds(Reservation $reservation): Collection
+    {
+        return collect([
+            $reservation->user_id,
+            $reservation->getOriginal('user_id'),
+        ])
+            ->merge($reservation->participants()->pluck('users.id'))
+            ->filter()
+            ->unique()
+            ->values();
     }
 }

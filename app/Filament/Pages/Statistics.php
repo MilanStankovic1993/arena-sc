@@ -3,6 +3,7 @@
 namespace App\Filament\Pages;
 
 use App\Filament\Widgets\AnalyticsCourtPerformanceWidget;
+use App\Filament\Widgets\AnalyticsCourtPerformanceTable;
 use App\Filament\Widgets\AnalyticsDurationDistributionWidget;
 use App\Filament\Widgets\AnalyticsRevenueChart;
 use App\Filament\Widgets\AnalyticsSummaryWidget;
@@ -11,6 +12,7 @@ use App\Filament\Widgets\AnalyticsTopCustomersTable;
 use App\Filament\Widgets\AnalyticsWeekdayPopularityWidget;
 use App\Models\Court;
 use App\Models\Sport;
+use App\Models\User;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
 use Filament\Pages\Dashboard as BaseDashboard;
@@ -48,6 +50,7 @@ class Statistics extends BaseDashboard
             AnalyticsSummaryWidget::class,
             AnalyticsRevenueChart::class,
             AnalyticsCourtPerformanceWidget::class,
+            AnalyticsCourtPerformanceTable::class,
             AnalyticsWeekdayPopularityWidget::class,
             AnalyticsTimePopularityWidget::class,
             AnalyticsDurationDistributionWidget::class,
@@ -60,7 +63,7 @@ class Statistics extends BaseDashboard
         return $schema
             ->components([
                 Section::make('Filter statistike')
-                    ->description('Pregledaj metrike po periodu, sportu i konkretnom terenu.')
+                    ->description('Pregledaj metrike po periodu, sportu, terenu i konkretnom korisniku.')
                     ->columnSpanFull()
                     ->schema([
                         Select::make('preset')
@@ -103,10 +106,19 @@ class Statistics extends BaseDashboard
                                     ->all();
                             })
                             ->searchable(),
+                        Select::make('userId')
+                            ->label('Korisnik')
+                            ->placeholder('Svi korisnici')
+                            ->options(fn (): array => User::query()
+                                ->where('role', 'customer')
+                                ->orderBy('name')
+                                ->pluck('name', 'id')
+                                ->all())
+                            ->searchable(),
                     ])
                     ->columns([
                         'md' => 2,
-                        'xl' => 5,
+                        'xl' => 6,
                     ]),
             ]);
     }
