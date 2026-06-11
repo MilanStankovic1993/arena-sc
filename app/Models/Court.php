@@ -40,7 +40,19 @@ class Court extends Model
     {
         static::saving(function (Court $court): void {
             if (filled($court->name)) {
-                $court->slug = Str::slug($court->name);
+                $baseSlug = Str::slug($court->name);
+                $slug = $baseSlug;
+                $suffix = 2;
+
+                while (static::query()
+                    ->where('slug', $slug)
+                    ->when($court->exists, fn ($query) => $query->whereKeyNot($court->getKey()))
+                    ->exists()) {
+                    $slug = "{$baseSlug}-{$suffix}";
+                    $suffix++;
+                }
+
+                $court->slug = $slug;
             }
         });
     }

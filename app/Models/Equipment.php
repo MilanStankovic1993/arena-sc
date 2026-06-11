@@ -48,7 +48,19 @@ class Equipment extends Model
     {
         static::saving(function (Equipment $equipment): void {
             if (filled($equipment->name)) {
-                $equipment->slug = Str::slug($equipment->name);
+                $baseSlug = Str::slug($equipment->name);
+                $slug = $baseSlug;
+                $suffix = 2;
+
+                while (static::query()
+                    ->where('slug', $slug)
+                    ->when($equipment->exists, fn ($query) => $query->whereKeyNot($equipment->getKey()))
+                    ->exists()) {
+                    $slug = "{$baseSlug}-{$suffix}";
+                    $suffix++;
+                }
+
+                $equipment->slug = $slug;
             }
         });
     }

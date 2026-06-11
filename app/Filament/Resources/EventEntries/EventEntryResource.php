@@ -24,6 +24,7 @@ use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
+use Illuminate\Validation\Rules\Unique;
 use UnitEnum;
 
 class EventEntryResource extends Resource
@@ -53,6 +54,10 @@ class EventEntryResource extends Resource
                     ->searchable()
                     ->preload()
                     ->required()
+                    ->unique(
+                        ignoreRecord: true,
+                        modifyRuleUsing: fn (Unique $rule, Get $get) => $rule->where('event_id', $get('event_id')),
+                    )
                     ->live()
                     ->afterStateUpdated(function ($state, Set $set, Get $get): void {
                         $user = $state ? User::query()->find($state) : null;
@@ -68,7 +73,14 @@ class EventEntryResource extends Resource
                         $set('contact_name', $user->name);
                         $set('contact_phone', $user->phone);
                     }),
-                TextInput::make('team_name')->label('Naziv tima / para')->required()->helperText('Moze biti ime igraca ili naziv para/tima, ali mora biti vezan za registrovanog korisnika.'),
+                TextInput::make('team_name')
+                    ->label('Naziv tima / para')
+                    ->required()
+                    ->unique(
+                        ignoreRecord: true,
+                        modifyRuleUsing: fn (Unique $rule, Get $get) => $rule->where('event_id', $get('event_id')),
+                    )
+                    ->helperText('Moze biti ime igraca ili naziv para/tima, ali mora biti vezan za registrovanog korisnika.'),
                 TextInput::make('contact_name')->label('Kontakt osoba'),
                 TextInput::make('contact_phone')->label('Telefon'),
                 Hidden::make('played')->default(0),

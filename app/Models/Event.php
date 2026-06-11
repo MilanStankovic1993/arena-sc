@@ -47,7 +47,19 @@ class Event extends Model
     {
         static::saving(function (Event $event): void {
             if (filled($event->title)) {
-                $event->slug = Str::slug($event->title);
+                $baseSlug = Str::slug($event->title);
+                $slug = $baseSlug;
+                $suffix = 2;
+
+                while (static::query()
+                    ->where('slug', $slug)
+                    ->when($event->exists, fn ($query) => $query->whereKeyNot($event->getKey()))
+                    ->exists()) {
+                    $slug = "{$baseSlug}-{$suffix}";
+                    $suffix++;
+                }
+
+                $event->slug = $slug;
             }
         });
     }

@@ -37,7 +37,19 @@ class Sport extends Model
     {
         static::saving(function (Sport $sport): void {
             if (filled($sport->name)) {
-                $sport->slug = Str::slug($sport->name);
+                $baseSlug = Str::slug($sport->name);
+                $slug = $baseSlug;
+                $suffix = 2;
+
+                while (static::query()
+                    ->where('slug', $slug)
+                    ->when($sport->exists, fn ($query) => $query->whereKeyNot($sport->getKey()))
+                    ->exists()) {
+                    $slug = "{$baseSlug}-{$suffix}";
+                    $suffix++;
+                }
+
+                $sport->slug = $slug;
             }
         });
     }
