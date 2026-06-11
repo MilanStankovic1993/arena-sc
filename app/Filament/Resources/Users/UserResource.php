@@ -62,6 +62,21 @@ class UserResource extends Resource
             Section::make('Korisnicki profil')->schema([
                 TextInput::make('name')->label('Ime i prezime')->required(),
                 TextInput::make('email')->email()->required()->unique(ignoreRecord: true),
+                TextInput::make('password')
+                    ->label('Lozinka')
+                    ->password()
+                    ->revealable()
+                    ->required(fn (string $operation): bool => $operation === 'create')
+                    ->dehydrated(fn ($state): bool => filled($state))
+                    ->minLength(8)
+                    ->same('passwordConfirmation'),
+                TextInput::make('passwordConfirmation')
+                    ->label('Potvrda lozinke')
+                    ->password()
+                    ->revealable()
+                    ->required(fn (string $operation): bool => $operation === 'create')
+                    ->dehydrated(false)
+                    ->visible(fn (string $operation): bool => $operation === 'create'),
                 TextInput::make('phone')->label('Telefon'),
                 Select::make('role')
                     ->label('Uloga')
