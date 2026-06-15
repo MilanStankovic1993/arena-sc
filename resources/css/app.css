@@ -487,6 +487,17 @@
         backdrop-filter: blur(18px);
     }
 
+    .home-contact-panel .auth-label {
+        color: var(--arena-sand);
+        text-shadow: 0 1px 10px rgba(0, 0, 0, 0.28);
+    }
+
+    .home-contact-panel .auth-input,
+    .home-contact-panel .auth-textarea {
+        border-color: rgba(245, 245, 242, 0.22);
+        background: rgba(255, 255, 255, 0.98);
+    }
+
     .home-contact-form {
         @apply grid gap-4;
     }
@@ -846,7 +857,7 @@
 
     .pricing-table {
         width: 100%;
-        min-width: 48rem;
+        min-width: 42rem;
         border-collapse: collapse;
     }
 
@@ -876,6 +887,12 @@
         font-size: 1rem;
         letter-spacing: 0.04em;
         text-transform: uppercase;
+    }
+
+    .pricing-panel .info-chip,
+    .membership-panel .info-chip {
+        background: rgba(200, 184, 154, 0.2);
+        color: var(--arena-sand);
     }
 
     .pricing-table tbody tr:last-child td {

@@ -1,4 +1,9 @@
-@extends('layouts.site', ['title' => 'Cenovnik | Arena SC'])
+@extends('layouts.site', [
+    'title' => 'Cenovnik termina i clanarina | Sportski centar Arena',
+    'metaDescription' => 'Cenovnik termina za padel i basket 3x3, clanarine i pravila rezervacije u Sportski centar Arena Kraljevo.',
+    'metaKeywords' => 'cenovnik padel, cenovnik basket 3x3, clanarine, sportski centar kraljevo, arena kraljevo, rezervacija termina',
+    'metaImage' => asset('media/home/equipment-hero.png'),
+])
 
 @section('content')
     @php
@@ -63,7 +68,6 @@
                                 <thead>
                                     <tr>
                                         <th>Blok</th>
-                                        <th>Dani</th>
                                         <th>Vreme</th>
                                         <th>1h</th>
                                         <th>1,5h</th>
@@ -76,7 +80,6 @@
                                             <td>
                                                 <strong>{{ $rule->name }}</strong>
                                             </td>
-                                            <td>{{ $rule->days_label }}</td>
                                             <td>{{ $formatTime($rule->start_time) }} - {{ $formatTime($rule->end_time) }}</td>
                                             <td>{{ $formatPrice($rule->price_60) }}</td>
                                             <td>{{ $formatPrice($rule->price_90) }}</td>

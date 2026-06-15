@@ -1,4 +1,9 @@
-@extends('layouts.site', ['title' => 'Rezervisi termin | Arena SC'])
+@extends('layouts.site', [
+    'title' => 'Rezervisi termin | Padel i Basket 3x3 | Arena Kraljevo',
+    'metaDescription' => 'Online rezervacija termina za padel i basket 3x3 u Sportski centar Arena Kraljevo. Proverite slobodne slotove i cene termina.',
+    'metaKeywords' => 'rezervisi termin, online rezervacija, padel kraljevo, basket 3x3 kraljevo, sportski centar arena',
+    'metaImage' => asset('media/home/hero-exterior.png'),
+])
 
 @section('content')
     @php

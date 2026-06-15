@@ -1,4 +1,9 @@
-@extends('layouts.site', ['title' => 'Oprema | Arena SC'])
+@extends('layouts.site', [
+    'title' => 'Oprema i iznajmljivanje | Sportski centar Arena',
+    'metaDescription' => 'Padel i sportska oprema za iznajmljivanje i prodaju u Sportski centar Arena. Pogledajte dostupnu opremu i cene.',
+    'metaKeywords' => 'padel oprema, iznajmljivanje opreme, sportska oprema kraljevo, arena kraljevo, padel reketi kraljevo',
+    'metaImage' => asset('media/home/equipment-hero.png'),
+])
 
 @section('content')
     @php

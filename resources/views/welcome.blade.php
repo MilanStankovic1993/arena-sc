@@ -1,4 +1,9 @@
-@extends('layouts.site', ['title' => 'Arena SC'])
+@extends('layouts.site', [
+    'title' => 'Sportski centar Arena | Padel i Basket 3x3 | Kraljevo',
+    'metaDescription' => 'Sportski centar Arena u Kraljevu nudi padel, basket 3x3, rezervacije termina, cenovnik, opremu i sportske dogadjaje na jednom mestu.',
+    'metaKeywords' => 'sportski centar, sportski centar kraljevo, sportski centar arena, padel kraljevo, basket 3x3 kraljevo, kraljevo padel, kraljevo basket, arena kraljevo',
+    'metaImage' => asset('media/home/hero-exterior.png'),
+])
 
 @section('content')
     <div class="page-stack home-page-stack">

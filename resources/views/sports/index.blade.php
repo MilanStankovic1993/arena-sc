@@ -1,4 +1,9 @@
-@extends('layouts.site', ['title' => 'Tereni i sportovi | Arena SC'])
+@extends('layouts.site', [
+    'title' => 'Padel i Basket 3x3 tereni | Sportski centar Arena Kraljevo',
+    'metaDescription' => 'Pregled svih padel i basket 3x3 terena u Sportski centar Arena Kraljevo. Pogledajte opise terena i rezervisite termin online.',
+    'metaKeywords' => 'padel tereni, basket 3x3, kraljevo padel, kraljevo basket, sportski centar kraljevo, arena kraljevo',
+    'metaImage' => asset('media/home/sports-hero.png'),
+])
 
 @section('content')
     <div class="page-stack sports-page-stack">

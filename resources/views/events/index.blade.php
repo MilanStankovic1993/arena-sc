@@ -1,4 +1,9 @@
-@extends('layouts.site', ['title' => 'Dogadjaji | Arena SC'])
+@extends('layouts.site', [
+    'title' => 'Turniri, lige i dogadjaji | Sportski centar Arena',
+    'metaDescription' => 'Pratite turnire, lige, rezultate i sportske dogadjaje u Sportski centar Arena Kraljevo za padel i basket 3x3.',
+    'metaKeywords' => 'padel turnir, padel liga, basket 3x3 turnir, dogadjaji kraljevo, sportski centar arena',
+    'metaImage' => asset('media/home/events-hero.png'),
+])
 
 @section('content')
     <div class="page-stack events-page-stack">

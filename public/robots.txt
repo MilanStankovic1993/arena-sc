@@ -1,2 +1,5 @@
 User-agent: *
+Allow: /
+
+Sitemap: https://scarena.rs/sitemap.xml
 Disallow:

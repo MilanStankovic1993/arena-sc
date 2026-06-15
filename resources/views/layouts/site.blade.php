@@ -1,12 +1,91 @@
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
     <head>
+        @php
+            $seo = config('arena.seo');
+            $location = config('arena.location');
+            $contactEmail = config('arena.contact.email');
+            $contactPhone = config('arena.contact.phone');
+            $contactInstagram = config('arena.contact.instagram');
+            $defaultImage = asset('media/home/hero-exterior.png');
+            $seoTitle = $title ?? $seo['default_title'];
+            $seoDescription = $metaDescription ?? $seo['default_description'];
+            $seoKeywords = $metaKeywords ?? $seo['default_keywords'];
+            $seoCanonical = $canonical ?? request()->url();
+            $seoImage = $metaImage ?? $defaultImage;
+            $seoType = $metaType ?? 'website';
+            $seoRobots = $metaRobots ?? 'index,follow,max-image-preview:large';
+            $schema = [
+                '@context' => 'https://schema.org',
+                '@graph' => [
+                    [
+                        '@type' => 'WebSite',
+                        '@id' => url('/#website'),
+                        'url' => url('/'),
+                        'name' => $seo['site_name'],
+                        'inLanguage' => 'sr-RS',
+                    ],
+                    [
+                        '@type' => 'SportsActivityLocation',
+                        '@id' => url('/#sports-center'),
+                        'name' => $location['name'],
+                        'url' => url('/'),
+                        'image' => $defaultImage,
+                        'description' => $seo['default_description'],
+                        'telephone' => $contactPhone,
+                        'email' => $contactEmail,
+                        'address' => [
+                            '@type' => 'PostalAddress',
+                            'streetAddress' => $location['address'],
+                            'addressLocality' => $location['city'],
+                            'addressRegion' => $location['region'],
+                            'postalCode' => $location['postal_code'],
+                            'addressCountry' => $location['country'],
+                        ],
+                        'geo' => [
+                            '@type' => 'GeoCoordinates',
+                            'latitude' => $location['latitude'],
+                            'longitude' => $location['longitude'],
+                        ],
+                        'sameAs' => array_values(array_filter([$contactInstagram])),
+                        'areaServed' => [
+                            '@type' => 'City',
+                            'name' => $location['city'],
+                        ],
+                        'keywords' => $seoKeywords,
+                    ],
+                ],
+            ];
+        @endphp
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="theme-color" content="#0F2A1F">
-        <title>{{ $title ?? 'Arena SC' }}</title>
+        <title>{{ $seoTitle }}</title>
+        <meta name="description" content="{{ $seoDescription }}">
+        <meta name="keywords" content="{{ $seoKeywords }}">
+        <meta name="robots" content="{{ $seoRobots }}">
+        <meta name="author" content="{{ $seo['site_name'] }}">
+        <meta name="geo.region" content="RS">
+        <meta name="geo.placename" content="{{ $location['city'] }}">
+        <meta name="geo.position" content="{{ $location['latitude'] }};{{ $location['longitude'] }}">
+        <meta name="ICBM" content="{{ $location['latitude'] }}, {{ $location['longitude'] }}">
+        <link rel="canonical" href="{{ $seoCanonical }}">
+        <link rel="sitemap" type="application/xml" title="Sitemap" href="{{ route('sitemap') }}">
+        <meta property="og:locale" content="sr_RS">
+        <meta property="og:type" content="{{ $seoType }}">
+        <meta property="og:title" content="{{ $seoTitle }}">
+        <meta property="og:description" content="{{ $seoDescription }}">
+        <meta property="og:url" content="{{ $seoCanonical }}">
+        <meta property="og:site_name" content="{{ $seo['site_name'] }}">
+        <meta property="og:image" content="{{ $seoImage }}">
+        <meta property="og:image:alt" content="{{ $seoTitle }}">
+        <meta name="twitter:card" content="summary_large_image">
+        <meta name="twitter:title" content="{{ $seoTitle }}">
+        <meta name="twitter:description" content="{{ $seoDescription }}">
+        <meta name="twitter:image" content="{{ $seoImage }}">
         <link rel="icon" type="image/svg+xml" href="{{ asset('brand/favicon.svg') }}">
         <link rel="alternate icon" href="{{ asset('favicon.ico') }}">
+        <script type="application/ld+json">{!! json_encode($schema, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) !!}</script>
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     </head>
     <body class="min-h-screen">

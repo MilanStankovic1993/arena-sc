@@ -1,4 +1,10 @@
-@extends('layouts.site', ['title' => $event->title . ' | Arena SC'])
+@extends('layouts.site', [
+    'title' => $event->title . ' | Dogadjaji | Arena Kraljevo',
+    'metaDescription' => trim(($event->summary ?: $event->description ?: 'Turnir ili liga u Sportski centar Arena Kraljevo.') . ' Pogledajte ucesnike, raspored i rezultate.'),
+    'metaKeywords' => strtolower($event->title . ', ' . $event->type->label() . ', padel turnir, padel liga, basket 3x3, sportski dogadjaji kraljevo'),
+    'metaImage' => $event->cover_image_url ?: asset('media/home/events-hero.png'),
+    'metaType' => 'article',
+])
 
 @section('content')
     <div class="page-stack">

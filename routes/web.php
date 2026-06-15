@@ -10,10 +10,12 @@ use App\Http\Controllers\ContactMessageController;
 use App\Http\Controllers\PriceListController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ReservationController;
+use App\Http\Controllers\SitemapController;
 use App\Http\Controllers\SportController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', LandingPageController::class)->name('home');
+Route::get('/sitemap.xml', SitemapController::class)->name('sitemap');
 Route::get('/rezervisi-termin', BookingController::class)->name('booking.index');
 Route::get('/rezervisi-termin/pregled', [BookingController::class, 'availability'])->name('booking.availability');
 Route::get('/o-nama', AboutController::class)->name('about');

@@ -1,4 +1,10 @@
-@extends('layouts.site', ['title' => $court->name . ' | Arena SC'])
+@extends('layouts.site', [
+    'title' => $court->name . ' | ' . $court->sport->name . ' | Arena Kraljevo',
+    'metaDescription' => trim(($court->description ?: $court->sport->name . ' teren u Sportski centar Arena Kraljevo.') . ' Rezervisite termin online i pogledajte cenovnik.'),
+    'metaKeywords' => strtolower($court->name . ', ' . $court->sport->name . ', teren, rezervacija terena, kraljevo padel, kraljevo basket, sportski centar arena'),
+    'metaImage' => $court->image_url ?: asset('media/home/courts-night.png'),
+    'metaType' => 'article',
+])
 
 @section('content')
     <div class="page-stack">
