@@ -33,17 +33,26 @@ class ReservationObserver
     public function saved(Reservation $reservation): void
     {
         $reservation->loadMissing(['user', 'sport', 'court']);
-        $reservation->participants()->syncWithoutDetaching([$reservation->user_id]);
+
+        if ($reservation->user_id) {
+            $reservation->participants()->syncWithoutDetaching([$reservation->user_id]);
+        }
 
         app(UserReservationStatsService::class)->recalculateMany($this->affectedUserIds($reservation));
 
         if ($reservation->wasRecentlyCreated && $reservation->status === ReservationStatus::Reserved) {
-            Mail::to($reservation->user->email)->send(new ReservationConfirmedMail($reservation));
+            if ($reservation->customer_display_email) {
+                Mail::to($reservation->customer_display_email)->send(new ReservationConfirmedMail($reservation));
+            }
+
             Mail::to(config('arena.contact.email'))->send(new AdminReservationNotificationMail($reservation, 'created'));
         }
 
         if ($reservation->wasChanged('status') && $reservation->status === ReservationStatus::Cancelled) {
-            Mail::to($reservation->user->email)->send(new ReservationCancelledMail($reservation));
+            if ($reservation->customer_display_email) {
+                Mail::to($reservation->customer_display_email)->send(new ReservationCancelledMail($reservation));
+            }
+
             Mail::to(config('arena.contact.email'))->send(new AdminReservationNotificationMail($reservation, 'cancelled'));
         }
     }

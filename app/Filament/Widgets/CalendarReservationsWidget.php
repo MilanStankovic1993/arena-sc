@@ -55,7 +55,7 @@ class CalendarReservationsWidget extends CalendarWidget
             ->with('user')
             ->get()
             ->map(function (Reservation $reservation): CalendarEvent {
-                $title = $reservation->user?->name ?: 'Gost';
+                $title = $reservation->customer_display_name;
 
                 $color = match ($reservation->status->value ?? $reservation->status) {
                     'reserved' => '#16a34a',

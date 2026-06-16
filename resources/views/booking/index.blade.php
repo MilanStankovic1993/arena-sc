@@ -38,7 +38,7 @@
                 </div>
             </div>
 
-            <div class="booking-summary-grid">
+            <div class="booking-summary-grid booking-summary-grid--single">
                 <div class="booking-stage">
                     <div class="booking-panel">
                         <div class="mb-6 flex flex-wrap items-end justify-between gap-4">
@@ -87,37 +87,6 @@
                         <div class="mt-5" data-booking-feedback hidden></div>
 
                         <div class="soft-message mt-5" data-contact-inline hidden></div>
-
-                        <div class="booking-chooser-grid" data-chooser-row hidden>
-                            <div class="booking-mini-card">
-                                <label class="text-xs font-extrabold uppercase tracking-[0.22em] text-[color:var(--arena-muted)]">Trajanje</label>
-                                <select class="booking-select mt-3" data-duration-select disabled>
-                                    <option value="">Izaberi trajanje</option>
-                                </select>
-                            </div>
-
-                            <div class="booking-mini-card lg:col-span-2">
-                                <label class="text-xs font-extrabold uppercase tracking-[0.22em] text-[color:var(--arena-muted)]">Teren</label>
-                                <select class="booking-select mt-3" data-court-select disabled>
-                                    <option value="">Izaberi teren</option>
-                                </select>
-                            </div>
-                        </div>
-
-                        <div class="booking-inline-summary" data-summary-card hidden>
-                            <div class="grid gap-4 lg:grid-cols-[minmax(0,1fr)_8rem] lg:items-start">
-                                <div>
-                                    <p class="text-xs font-extrabold uppercase tracking-[0.22em] text-[color:var(--arena-muted)]">Izabrani termin</p>
-                                    <h2 class="mt-3 text-2xl font-black text-[color:var(--arena-forest)]" data-summary-title></h2>
-                                    <p class="mt-2 text-sm leading-7 text-[color:var(--arena-muted)]" data-summary-copy></p>
-                                </div>
-
-                                <div class="booking-mini-card text-center">
-                                    <span class="block text-xs font-extrabold uppercase tracking-[0.18em] text-[color:var(--arena-muted)]">Cena</span>
-                                    <div class="mt-3 text-2xl font-black text-[color:var(--arena-forest)]" data-selected-price></div>
-                                </div>
-                            </div>
-                        </div>
                     </div>
                 </div>
 
@@ -171,31 +140,96 @@
                         </div>
                     </div>
 
-                    <div class="premium-card p-6 sm:p-7 booking-section" data-summary-box hidden>
-                        <div class="booking-mini-card" data-court-preview hidden>
-                            <div class="grid gap-4 sm:grid-cols-[7rem_minmax(0,1fr)] sm:items-center">
-                                <div class="overflow-hidden rounded-[1.1rem] border border-white/20 bg-[rgba(15,42,31,0.08)]" data-court-preview-image></div>
-                                <div>
-                                    <p class="text-xl font-black text-[color:var(--arena-forest)]" data-court-preview-name></p>
-                                    <p class="mt-1 text-sm text-[color:var(--arena-muted)]" data-court-preview-meta></p>
-                                </div>
-                            </div>
-                        </div>
+                    <div class="booking-modal" data-booking-modal hidden>
+                        <button type="button" class="booking-modal__shade" data-booking-modal-close aria-label="Zatvori detalje termina"></button>
 
-                        @if (! auth()->check())
-                            <div class="soft-message">
-                                <p class="text-sm leading-7 text-[color:var(--arena-ink)]">Za potvrdu termina prijavi se ili napravi nalog.</p>
-                                <div class="mt-4 flex flex-wrap gap-3">
-                                    <a href="{{ route('register') }}" class="arena-button-primary">Registruj se</a>
-                                    <a href="{{ route('login') }}" class="arena-button-secondary-light">Prijavi se</a>
+                        <div class="premium-card p-6 sm:p-7 booking-section booking-modal__panel" data-summary-box hidden role="dialog" aria-modal="true" aria-label="Potvrda rezervacije">
+                        <button type="button" class="booking-modal__close" data-booking-modal-close aria-label="Zatvori">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="m6 6 12 12M18 6 6 18" />
+                            </svg>
+                        </button>
+
+                        <div class="booking-option-list booking-option-list--modal" data-option-list hidden></div>
+
+                        <div class="booking-confirm-stack" data-booking-confirm hidden>
+                            <div class="booking-confirm-topline">
+                                <button type="button" class="booking-back-button" data-booking-back-to-options>
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="m15 18-6-6 6-6" />
+                                    </svg>
+                                    Promeni izbor
+                                </button>
+                            </div>
+
+                            <div class="booking-inline-summary" data-summary-card hidden>
+                                <div class="grid gap-4 lg:grid-cols-[minmax(0,1fr)_8rem] lg:items-start">
+                                    <div>
+                                        <p class="text-xs font-extrabold uppercase tracking-[0.22em] text-[color:var(--arena-muted)]">Izabrani termin</p>
+                                        <h2 class="mt-3 text-2xl font-black text-[color:var(--arena-forest)]" data-summary-title></h2>
+                                        <p class="mt-2 text-sm leading-7 text-[color:var(--arena-muted)]" data-summary-copy></p>
+                                    </div>
+
+                                    <div class="booking-mini-card text-center">
+                                        <span class="block text-xs font-extrabold uppercase tracking-[0.18em] text-[color:var(--arena-muted)]">Cena</span>
+                                        <div class="mt-3 text-2xl font-black text-[color:var(--arena-forest)]" data-selected-price></div>
+                                    </div>
                                 </div>
                             </div>
-                        @else
+
+                            <div class="booking-mini-card" data-court-preview hidden>
+                                <div class="grid gap-4 sm:grid-cols-[7rem_minmax(0,1fr)] sm:items-center">
+                                    <div class="overflow-hidden rounded-[1.1rem] border border-white/20 bg-[rgba(15,42,31,0.08)]" data-court-preview-image></div>
+                                    <div>
+                                        <p class="text-xl font-black text-[color:var(--arena-forest)]" data-court-preview-name></p>
+                                        <p class="mt-1 text-sm text-[color:var(--arena-muted)]" data-court-preview-meta></p>
+                                    </div>
+                                </div>
+                            </div>
+
                             <form method="POST" action="{{ route('reservations.store') }}" class="space-y-5" data-booking-form>
                                 @csrf
                                 <input type="hidden" name="court_id" value="" data-reservation-court-id>
                                 <input type="hidden" name="starts_at" value="" data-reservation-starts-at>
                                 <input type="hidden" name="duration_minutes" value="" data-reservation-duration>
+
+                                @guest
+                                    <div class="site-table-shell p-4">
+                                        <div class="flex flex-wrap items-center justify-between gap-3">
+                                            <div>
+                                                <p class="text-sm font-extrabold uppercase tracking-[0.26em] text-[color:var(--arena-forest-glow)]">Podaci za rezervaciju</p>
+                                                <p class="mt-2 text-sm text-[color:var(--arena-muted)]">Nalog nije obavezan.</p>
+                                            </div>
+                                            <span class="info-chip-soft">Guest</span>
+                                        </div>
+
+                                        <div class="mt-4 grid gap-4">
+                                            <div>
+                                                <label class="text-sm font-semibold text-slate-700">Ime i prezime</label>
+                                                <input type="text" name="guest_name" value="{{ old('guest_name') }}" class="mt-2 booking-select" required>
+                                                @error('guest_name')
+                                                    <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                                                @enderror
+                                            </div>
+
+                                            <div>
+                                                <label class="text-sm font-semibold text-slate-700">Telefon</label>
+                                                <input type="text" name="guest_phone" value="{{ old('guest_phone') }}" class="mt-2 booking-select" required>
+                                                @error('guest_phone')
+                                                    <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                                                @enderror
+                                            </div>
+
+                                            <div>
+                                                <label class="text-sm font-semibold text-slate-700">Email <span class="font-normal text-slate-500">(opciono)</span></label>
+                                                <input type="email" name="guest_email" value="{{ old('guest_email') }}" class="mt-2 booking-select">
+                                                @error('guest_email')
+                                                    <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                                                @enderror
+                                            </div>
+                                        </div>
+                                    </div>
+                                @endguest
 
                                 <div class="site-table-shell p-4" data-equipment-box hidden>
                                     <div class="flex flex-wrap items-center justify-between gap-3">
@@ -216,7 +250,8 @@
 
                                 <button class="arena-button-primary w-full justify-center">Potvrdi rezervaciju</button>
                             </form>
-                        @endif
+                        </div>
+                        </div>
                     </div>
 
                     <div class="premium-card p-6 sm:p-7 booking-section" data-pricing-card hidden>
@@ -258,13 +293,15 @@
             const contactInline = app.querySelector('[data-contact-inline]');
             const dayList = app.querySelector('[data-day-list]');
             const timeList = app.querySelector('[data-time-list]');
-            const chooserRow = app.querySelector('[data-chooser-row]');
-            const durationSelect = app.querySelector('[data-duration-select]');
-            const courtSelect = app.querySelector('[data-court-select]');
+            const optionList = app.querySelector('[data-option-list]');
             const pricingCard = app.querySelector('[data-pricing-card]');
             const pricingList = app.querySelector('[data-pricing-list]');
             const summaryCard = app.querySelector('[data-summary-card]');
             const summaryBox = app.querySelector('[data-summary-box]');
+            const confirmSection = app.querySelector('[data-booking-confirm]');
+            const bookingModal = app.querySelector('[data-booking-modal]');
+            const bookingModalCloseButtons = app.querySelectorAll('[data-booking-modal-close]');
+            const bookingBackToOptionsButton = app.querySelector('[data-booking-back-to-options]');
             const summaryTitle = app.querySelector('[data-summary-title]');
             const summaryCopy = app.querySelector('[data-summary-copy]');
             const selectedPrice = app.querySelector('[data-selected-price]');
@@ -309,10 +346,29 @@
                 return `${year}-${month}-${day}`;
             };
 
-            const resetSelect = (select, placeholder) => {
-                select.innerHTML = `<option value="">${placeholder}</option>`;
-                select.value = '';
-                select.disabled = true;
+            const openBookingModal = () => {
+                if (!bookingModal) return;
+                bookingModal.hidden = false;
+                document.body.classList.add('booking-modal-open');
+            };
+
+            const closeBookingModal = () => {
+                if (!bookingModal) return;
+                bookingModal.hidden = true;
+                document.body.classList.remove('booking-modal-open');
+            };
+
+            const showOptionStep = () => {
+                optionList.hidden = false;
+                if (confirmSection) confirmSection.hidden = true;
+                summaryCard.hidden = true;
+                if (courtPreview) courtPreview.hidden = true;
+                if (equipmentBox) equipmentBox.hidden = true;
+            };
+
+            const showConfirmStep = () => {
+                optionList.hidden = true;
+                if (confirmSection) confirmSection.hidden = false;
             };
 
             const setFeedback = (message, type = 'info') => {
@@ -355,7 +411,7 @@
                 windowLabelRow.hidden = true;
                 timeHeader.hidden = true;
                 timeList.hidden = true;
-                chooserRow.hidden = true;
+                optionList.hidden = true;
 
                 const copy = message || `Za sport ${sport.name} online rezervacija trenutno nije dostupna. Posaljite upit ili nas pozovite i zakazacemo termin.`;
 
@@ -378,7 +434,7 @@
 
             const updateWindowLabel = () => {
                 const end = new Date(windowStart);
-                end.setDate(end.getDate() + 4);
+                end.setDate(end.getDate() + 2);
 
                 windowLabel.textContent = `${windowStart.toLocaleDateString('sr-RS')} - ${end.toLocaleDateString('sr-RS')}`;
                 prevWindowButton.disabled = windowStart <= today;
@@ -391,11 +447,12 @@
                 selectedCourt = null;
                 dayList.innerHTML = '';
                 timeList.innerHTML = '';
-                resetSelect(durationSelect, 'Izaberi trajanje');
-                resetSelect(courtSelect, 'Izaberi teren');
-                chooserRow.hidden = true;
+                optionList.innerHTML = '';
+                optionList.hidden = true;
                 summaryCard.hidden = true;
                 summaryBox.hidden = true;
+                if (confirmSection) confirmSection.hidden = true;
+                closeBookingModal();
                 if (courtPreview) courtPreview.hidden = true;
                 if (equipmentBox) equipmentBox.hidden = true;
             };
@@ -415,6 +472,9 @@
             };
 
             const renderPricing = (rules) => {
+                pricingCard.hidden = true;
+                return;
+
                 pricingList.innerHTML = '';
                 pricingCard.hidden = rules.length === 0;
 
@@ -478,10 +538,13 @@
                 if (!selectedDay || !selectedTime || !selectedDuration || !selectedCourt) {
                     summaryCard.hidden = true;
                     summaryBox.hidden = true;
+                    if (confirmSection) confirmSection.hidden = true;
+                    closeBookingModal();
                     if (courtPreview) courtPreview.hidden = true;
                     return;
                 }
 
+                showConfirmStep();
                 summaryCard.hidden = false;
                 summaryBox.hidden = false;
                 summaryTitle.textContent = `${selectedDay.full_label} | ${selectedTime.time}`;
@@ -502,57 +565,113 @@
                 }
 
                 renderEquipment(availabilityPayload?.equipment ?? []);
+                openBookingModal();
             };
 
-            const renderCourts = () => {
-                resetSelect(courtSelect, 'Izaberi teren');
-                selectedCourt = null;
-                summaryCard.hidden = true;
-                summaryBox.hidden = true;
-
-                if (!selectedDuration) return;
-
-                courtSelect.disabled = false;
-
-                selectedDuration.courts.forEach((court, index) => {
-                    const option = document.createElement('option');
-                    option.value = `${index}`;
-                    option.textContent = `${court.name} - ${formatMoney(court.price)}`;
-                    courtSelect.appendChild(option);
-                });
-            };
-
-            const renderDurations = () => {
-                chooserRow.hidden = false;
-                resetSelect(durationSelect, 'Izaberi trajanje');
-                resetSelect(courtSelect, 'Izaberi teren');
+            const renderOptions = () => {
+                optionList.innerHTML = '';
                 selectedDuration = null;
                 selectedCourt = null;
-                summaryCard.hidden = true;
-                summaryBox.hidden = true;
+                summaryBox.hidden = false;
+                showOptionStep();
+                openBookingModal();
 
                 if (!selectedTime) return;
 
-                durationSelect.disabled = false;
+                const header = document.createElement('div');
+                header.className = 'booking-option-list__header';
+                header.innerHTML = `
+                    <div>
+                        <p class="text-xs font-extrabold uppercase tracking-[0.26em] text-[color:var(--arena-forest-glow)]">${selectedDay.full_label} | ${selectedTime.time}</p>
+                        <p class="mt-1 text-sm text-[color:var(--arena-muted)]">Izaberi teren, pa trajanje termina.</p>
+                    </div>
+                    <span class="info-chip-soft">Slobodni tereni</span>
+                `;
+                optionList.appendChild(header);
 
-                selectedTime.durations.forEach((duration, index) => {
-                    const option = document.createElement('option');
-                    option.value = `${index}`;
-                    option.textContent = `${duration.label} - od ${formatMoney(duration.price_from)}`;
-                    durationSelect.appendChild(option);
+                const grid = document.createElement('div');
+                grid.className = 'booking-court-option-grid';
+                const courtGroups = new Map();
+
+                selectedTime.durations.forEach((duration) => {
+                    duration.courts.forEach((court) => {
+                        const courtMeta = availabilityPayload?.courts?.[court.id] ?? {};
+                        const group = courtGroups.get(court.id) ?? {
+                            court: { ...courtMeta, ...court },
+                            durations: [],
+                        };
+
+                        group.durations.push({
+                            ...duration,
+                            court: { ...courtMeta, ...court },
+                        });
+
+                        courtGroups.set(court.id, group);
+                    });
                 });
+
+                courtGroups.forEach((group) => {
+                    const card = document.createElement('div');
+                    card.className = 'booking-court-option-card';
+                    card.innerHTML = `
+                        <div class="booking-court-option-card__header">
+                            <div>
+                                <p class="booking-court-option-card__title">${group.court.name}</p>
+                                <p class="booking-court-option-card__meta">${group.court.location || 'Arena SC'}${group.court.surface ? ` | ${group.court.surface}` : ''}</p>
+                            </div>
+                            <span class="info-chip-soft">${group.durations.length} opcije</span>
+                        </div>
+                    `;
+
+                    const durationGrid = document.createElement('div');
+                    durationGrid.className = 'booking-duration-choice-grid';
+
+                    group.durations.forEach((duration) => {
+                        const option = document.createElement('button');
+                        option.type = 'button';
+                        option.className = 'booking-duration-choice';
+                        option.innerHTML = `
+                            <span>${duration.label}</span>
+                            <strong>${formatMoney(duration.court.price)}</strong>
+                        `;
+
+                        option.addEventListener('click', () => {
+                            selectedDuration = duration;
+                            selectedCourt = duration.court;
+                            Array.from(optionList.querySelectorAll('.booking-duration-choice')).forEach((child) => child.classList.remove('is-active'));
+                            option.classList.add('is-active');
+                            renderSummary();
+                        });
+
+                        durationGrid.appendChild(option);
+                    });
+
+                    card.appendChild(durationGrid);
+                    grid.appendChild(card);
+                });
+
+                if (!courtGroups.size) {
+                    setFeedback('Za izabrano vreme nema slobodnih terena. Probaj drugo vreme.', 'error');
+                    optionList.hidden = true;
+                    summaryBox.hidden = true;
+                    closeBookingModal();
+                    return;
+                }
+
+                optionList.appendChild(grid);
             };
 
             const renderTimes = () => {
                 timeList.innerHTML = '';
-                resetSelect(durationSelect, 'Izaberi trajanje');
-                resetSelect(courtSelect, 'Izaberi teren');
-                chooserRow.hidden = true;
+                optionList.innerHTML = '';
+                optionList.hidden = true;
                 selectedTime = null;
                 selectedDuration = null;
                 selectedCourt = null;
                 summaryCard.hidden = true;
                 summaryBox.hidden = true;
+                if (confirmSection) confirmSection.hidden = true;
+                closeBookingModal();
 
                 if (!selectedDay) {
                     setFeedback('Izaberi dan da prikazemo slobodna vremena.', 'info');
@@ -576,10 +695,32 @@
                         selectedTime = selectedDay.times[index];
                         Array.from(timeList.children).forEach((child) => child.classList.remove('is-active'));
                         button.classList.add('is-active');
-                        renderDurations();
+                        renderOptions();
                     });
 
                     timeList.appendChild(button);
+                });
+            };
+
+            const renderDateShell = () => {
+                dayList.innerHTML = '';
+                selectedDay = null;
+
+                Array.from({ length: 3 }).forEach((_, index) => {
+                    const date = new Date(windowStart);
+                    date.setDate(date.getDate() + index);
+
+                    const button = document.createElement('button');
+                    button.type = 'button';
+                    button.className = `booking-day-card${index === 0 ? ' is-active' : ''}`;
+                    button.disabled = true;
+                    button.innerHTML = `
+                        <span class="block text-xs font-extrabold uppercase tracking-[0.22em] opacity-70">${date.toLocaleDateString('sr-RS', { weekday: 'short' })}</span>
+                        <strong class="mt-2 block text-4xl font-black">${String(date.getDate()).padStart(2, '0')}</strong>
+                        <span class="mt-1 block text-sm opacity-80">${date.toLocaleDateString('sr-RS', { month: 'short' })}</span>
+                    `;
+
+                    dayList.appendChild(button);
                 });
             };
 
@@ -590,11 +731,12 @@
                 selectedDuration = null;
                 selectedCourt = null;
                 timeList.innerHTML = '';
-                resetSelect(durationSelect, 'Izaberi trajanje');
-                resetSelect(courtSelect, 'Izaberi teren');
-                chooserRow.hidden = true;
+                optionList.innerHTML = '';
+                optionList.hidden = true;
                 summaryCard.hidden = true;
                 summaryBox.hidden = true;
+                if (confirmSection) confirmSection.hidden = true;
+                closeBookingModal();
 
                 const visibleDays = days.slice(0, 3);
 
@@ -646,6 +788,8 @@
                 prevWindowButton.disabled = true;
                 nextWindowButton.disabled = true;
                 clearFlow();
+                renderDateShell();
+                setFeedback('Ucitavamo slobodne termine...', 'info');
                 pricingCard.hidden = true;
 
                 try {
@@ -673,7 +817,7 @@
 
                     renderPricing(availabilityPayload.pricingRules ?? []);
                     renderDays(availabilityPayload.days ?? []);
-                    setFeedback('Izaberi dan, vreme, trajanje i teren.', 'info');
+                    setFeedback('Izaberi dan i vreme, pa odaberi slobodan teren sa trajanjem.', 'info');
                 } catch (error) {
                     setFeedback(error.message || 'Doslo je do greske pri ucitavanju termina.', 'error');
                 } finally {
@@ -699,19 +843,22 @@
                 }
             });
 
-            durationSelect.addEventListener('change', () => {
-                selectedDuration = selectedTime?.durations?.[Number(durationSelect.value)] ?? null;
-                renderCourts();
+            bookingModalCloseButtons.forEach((button) => {
+                button.addEventListener('click', closeBookingModal);
             });
 
-            courtSelect.addEventListener('change', () => {
-                selectedCourt = selectedDuration?.courts?.[Number(courtSelect.value)] ?? null;
-                renderSummary();
-            });
+            if (bookingBackToOptionsButton) {
+                bookingBackToOptionsButton.addEventListener('click', () => {
+                    selectedDuration = null;
+                    selectedCourt = null;
+                    Array.from(optionList.querySelectorAll('.booking-duration-choice')).forEach((child) => child.classList.remove('is-active'));
+                    showOptionStep();
+                });
+            }
 
             prevWindowButton.addEventListener('click', () => {
                 const candidate = new Date(windowStart);
-                candidate.setDate(candidate.getDate() - 5);
+                candidate.setDate(candidate.getDate() - 3);
                 candidate.setHours(0, 0, 0, 0);
 
                 windowStart = candidate < today ? new Date(today) : candidate;
@@ -724,7 +871,7 @@
 
             nextWindowButton.addEventListener('click', () => {
                 windowStart = new Date(windowStart);
-                windowStart.setDate(windowStart.getDate() + 5);
+                windowStart.setDate(windowStart.getDate() + 3);
                 windowStart.setHours(0, 0, 0, 0);
                 updateWindowLabel();
 

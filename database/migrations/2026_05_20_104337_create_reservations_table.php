@@ -13,7 +13,10 @@ return new class extends Migration
     {
         Schema::create('reservations', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('user_id')->nullable()->constrained()->nullOnDelete();
+            $table->string('guest_name')->nullable();
+            $table->string('guest_phone')->nullable();
+            $table->string('guest_email')->nullable();
             $table->foreignId('sport_id')->constrained()->cascadeOnDelete();
             $table->foreignId('court_id')->constrained()->cascadeOnDelete();
             $table->enum('status', ['reserved', 'cancelled'])->default('reserved');

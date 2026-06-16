@@ -58,7 +58,7 @@ class ReservationController extends Controller
 
         $user = Auth::user();
 
-        if (! $membershipLimitService->canReserve($user, $court->sport_id, $startsAt)) {
+        if ($user && ! $membershipLimitService->canReserve($user, $court->sport_id, $startsAt)) {
             return back()->withErrors([
                 'starts_at' => $membershipLimitService->message($user, $court->sport_id, $startsAt),
             ])->withInput();
@@ -88,6 +88,9 @@ class ReservationController extends Controller
         ): void {
             $reservation = Reservation::create([
                 'user_id' => Auth::id(),
+                'guest_name' => Auth::check() ? null : $request->string('guest_name')->toString(),
+                'guest_phone' => Auth::check() ? null : $request->string('guest_phone')->toString(),
+                'guest_email' => Auth::check() ? null : $request->string('guest_email')->toString(),
                 'sport_id' => $court->sport_id,
                 'court_id' => $court->id,
                 'status' => $status,
@@ -105,7 +108,13 @@ class ReservationController extends Controller
             }
         });
 
-        return redirect()->route('dashboard')->with('status', 'Uspesno ste rezervisali termin.');
+        if (Auth::check()) {
+            return redirect()->route('dashboard')->with('status', 'Uspesno ste rezervisali termin.');
+        }
+
+        return redirect()
+            ->route('booking.index', ['sport' => $court->sport->slug])
+            ->with('status', 'Uspesno ste rezervisali termin. Kontaktiracemo vas ukoliko bude potrebna potvrda.');
     }
 
     public function cancel(Reservation $reservation): RedirectResponse

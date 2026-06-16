@@ -1835,12 +1835,16 @@
         @apply grid gap-6 xl:grid-cols-[minmax(0,1fr)_23rem];
     }
 
+    .booking-summary-grid--single {
+        @apply block;
+    }
+
     .booking-stage {
         @apply rounded-[2.25rem] border border-[rgba(15,42,31,0.1)] bg-[linear-gradient(180deg,rgba(15,42,31,0.96),rgba(27,61,47,0.96))] p-4 sm:p-6 lg:p-8 shadow-[0_34px_80px_rgba(9,23,17,0.28)];
     }
 
     .booking-panel {
-        @apply mx-auto w-full max-w-[48rem] rounded-[2rem] border bg-white p-5 sm:p-7;
+        @apply mx-auto w-full max-w-[66rem] rounded-[2rem] border bg-white p-5 sm:p-7;
         border-color: rgba(15, 42, 31, 0.12);
         box-shadow:
             0 28px 64px rgba(15, 42, 31, 0.16),
@@ -1875,8 +1879,13 @@
     }
 
     .booking-day-card {
-        @apply rounded-[1.35rem] border bg-white px-4 py-4 text-center text-[color:var(--arena-forest)] transition;
+        @apply rounded-[1.15rem] border bg-white px-3 py-3 text-center text-[color:var(--arena-forest)] transition;
         border-color: rgba(15, 42, 31, 0.12);
+    }
+
+    .booking-day-card strong {
+        font-size: clamp(1.6rem, 4vw, 2.25rem);
+        line-height: 0.9;
     }
 
     .booking-day-card.is-active {
@@ -1887,12 +1896,12 @@
     }
 
     .booking-time-grid-compact {
-        @apply grid gap-3;
-        grid-template-columns: repeat(4, minmax(0, 1fr));
+        @apply grid gap-2;
+        grid-template-columns: repeat(7, minmax(0, 1fr));
     }
 
     .booking-time-pill {
-        @apply rounded-[1rem] border bg-white px-3 py-3 text-center text-base font-bold text-[color:var(--arena-forest)] transition;
+        @apply rounded-[0.9rem] border bg-white px-2 py-2 text-center text-sm font-bold text-[color:var(--arena-forest)] transition;
         border-color: rgba(15, 42, 31, 0.12);
         box-shadow: 0 8px 20px rgba(15, 42, 31, 0.06);
     }
@@ -1917,9 +1926,166 @@
         @apply mt-6 grid gap-4 lg:grid-cols-3;
     }
 
+    .booking-option-list {
+        @apply mt-6 rounded-[1.65rem] border bg-[rgba(245,245,242,0.72)] p-4 sm:p-5;
+        border-color: rgba(15, 42, 31, 0.12);
+    }
+
+    .booking-option-list__header {
+        @apply mb-4 flex flex-wrap items-center justify-between gap-3;
+    }
+
+    .booking-slot-option-grid {
+        @apply grid gap-3 md:grid-cols-2 xl:grid-cols-3;
+    }
+
+    .booking-slot-option {
+        @apply rounded-[1.25rem] border bg-white px-4 py-4 text-left transition duration-200;
+        border-color: rgba(15, 42, 31, 0.12);
+        box-shadow: 0 12px 28px rgba(15, 42, 31, 0.07);
+    }
+
+    .booking-slot-option:hover {
+        transform: translateY(-2px);
+        border-color: rgba(178, 157, 120, 0.52);
+        box-shadow: 0 18px 34px rgba(15, 42, 31, 0.12);
+    }
+
+    .booking-slot-option.is-active {
+        background: linear-gradient(135deg, rgba(200, 184, 154, 0.96), rgba(184, 162, 120, 0.95));
+        border-color: rgba(178, 157, 120, 0.9);
+        color: var(--arena-charcoal);
+    }
+
+    .booking-slot-option__top {
+        @apply flex items-start justify-between gap-3 text-base font-black text-[color:var(--arena-forest)];
+    }
+
+    .booking-slot-option.is-active .booking-slot-option__top {
+        color: var(--arena-charcoal);
+    }
+
+    .booking-slot-option__meta {
+        @apply mt-2 block text-sm leading-6 text-[color:var(--arena-muted)];
+    }
+
+    .booking-slot-option__price {
+        @apply mt-4 inline-flex rounded-full bg-[rgba(15,42,31,0.08)] px-3 py-1 text-sm font-black text-[color:var(--arena-forest)];
+    }
+
+    .booking-slot-option.is-active .booking-slot-option__price {
+        background: rgba(15, 42, 31, 0.14);
+        color: var(--arena-charcoal);
+    }
+
+    .booking-court-option-grid {
+        @apply grid gap-4 lg:grid-cols-3;
+    }
+
+    .booking-court-option-card {
+        @apply rounded-[1.45rem] border bg-white p-4;
+        border-color: rgba(15, 42, 31, 0.12);
+        box-shadow: 0 16px 34px rgba(15, 42, 31, 0.08);
+    }
+
+    .booking-court-option-card__header {
+        @apply flex items-start justify-between gap-3 border-b pb-3;
+        border-color: rgba(15, 42, 31, 0.1);
+    }
+
+    .booking-court-option-card__title {
+        @apply text-xl font-black text-[color:var(--arena-forest)];
+    }
+
+    .booking-court-option-card__meta {
+        @apply mt-1 text-xs font-bold text-[color:var(--arena-muted)];
+    }
+
+    .booking-duration-choice-grid {
+        @apply mt-3 grid gap-2;
+    }
+
+    .booking-duration-choice {
+        @apply flex items-center justify-between gap-3 rounded-[1rem] border bg-[rgba(245,245,242,0.75)] px-4 py-3 text-left text-[color:var(--arena-forest)] transition;
+        border-color: rgba(15, 42, 31, 0.1);
+    }
+
+    .booking-duration-choice:hover {
+        transform: translateY(-1px);
+        border-color: rgba(178, 157, 120, 0.6);
+        background: rgba(245, 245, 242, 0.96);
+    }
+
+    .booking-duration-choice.is-active {
+        background: linear-gradient(135deg, rgba(200, 184, 154, 0.96), rgba(184, 162, 120, 0.95));
+        border-color: rgba(178, 157, 120, 0.9);
+        color: var(--arena-charcoal);
+    }
+
+    .booking-duration-choice span {
+        @apply text-base font-black;
+    }
+
+    .booking-duration-choice strong {
+        @apply text-sm font-black;
+    }
+
+    .booking-modal-open {
+        overflow: hidden;
+    }
+
+    .booking-modal {
+        @apply fixed inset-0 z-[80] flex items-center justify-center p-4 sm:p-6;
+    }
+
+    .booking-modal[hidden] {
+        display: none !important;
+    }
+
+    .booking-modal__shade {
+        @apply absolute inset-0 cursor-default border-0 bg-[rgba(5,18,13,0.72)] backdrop-blur-sm;
+    }
+
+    .booking-modal__panel {
+        @apply relative max-h-[min(90vh,58rem)] w-full max-w-[64rem] overflow-y-auto;
+        box-shadow: 0 34px 90px rgba(0, 0, 0, 0.34);
+    }
+
+    .booking-modal__close {
+        @apply absolute right-4 top-4 z-10 inline-flex h-10 w-10 items-center justify-center rounded-full border bg-white text-[color:var(--arena-forest)] transition;
+        border-color: rgba(15, 42, 31, 0.14);
+    }
+
+    .booking-modal__close:hover {
+        transform: translateY(-1px);
+        background: var(--arena-gold);
+        color: var(--arena-charcoal);
+    }
+
     .booking-inline-summary {
         @apply mt-6 rounded-[1.35rem] border bg-[rgba(15,42,31,0.04)] px-4 py-4;
         border-color: rgba(15, 42, 31, 0.12);
+    }
+
+    .booking-confirm-stack {
+        @apply space-y-5;
+    }
+
+    .booking-confirm-topline {
+        @apply flex items-center justify-between gap-3 pr-12;
+    }
+
+    .booking-back-button {
+        @apply inline-flex items-center gap-2 rounded-full border px-4 py-2 text-xs font-black uppercase tracking-[0.16em] text-[color:var(--arena-forest)] transition;
+        border-color: rgba(15, 42, 31, 0.14);
+        background: rgba(245, 245, 242, 0.82);
+    }
+
+    .booking-back-button:hover {
+        transform: translateY(-1px);
+        border-color: rgba(178, 157, 120, 0.55);
+        background: var(--arena-gold);
+        color: var(--arena-charcoal);
     }
 
     .booking-section {

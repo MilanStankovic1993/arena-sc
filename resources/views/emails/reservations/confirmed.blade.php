@@ -2,7 +2,7 @@
     <h1 style="margin:0 0 16px;color:#0f2a1f;font-size:28px;line-height:1.1;">Rezervacija je uspešno evidentirana</h1>
 
     <p style="margin:0 0 18px;color:#475569;font-size:15px;line-height:1.8;">
-        Termin je rezervisan za {{ $reservation->court->name }}. Ispod je pregled svih detalja.
+        Termin je rezervisan za {{ $reservation->customer_display_name }} na terenu {{ $reservation->court->name }}. Ispod je pregled svih detalja.
     </p>
 
     <div style="display:grid;gap:12px;">

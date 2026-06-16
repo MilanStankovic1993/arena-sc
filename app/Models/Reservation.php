@@ -12,6 +12,9 @@ class Reservation extends Model
 {
     protected $fillable = [
         'user_id',
+        'guest_name',
+        'guest_phone',
+        'guest_email',
         'sport_id',
         'court_id',
         'status',
@@ -44,6 +47,21 @@ class Reservation extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function getCustomerDisplayNameAttribute(): string
+    {
+        return $this->user?->name ?: ($this->guest_name ?: 'Gost');
+    }
+
+    public function getCustomerDisplayEmailAttribute(): ?string
+    {
+        return $this->user?->email ?: $this->guest_email;
+    }
+
+    public function getCustomerDisplayPhoneAttribute(): ?string
+    {
+        return $this->user?->phone ?: $this->guest_phone;
     }
 
     public function sport(): BelongsTo

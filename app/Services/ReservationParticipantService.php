@@ -11,7 +11,7 @@ class ReservationParticipantService
     public function attachUsers(Reservation $reservation, Collection|array $users): int
     {
         $before = $reservation->participants()->pluck('users.id');
-        $ids = $this->normalizeUserIds($users)->push($reservation->user_id)->unique()->values();
+        $ids = $this->normalizeUserIds($users)->push($reservation->user_id)->filter()->unique()->values();
 
         $reservation->participants()->syncWithoutDetaching($ids->all());
 
@@ -23,7 +23,7 @@ class ReservationParticipantService
     public function syncUsers(Reservation $reservation, Collection|array $users): void
     {
         $before = $reservation->participants()->pluck('users.id');
-        $ids = $this->normalizeUserIds($users)->push($reservation->user_id)->unique()->values();
+        $ids = $this->normalizeUserIds($users)->push($reservation->user_id)->filter()->unique()->values();
 
         $reservation->participants()->sync($ids->all());
 

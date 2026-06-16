@@ -314,7 +314,7 @@ class UserResource extends Resource
                                             $reservation->starts_at?->format('d.m.Y H:i'),
                                             $reservation->sport?->name,
                                             $reservation->court?->name,
-                                            $reservation->user?->name,
+                                            $reservation->customer_display_name,
                                         ),
                                     ])
                                     ->all())

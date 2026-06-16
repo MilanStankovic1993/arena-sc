@@ -50,7 +50,24 @@ class ReservationResource extends Resource
     {
         return $schema->components([
             Section::make('Termin')->schema([
-                Select::make('user_id')->label('Korisnik')->relationship('user', 'name')->required()->searchable()->preload(),
+                Select::make('user_id')
+                    ->label('Korisnik')
+                    ->relationship('user', 'name')
+                    ->searchable()
+                    ->preload()
+                    ->helperText('Za guest rezervaciju ostavi korisnika prazno i popuni podatke gosta.'),
+                TextInput::make('guest_name')
+                    ->label('Ime gosta')
+                    ->maxLength(255)
+                    ->required(fn ($get): bool => blank($get('user_id'))),
+                TextInput::make('guest_phone')
+                    ->label('Telefon gosta')
+                    ->maxLength(50)
+                    ->required(fn ($get): bool => blank($get('user_id'))),
+                TextInput::make('guest_email')
+                    ->label('Email gosta')
+                    ->email()
+                    ->maxLength(255),
                 Select::make('sport_id')->label('Sport')->relationship('sport', 'name')->required()->searchable()->preload(),
                 Select::make('court_id')->label('Teren')->relationship('court', 'name')->required()->searchable()->preload(),
                 Select::make('status')
@@ -61,7 +78,6 @@ class ReservationResource extends Resource
                 DateTimePicker::make('starts_at')->label('Pocetak')->required(),
                 DateTimePicker::make('ends_at')->label('Kraj')->required(),
                 TextInput::make('duration_minutes')->label('Trajanje (min)')->numeric()->default(60)->required(),
-                TextInput::make('players_count')->label('Broj igraca')->numeric(),
                 TextInput::make('court_price')->label('Cena terena')->numeric()->prefix('RSD')->required(),
                 TextInput::make('equipment_price')->label('Cena opreme')->numeric()->prefix('RSD')->required(),
                 TextInput::make('total_price')->label('Ukupno')->numeric()->prefix('RSD')->required(),
@@ -97,7 +113,13 @@ class ReservationResource extends Resource
             ->defaultSort('starts_at', 'desc')
             ->columns([
                 TextColumn::make('id')->label('#')->sortable(),
-                TextColumn::make('user.name')->label('Korisnik')->searchable(),
+                TextColumn::make('customer_display_name')
+                    ->label('Korisnik/gost')
+                    ->state(fn (Reservation $record): string => $record->customer_display_name),
+                TextColumn::make('customer_display_phone')
+                    ->label('Telefon')
+                    ->state(fn (Reservation $record): ?string => $record->customer_display_phone)
+                    ->toggleable(),
                 TextColumn::make('sport.name')->label('Sport')->badge(),
                 TextColumn::make('court.name')->label('Teren')->badge(),
                 TextColumn::make('status')
