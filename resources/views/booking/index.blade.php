@@ -338,6 +338,13 @@
 
             const formatMoney = (amount) => `${new Intl.NumberFormat('sr-RS').format(Number(amount || 0))} RSD`;
 
+            const normalizeList = (value) => {
+                if (Array.isArray(value)) return value;
+                if (value && typeof value === 'object') return Object.values(value);
+
+                return [];
+            };
+
             const toIsoDate = (date) => {
                 const year = date.getFullYear();
                 const month = `${date.getMonth() + 1}`.padStart(2, '0');
@@ -472,6 +479,7 @@
             };
 
             const renderPricing = (rules) => {
+                rules = normalizeList(rules);
                 pricingCard.hidden = true;
                 return;
 
@@ -500,6 +508,7 @@
             };
 
             const renderEquipment = (items) => {
+                items = normalizeList(items);
                 if (!equipmentBox || !equipmentList) return;
 
                 equipmentList.innerHTML = '';
@@ -593,8 +602,8 @@
                 grid.className = 'booking-court-option-grid';
                 const courtGroups = new Map();
 
-                selectedTime.durations.forEach((duration) => {
-                    duration.courts.forEach((court) => {
+                normalizeList(selectedTime.durations).forEach((duration) => {
+                    normalizeList(duration.courts).forEach((court) => {
                         const courtMeta = availabilityPayload?.courts?.[court.id] ?? {};
                         const group = courtGroups.get(court.id) ?? {
                             court: { ...courtMeta, ...court },
@@ -680,6 +689,8 @@
 
                 clearFeedback();
 
+                selectedDay.times = normalizeList(selectedDay.times);
+
                 if (!selectedDay.times.length) {
                     setFeedback('Za izabrani dan trenutno nema slobodnih termina. Probaj sledeci dan.', 'error');
                     return;
@@ -725,6 +736,7 @@
             };
 
             const renderDays = (days) => {
+                days = normalizeList(days);
                 dayList.innerHTML = '';
                 selectedDay = null;
                 selectedTime = null;

@@ -224,7 +224,7 @@ class BookingController extends Controller
                     'cover_image_url' => $sport->cover_image_url,
                     'supports_online_booking' => true,
                 ],
-                'courts' => $courtMeta,
+                'courts' => $courtMeta->all(),
                 'pricingRules' => $pricingRules->map(fn ($rule): array => [
                     'name' => $rule->name,
                     'days' => $rule->days_label,
@@ -232,9 +232,9 @@ class BookingController extends Controller
                     'price60' => (float) $rule->price_60,
                     'price90' => (float) $rule->price_90,
                     'price120' => (float) $rule->price_120,
-                ])->values(),
-                'days' => $days,
-                'equipment' => $equipment,
+                ])->values()->all(),
+                'days' => $days->all(),
+                'equipment' => $equipment->all(),
             ];
         });
 
