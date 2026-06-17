@@ -9,7 +9,9 @@ use App\Mail\ReservationConfirmedMail;
 use App\Models\Reservation;
 use App\Services\UserReservationStatsService;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
+use Throwable;
 
 class ReservationObserver
 {
@@ -42,18 +44,18 @@ class ReservationObserver
 
         if ($reservation->wasRecentlyCreated && $reservation->status === ReservationStatus::Reserved) {
             if ($reservation->customer_display_email) {
-                Mail::to($reservation->customer_display_email)->send(new ReservationConfirmedMail($reservation));
+                $this->sendReservationMail($reservation->customer_display_email, new ReservationConfirmedMail($reservation), $reservation);
             }
 
-            Mail::to(config('arena.contact.email'))->send(new AdminReservationNotificationMail($reservation, 'created'));
+            $this->sendReservationMail(config('arena.contact.email'), new AdminReservationNotificationMail($reservation, 'created'), $reservation);
         }
 
         if ($reservation->wasChanged('status') && $reservation->status === ReservationStatus::Cancelled) {
             if ($reservation->customer_display_email) {
-                Mail::to($reservation->customer_display_email)->send(new ReservationCancelledMail($reservation));
+                $this->sendReservationMail($reservation->customer_display_email, new ReservationCancelledMail($reservation), $reservation);
             }
 
-            Mail::to(config('arena.contact.email'))->send(new AdminReservationNotificationMail($reservation, 'cancelled'));
+            $this->sendReservationMail(config('arena.contact.email'), new AdminReservationNotificationMail($reservation, 'cancelled'), $reservation);
         }
     }
 
@@ -79,5 +81,23 @@ class ReservationObserver
             ->filter()
             ->unique()
             ->values();
+    }
+
+    protected function sendReservationMail(?string $recipient, object $mail, Reservation $reservation): void
+    {
+        if (blank($recipient)) {
+            return;
+        }
+
+        try {
+            Mail::to($recipient)->send($mail);
+        } catch (Throwable $exception) {
+            Log::error('Reservation email failed.', [
+                'reservation_id' => $reservation->id,
+                'recipient' => $recipient,
+                'mail' => $mail::class,
+                'error' => $exception->getMessage(),
+            ]);
+        }
     }
 }
