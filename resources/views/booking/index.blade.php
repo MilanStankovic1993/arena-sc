@@ -752,6 +752,11 @@
 
                 const visibleDays = days.slice(0, 3);
 
+                if (!visibleDays.length) {
+                    setFeedback('Za izabrani sport trenutno nema dostupnih dana za online rezervaciju.', 'error');
+                    return;
+                }
+
                 visibleDays.forEach((day, index) => {
                     const button = document.createElement('button');
                     button.type = 'button';
@@ -829,7 +834,6 @@
 
                     renderPricing(availabilityPayload.pricingRules ?? []);
                     renderDays(availabilityPayload.days ?? []);
-                    setFeedback('Izaberi dan i vreme, pa odaberi slobodan teren sa trajanjem.', 'info');
                 } catch (error) {
                     setFeedback(error.message || 'Doslo je do greske pri ucitavanju termina.', 'error');
                 } finally {

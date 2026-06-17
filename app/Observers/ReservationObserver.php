@@ -8,7 +8,10 @@ use App\Mail\ReservationCancelledMail;
 use App\Mail\ReservationConfirmedMail;
 use App\Models\Reservation;
 use App\Services\UserReservationStatsService;
+use Carbon\Carbon;
+use Carbon\CarbonInterface;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Throwable;
@@ -35,6 +38,8 @@ class ReservationObserver
     public function saved(Reservation $reservation): void
     {
         $reservation->loadMissing(['user', 'sport', 'court']);
+
+        $this->clearAvailabilityCache($reservation);
 
         if ($reservation->user_id) {
             $reservation->participants()->syncWithoutDetaching([$reservation->user_id]);
@@ -66,6 +71,8 @@ class ReservationObserver
 
     public function deleted(Reservation $reservation): void
     {
+        $this->clearAvailabilityCache($reservation);
+
         app(UserReservationStatsService::class)->recalculateMany($this->deletingParticipantIds[$reservation->id] ?? [$reservation->user_id]);
 
         unset($this->deletingParticipantIds[$reservation->id]);
@@ -98,6 +105,32 @@ class ReservationObserver
                 'mail' => $mail::class,
                 'error' => $exception->getMessage(),
             ]);
+        }
+    }
+
+    protected function clearAvailabilityCache(Reservation $reservation): void
+    {
+        $sportIds = collect([
+            $reservation->sport_id,
+            $reservation->getOriginal('sport_id'),
+        ])->filter()->unique();
+
+        $dates = collect([
+            $reservation->starts_at,
+            $reservation->getOriginal('starts_at'),
+        ])
+            ->filter()
+            ->map(fn ($date): CarbonInterface => $date instanceof CarbonInterface ? $date : Carbon::parse($date));
+
+        foreach ($sportIds as $sportId) {
+            foreach ($dates as $date) {
+                foreach ([0, 1, 2] as $offset) {
+                    $cacheDate = $date->copy()->subDays($offset)->toDateString();
+
+                    Cache::forget('booking.availability.' . $sportId . '.' . $cacheDate);
+                    Cache::forget('booking.availability.v2.' . $sportId . '.' . $cacheDate);
+                }
+            }
         }
     }
 }

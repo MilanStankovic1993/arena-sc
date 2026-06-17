@@ -80,7 +80,7 @@ class BookingController extends Controller
         $periodStart = $selectedDay->copy()->startOfDay();
         $periodEnd = $selectedDay->copy()->addDays(2)->endOfDay();
 
-        $cacheKey = 'booking.availability.' . $sport->id . '.' . $selectedDay->toDateString();
+        $cacheKey = 'booking.availability.v2.' . $sport->id . '.' . $selectedDay->toDateString();
 
         $payload = Cache::remember($cacheKey, now()->addSeconds(20), function () use ($sport, $courts, $scheduleService, $pricingService, $selectedDay, $periodStart, $periodEnd): array {
             $pricingRules = $sport->pricingRules()
@@ -172,7 +172,7 @@ class BookingController extends Controller
                                         default => '1 sat',
                                     },
                                     'price_from' => $availableCourts->min('price'),
-                                    'courts' => $availableCourts,
+                                    'courts' => $availableCourts->all(),
                                 ];
                             })
                             ->filter()
@@ -185,7 +185,7 @@ class BookingController extends Controller
                         return [
                             'time' => $slot['starts_at']->format('H:i'),
                             'starts_at' => $slot['starts_at']->format('Y-m-d H:i:s'),
-                            'durations' => $durations,
+                            'durations' => $durations->all(),
                         ];
                     })
                     ->filter()
@@ -197,7 +197,7 @@ class BookingController extends Controller
                     'date_label' => $day->format('d'),
                     'month_label' => $day->translatedFormat('M'),
                     'full_label' => $day->format('d.m.Y'),
-                    'times' => $times,
+                    'times' => $times->all(),
                 ];
             })
             ->values();

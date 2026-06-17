@@ -15,6 +15,7 @@ use App\Services\AdminAnalyticsService;
 use App\Services\ReservationParticipantService;
 use App\Services\UserStatisticsService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Mail;
 use Tests\TestCase;
 
@@ -173,6 +174,19 @@ class PublicSiteDataFlowTest extends TestCase
             ->assertJsonPath("courts.{$court->id}.image_url", $this->storageUrl('courts/padel-1.jpg'))
             ->assertJsonPath('days.0.times.0.durations.0.courts.0.name', $court->name)
             ->assertJsonPath('days.0.times.0.durations.0.courts.0.price', 2800);
+
+        $cachedResponse = $this->getJson(route('booking.availability', [
+            'sport' => $sport->slug,
+            'date' => now()->addDay()->toDateString(),
+        ]));
+
+        $cachedResponse->assertOk()
+            ->assertJsonPath('days.0.times.0.time', '08:00')
+            ->assertJsonPath('days.0.times.0.durations.0.courts.0.name', $court->name);
+
+        $this->assertIsArray($cachedResponse->json('days.0.times'));
+        $this->assertIsArray($cachedResponse->json('days.0.times.0.durations'));
+        $this->assertIsArray($cachedResponse->json('days.0.times.0.durations.0.courts'));
     }
 
     public function test_booking_availability_offers_slots_that_cross_pricing_blocks(): void
@@ -424,6 +438,79 @@ class PublicSiteDataFlowTest extends TestCase
             'court_price' => 6500,
             'total_price' => 6500,
         ]);
+    }
+
+    public function test_booking_availability_cache_is_cleared_after_reservation_is_created(): void
+    {
+        Mail::fake();
+
+        $user = User::factory()->create();
+
+        $sport = Sport::query()->create([
+            'name' => 'Padel',
+            'slug' => 'padel',
+            'short_description' => 'Padel sport',
+            'description' => 'Padel opis',
+            'is_active' => true,
+            'sort_order' => 1,
+        ]);
+
+        $court = Court::query()->create([
+            'sport_id' => $sport->id,
+            'name' => 'Padel teren 1',
+            'slug' => 'padel-teren-1',
+            'location' => 'Hala A',
+            'surface' => 'Sinteticka trava',
+            'description' => 'Glavni teren',
+            'requires_approval' => false,
+            'is_active' => true,
+        ]);
+
+        PricingRule::query()->create([
+            'sport_id' => $sport->id,
+            'name' => 'Dnevni blok',
+            'days_of_week' => [],
+            'start_time' => '08:00:00',
+            'end_time' => '23:30:00',
+            'price_60' => 2800,
+            'price_90' => 4000,
+            'price_120' => 5200,
+            'is_active' => true,
+        ]);
+
+        $startsAt = now()->addDay()->setTime(10, 0, 0);
+
+        foreach ([0, 1, 2] as $offset) {
+            Cache::put(
+                'booking.availability.' . $sport->id . '.' . $startsAt->copy()->subDays($offset)->toDateString(),
+                ['stale' => true],
+                now()->addMinute(),
+            );
+
+            Cache::put(
+                'booking.availability.v2.' . $sport->id . '.' . $startsAt->copy()->subDays($offset)->toDateString(),
+                ['stale' => true],
+                now()->addMinute(),
+            );
+        }
+
+        $response = $this
+            ->actingAs($user)
+            ->post(route('reservations.store'), [
+                'court_id' => $court->id,
+                'starts_at' => $startsAt->format('Y-m-d H:i:s'),
+                'duration_minutes' => 60,
+                'equipment' => [],
+            ]);
+
+        $response->assertRedirect(route('dashboard'));
+
+        foreach ([0, 1, 2] as $offset) {
+            $cacheDate = $startsAt->copy()->subDays($offset)->toDateString();
+
+            $this->assertFalse(Cache::has('booking.availability.' . $sport->id . '.' . $cacheDate));
+            $this->assertFalse(Cache::has('booking.availability.v2.' . $sport->id . '.' . $cacheDate));
+        }
     }
 
     public function test_guest_can_create_reserved_reservation_with_contact_details(): void
