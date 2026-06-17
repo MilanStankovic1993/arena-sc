@@ -1,4 +1,4 @@
-<x-mail-layout title="Primili smo vašu poruku | Arena SC">
+<x-mail-layout title="Primili smo vašu poruku | Sportski centar Arena">
     <h1 style="margin:0 0 16px;color:#0f2a1f;font-size:28px;line-height:1.1;">Primili smo vašu poruku</h1>
 
     <p style="margin:0 0 14px;color:#475569;font-size:15px;line-height:1.8;">

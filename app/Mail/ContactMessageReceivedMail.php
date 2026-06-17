@@ -21,7 +21,7 @@ class ContactMessageReceivedMail extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Nova kontakt poruka | Arena SC',
+            subject: 'Nova kontakt poruka | Sportski centar Arena',
             replyTo: [
                 new Address($this->payload['email'], $this->payload['name']),
             ],

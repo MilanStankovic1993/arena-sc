@@ -20,7 +20,7 @@
         @endif
 
         <p style="margin:0 0 8px;font-size:12px;letter-spacing:0.26em;text-transform:uppercase;color:#c8b89a;">
-            Arena SC
+            Sportski centar Arena
         </p>
 
         <h1 style="margin:0 0 16px;font-size:34px;line-height:1.05;font-weight:800;color:#0f2a1f;">

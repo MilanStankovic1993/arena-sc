@@ -1,4 +1,4 @@
-# Arena SC
+# Sportski centar Arena
 
 Laravel + Filament sistem za:
 - javni sajt sportskog centra

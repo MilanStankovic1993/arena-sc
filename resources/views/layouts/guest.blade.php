@@ -6,7 +6,7 @@
         <meta name="csrf-token" content="{{ csrf_token() }}">
         <meta name="theme-color" content="#0F2A1F">
 
-        <title>{{ config('app.name', 'Arena SC') }}</title>
+        <title>{{ config('app.name', 'Sportski centar Arena') }}</title>
         <link rel="icon" type="image/svg+xml" href="{{ asset('brand/favicon.svg') }}">
         <link rel="alternate icon" href="{{ asset('favicon.ico') }}">
 

@@ -1,4 +1,4 @@
-# Arena SC deploy na cPanel / shared hosting
+# Sportski centar Arena deploy na cPanel / shared hosting
 
 Ovaj dokument je usklađen sa trenutnim stanjem projekta:
 - Laravel 13
@@ -38,7 +38,7 @@ Ako hosting to još nije prebacio, traži od podrške da primarni domen `scarena
 Koristi ovo kao osnovu i zameni stvarne vrednosti:
 
 ```env
-APP_NAME="Arena SC"
+APP_NAME="Sportski centar Arena"
 APP_ENV=production
 APP_KEY=
 APP_DEBUG=false
@@ -92,7 +92,7 @@ MAIL_PASSWORD=OVDE_UNESI_MAIL_LOZINKU
 MAIL_FROM_ADDRESS="info@scarena.rs"
 MAIL_FROM_NAME="${APP_NAME}"
 CONTACT_MAIL_TO="info@scarena.rs"
-CONTACT_MAIL_NAME="Arena SC"
+CONTACT_MAIL_NAME="Sportski centar Arena"
 CONTACT_PHONE="+381 60 111 222"
 CONTACT_INSTAGRAM="https://www.instagram.com/scarena.rs/"
 LOCATION_NAME="Sportski centar Arena"

@@ -46,7 +46,7 @@ class AppServiceProvider extends ServiceProvider
 
         VerifyEmail::toMailUsing(function (object $notifiable, string $url) {
             return (new MailMessage())
-                ->subject('Potvrdite email adresu | Sportski Centar Arena')
+                ->subject('Potvrdite email adresu | Sportski centar Arena')
                 ->view('emails.auth.verify-email', [
                     'url' => $url,
                     'user' => $notifiable,
@@ -55,7 +55,7 @@ class AppServiceProvider extends ServiceProvider
 
         ResetPassword::toMailUsing(function (object $notifiable, string $url) {
             return (new MailMessage())
-                ->subject('Reset lozinke | Arena SC')
+                ->subject('Reset lozinke | Sportski centar Arena')
                 ->greeting('Zahtev za reset lozinke')
                 ->line('Primili smo zahtev za promenu lozinke na vasem nalogu.')
                 ->action('Resetuj lozinku', $url)

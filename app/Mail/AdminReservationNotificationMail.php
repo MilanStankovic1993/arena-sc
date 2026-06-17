@@ -23,8 +23,8 @@ class AdminReservationNotificationMail extends Mailable
     {
         return new Envelope(
             subject: $this->mode === 'cancelled'
-                ? 'Otkazana rezervacija | Arena SC'
-                : 'Nova rezervacija | Arena SC',
+                ? 'Otkazana rezervacija | Sportski centar Arena'
+                : 'Nova rezervacija | Sportski centar Arena',
         );
     }
 

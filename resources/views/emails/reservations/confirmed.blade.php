@@ -1,4 +1,4 @@
-<x-mail-layout title="Rezervacija je evidentirana | Arena SC">
+<x-mail-layout title="Rezervacija je evidentirana | Sportski centar Arena">
     <h1 style="margin:0 0 16px;color:#0f2a1f;font-size:28px;line-height:1.1;">Rezervacija je uspešno evidentirana</h1>
 
     <p style="margin:0 0 18px;color:#475569;font-size:15px;line-height:1.8;">

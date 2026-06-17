@@ -175,6 +175,66 @@ class PublicSiteDataFlowTest extends TestCase
             ->assertJsonPath('days.0.times.0.durations.0.courts.0.price', 2800);
     }
 
+    public function test_booking_availability_offers_slots_that_cross_pricing_blocks(): void
+    {
+        $sport = Sport::query()->create([
+            'name' => 'Padel',
+            'slug' => 'padel',
+            'short_description' => 'Padel sport',
+            'description' => 'Padel opis',
+            'is_active' => true,
+            'sort_order' => 1,
+        ]);
+
+        $court = Court::query()->create([
+            'sport_id' => $sport->id,
+            'name' => 'Padel teren 1',
+            'slug' => 'padel-teren-1',
+            'location' => 'Hala A',
+            'surface' => 'Sinteticka trava',
+            'description' => 'Glavni teren',
+            'requires_approval' => false,
+            'is_active' => true,
+        ]);
+
+        PricingRule::query()->create([
+            'sport_id' => $sport->id,
+            'name' => 'Dnevni blok',
+            'days_of_week' => [],
+            'start_time' => '08:00:00',
+            'end_time' => '18:00:00',
+            'price_60' => 3000,
+            'price_90' => 4500,
+            'price_120' => 6000,
+            'is_active' => true,
+        ]);
+
+        PricingRule::query()->create([
+            'sport_id' => $sport->id,
+            'name' => 'Vecernji blok',
+            'days_of_week' => [],
+            'start_time' => '18:00:00',
+            'end_time' => '23:30:00',
+            'price_60' => 3500,
+            'price_90' => 5250,
+            'price_120' => 7000,
+            'is_active' => true,
+        ]);
+
+        $response = $this->getJson(route('booking.availability', [
+            'sport' => $sport->slug,
+            'date' => now()->addDay()->toDateString(),
+        ]));
+
+        $slot = collect($response->json('days.0.times'))->firstWhere('time', '17:00');
+        $durations = collect($slot['durations'])->keyBy('minutes');
+
+        $response->assertOk();
+        $this->assertArrayHasKey(120, $durations);
+        $this->assertEquals(6500, data_get($durations[120], 'courts.0.price'));
+        $this->assertSame($court->name, data_get($durations[120], 'courts.0.name'));
+    }
+
     public function test_booking_availability_does_not_offer_past_slots_for_today(): void
     {
         $this->travelTo(now()->setTime(12, 0, 0));
@@ -288,6 +348,81 @@ class PublicSiteDataFlowTest extends TestCase
 
         $this->assertDatabaseHas('reservation_participants', [
             'user_id' => $user->id,
+        ]);
+    }
+
+    public function test_site_reservation_can_be_created_across_pricing_blocks(): void
+    {
+        Mail::fake();
+
+        $user = User::factory()->create();
+
+        $sport = Sport::query()->create([
+            'name' => 'Padel',
+            'slug' => 'padel',
+            'short_description' => 'Padel sport',
+            'description' => 'Padel opis',
+            'is_active' => true,
+            'sort_order' => 1,
+        ]);
+
+        $court = Court::query()->create([
+            'sport_id' => $sport->id,
+            'name' => 'Padel teren 1',
+            'slug' => 'padel-teren-1',
+            'location' => 'Hala A',
+            'surface' => 'Sinteticka trava',
+            'description' => 'Glavni teren',
+            'requires_approval' => false,
+            'is_active' => true,
+        ]);
+
+        PricingRule::query()->create([
+            'sport_id' => $sport->id,
+            'name' => 'Dnevni blok',
+            'days_of_week' => [],
+            'start_time' => '08:00:00',
+            'end_time' => '18:00:00',
+            'price_60' => 3000,
+            'price_90' => 4500,
+            'price_120' => 6000,
+            'is_active' => true,
+        ]);
+
+        PricingRule::query()->create([
+            'sport_id' => $sport->id,
+            'name' => 'Vecernji blok',
+            'days_of_week' => [],
+            'start_time' => '18:00:00',
+            'end_time' => '23:30:00',
+            'price_60' => 3500,
+            'price_90' => 5250,
+            'price_120' => 7000,
+            'is_active' => true,
+        ]);
+
+        $startsAt = now()->addDay()->setTime(17, 0, 0);
+
+        $response = $this
+            ->actingAs($user)
+            ->post(route('reservations.store'), [
+                'court_id' => $court->id,
+                'starts_at' => $startsAt->format('Y-m-d H:i:s'),
+                'duration_minutes' => 120,
+                'customer_note' => 'Termin preko dva cenovna bloka',
+                'equipment' => [],
+            ]);
+
+        $response->assertRedirect(route('dashboard'));
+
+        $this->assertDatabaseHas('reservations', [
+            'user_id' => $user->id,
+            'sport_id' => $sport->id,
+            'court_id' => $court->id,
+            'status' => 'reserved',
+            'duration_minutes' => 120,
+            'court_price' => 6500,
+            'total_price' => 6500,
         ]);
     }
 
@@ -718,7 +853,7 @@ class PublicSiteDataFlowTest extends TestCase
             'slug' => 'padel-liga',
             'type' => 'league',
             'status' => 'registration',
-            'location' => 'Arena SC',
+            'location' => 'Sportski centar Arena',
             'cover_image' => 'events/padel-liga.jpg',
             'cta_label' => 'Prijavi se',
             'summary' => 'Liga opis',

@@ -21,7 +21,7 @@ class ReservationConfirmedMail extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Rezervacija je uspesno evidentirana | Arena SC',
+            subject: 'Rezervacija je uspesno evidentirana | Sportski centar Arena',
         );
     }
 

@@ -20,7 +20,7 @@ class ContactMessageConfirmationMail extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Primili smo vasu poruku | Arena SC',
+            subject: 'Primili smo vasu poruku | Sportski centar Arena',
         );
     }
 

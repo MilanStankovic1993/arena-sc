@@ -33,10 +33,18 @@
                 >
                     <div class="about-story-panel__copy">
                         <span class="eyebrow-chip">Sportski centar Arena</span>
-                        <h2 class="section-title mt-5">Ovde ide tekst o nama.</h2>
-                        <p class="about-story-panel__text mt-6">
-                            Ovde ide tekst o nama.
-                        </p>
+                        <h2 class="section-title mt-5">O nama</h2>
+                        <div class="about-story-panel__text mt-6 space-y-5">
+                            <p>
+                                Sportski centar Arena nastao je sa idejom da Kraljevo dobije moderan prostor za trening, rekreaciju i druzenje. Mesto gde se spajaju energija, takmicarski duh i vreme provedeno sa prijateljima.
+                            </p>
+                            <p>
+                                U Areni vas ocekuju savremeni padel tereni, 3x3 kosarkaski teren i prijatan kutak za predah uz kafu. Bez obzira da li dolazite zbog ozbiljnog treninga, rekreacije ili dobre atmosfere, cilj nam je da svaki dolazak bude iskustvo kojem cete se rado vracati.
+                            </p>
+                            <p>
+                                Vise od terena i treninga, Arena je prostor namenjen svima koji vole pokret, druzenje i kvalitetno provedeno vreme.
+                            </p>
+                        </div>
                     </div>
                 </div>
 

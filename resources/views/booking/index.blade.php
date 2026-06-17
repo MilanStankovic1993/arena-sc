@@ -513,7 +513,7 @@
                             <div class="booking-equipment-item__image-shell">
                                 ${item.image_url
                                     ? `<img src="${item.image_url}" alt="${item.name}" class="booking-equipment-item__image">`
-                                    : `<div class="booking-equipment-item__image-fallback"><img src="{{ asset('brand/arena-sc-mark.svg') }}" alt="Arena SC" class="h-10 w-10 opacity-80"></div>`
+                                    : `<div class="booking-equipment-item__image-fallback"><img src="{{ asset('brand/arena-sc-mark.svg') }}" alt="Sportski centar Arena" class="h-10 w-10 opacity-80"></div>`
                                 }
                             </div>
                             <div class="booking-equipment-item__copy">
@@ -548,7 +548,7 @@
                 summaryCard.hidden = false;
                 summaryBox.hidden = false;
                 summaryTitle.textContent = `${selectedDay.full_label} | ${selectedTime.time}`;
-                summaryCopy.textContent = `${selectedDuration.label} | ${selectedCourt.name} | ${selectedCourt.location || 'Arena SC'} | ${selectedCourt.surface || 'Spreman teren'}`;
+                summaryCopy.textContent = `${selectedDuration.label} | ${selectedCourt.name} | ${selectedCourt.location || 'Sportski centar Arena'} | ${selectedCourt.surface || 'Spreman teren'}`;
                 selectedPrice.textContent = formatMoney(selectedCourt.price);
 
                 if (courtIdInput) courtIdInput.value = selectedCourt.id;
@@ -558,10 +558,10 @@
                 if (courtPreview) {
                     courtPreview.hidden = false;
                     courtPreviewName.textContent = selectedCourt.name;
-                    courtPreviewMeta.textContent = `${selectedCourt.location || 'Arena SC'} | ${selectedCourt.surface || 'Standard'}`;
+                    courtPreviewMeta.textContent = `${selectedCourt.location || 'Sportski centar Arena'} | ${selectedCourt.surface || 'Standard'}`;
                     courtPreviewImage.innerHTML = selectedCourt.image_url
                         ? `<img src="${selectedCourt.image_url}" alt="${selectedCourt.name}" class="h-24 w-full object-cover">`
-                        : `<div class="flex h-24 items-center justify-center bg-[linear-gradient(145deg,rgba(15,42,31,0.96),rgba(26,26,26,0.92))]"><img src="{{ asset('brand/arena-sc-mark.svg') }}" alt="Arena SC" class="h-10 w-10 opacity-80"></div>`;
+                        : `<div class="flex h-24 items-center justify-center bg-[linear-gradient(145deg,rgba(15,42,31,0.96),rgba(26,26,26,0.92))]"><img src="{{ asset('brand/arena-sc-mark.svg') }}" alt="Sportski centar Arena" class="h-10 w-10 opacity-80"></div>`;
                 }
 
                 renderEquipment(availabilityPayload?.equipment ?? []);
@@ -617,7 +617,7 @@
                         <div class="booking-court-option-card__header">
                             <div>
                                 <p class="booking-court-option-card__title">${group.court.name}</p>
-                                <p class="booking-court-option-card__meta">${group.court.location || 'Arena SC'}${group.court.surface ? ` | ${group.court.surface}` : ''}</p>
+                                <p class="booking-court-option-card__meta">${group.court.location || 'Sportski centar Arena'}${group.court.surface ? ` | ${group.court.surface}` : ''}</p>
                             </div>
                             <span class="info-chip-soft">${group.durations.length} opcije</span>
                         </div>

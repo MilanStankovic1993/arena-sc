@@ -22,7 +22,7 @@ class ReservationCancelledMail extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Rezervacija je otkazana | Arena SC',
+            subject: 'Rezervacija je otkazana | Sportski centar Arena',
         );
     }
 

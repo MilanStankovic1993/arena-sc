@@ -29,7 +29,7 @@ class DatabaseSeeder extends Seeder
             ['name' => 'Padel'],
             [
                 'short_description' => 'Premium padel tereni za rekreativce, timove i turnire.',
-                'description' => 'Arena SC raspolaze sa tri padel terena dostupna za online rezervacije.',
+                'description' => 'Sportski centar Arena raspolaze sa tri padel terena dostupna za online rezervacije.',
                 'supports_online_booking' => true,
                 'is_active' => true,
                 'sort_order' => 1,
@@ -40,7 +40,7 @@ class DatabaseSeeder extends Seeder
             ['name' => 'Basket 3x3'],
             [
                 'short_description' => 'Basket 3x3 teren za brze termine, treninge i sportske dogadjaje.',
-                'description' => 'Arena SC raspolaze basket 3x3 terenom dostupnim za online rezervacije.',
+                'description' => 'Sportski centar Arena raspolaze basket 3x3 terenom dostupnim za online rezervacije.',
                 'supports_online_booking' => true,
                 'is_active' => true,
                 'sort_order' => 2,
@@ -48,10 +48,10 @@ class DatabaseSeeder extends Seeder
         );
 
         foreach ([
-            ['sport_id' => $padel->id, 'name' => 'Padel teren 1', 'location' => 'Arena SC', 'surface' => 'Sinteticka trava', 'description' => 'Padel teren za dnevne i vecernje termine.'],
-            ['sport_id' => $padel->id, 'name' => 'Padel teren 2', 'location' => 'Arena SC', 'surface' => 'Sinteticka trava', 'description' => 'Padel teren za rekreativne i timske termine.'],
-            ['sport_id' => $padel->id, 'name' => 'Padel teren 3', 'location' => 'Arena SC', 'surface' => 'Sinteticka trava', 'description' => 'Padel teren za treninge, meceve i turnire.'],
-            ['sport_id' => $basket->id, 'name' => 'Basket 3x3 teren', 'location' => 'Arena SC', 'surface' => 'Sportska podloga', 'description' => 'Basket 3x3 teren za termine, treninge i dogadjaje.'],
+            ['sport_id' => $padel->id, 'name' => 'Padel teren 1', 'location' => 'Sportski centar Arena', 'surface' => 'Sinteticka trava', 'description' => 'Padel teren za dnevne i vecernje termine.'],
+            ['sport_id' => $padel->id, 'name' => 'Padel teren 2', 'location' => 'Sportski centar Arena', 'surface' => 'Sinteticka trava', 'description' => 'Padel teren za rekreativne i timske termine.'],
+            ['sport_id' => $padel->id, 'name' => 'Padel teren 3', 'location' => 'Sportski centar Arena', 'surface' => 'Sinteticka trava', 'description' => 'Padel teren za treninge, meceve i turnire.'],
+            ['sport_id' => $basket->id, 'name' => 'Basket 3x3 teren', 'location' => 'Sportski centar Arena', 'surface' => 'Sportska podloga', 'description' => 'Basket 3x3 teren za termine, treninge i dogadjaje.'],
         ] as $court) {
             Court::query()->updateOrCreate(
                 ['name' => $court['name']],

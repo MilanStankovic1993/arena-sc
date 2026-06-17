@@ -1,4 +1,4 @@
-<x-mail-layout :title="$mode === 'cancelled' ? 'Otkazana rezervacija | Arena SC' : 'Nova rezervacija | Arena SC'">
+<x-mail-layout :title="$mode === 'cancelled' ? 'Otkazana rezervacija | Sportski centar Arena' : 'Nova rezervacija | Sportski centar Arena'">
     <h1 style="margin:0 0 16px;color:#0f2a1f;font-size:28px;line-height:1.1;">
         {{ $mode === 'cancelled' ? 'Otkazana rezervacija' : 'Nova rezervacija' }}
     </h1>

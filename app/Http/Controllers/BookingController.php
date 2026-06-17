@@ -5,9 +5,9 @@ namespace App\Http\Controllers;
 use App\Models\Court;
 use App\Models\CourtClosure;
 use App\Models\Equipment;
-use App\Models\PricingRule;
 use App\Models\Reservation;
 use App\Models\Sport;
+use App\Services\ReservationPricingService;
 use App\Services\ReservationScheduleService;
 use Carbon\Carbon;
 use Carbon\CarbonInterface;
@@ -16,6 +16,7 @@ use Illuminate\Http\Request;
 use Illuminate\View\View;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
+use RuntimeException;
 
 class BookingController extends Controller
 {
@@ -39,6 +40,7 @@ class BookingController extends Controller
     public function availability(
         Request $request,
         ReservationScheduleService $scheduleService,
+        ReservationPricingService $pricingService,
     ): JsonResponse {
         $sport = Sport::query()
             ->where('slug', $request->string('sport')->toString())
@@ -80,7 +82,7 @@ class BookingController extends Controller
 
         $cacheKey = 'booking.availability.' . $sport->id . '.' . $selectedDay->toDateString();
 
-        $payload = Cache::remember($cacheKey, now()->addSeconds(20), function () use ($sport, $courts, $scheduleService, $selectedDay, $periodStart, $periodEnd): array {
+        $payload = Cache::remember($cacheKey, now()->addSeconds(20), function () use ($sport, $courts, $scheduleService, $pricingService, $selectedDay, $periodStart, $periodEnd): array {
             $pricingRules = $sport->pricingRules()
                 ->where('is_active', true)
                 ->orderBy('start_time')
@@ -118,17 +120,17 @@ class BookingController extends Controller
             $now = now();
 
             $days = collect(range(0, 2))
-                ->map(function (int $offset) use ($selectedDay, $courts, $scheduleService, $pricingRules, $reservationsByCourt, $closuresByCourt, $now): array {
+                ->map(function (int $offset) use ($selectedDay, $courts, $scheduleService, $pricingRules, $pricingService, $reservationsByCourt, $closuresByCourt, $now): array {
                 $day = $selectedDay->copy()->addDays($offset);
 
                 $times = $scheduleService->buildDailySchedule($courts->first(), $day, 60)
-                    ->map(function (array $slot) use ($courts, $pricingRules, $reservationsByCourt, $closuresByCourt, $now) {
+                    ->map(function (array $slot) use ($courts, $pricingRules, $pricingService, $reservationsByCourt, $closuresByCourt, $now) {
                         if ($slot['starts_at']->lte($now)) {
                             return null;
                         }
 
                         $durations = collect([60, 90, 120])
-                            ->map(function (int $minutes) use ($slot, $courts, $pricingRules, $reservationsByCourt, $closuresByCourt) {
+                            ->map(function (int $minutes) use ($slot, $courts, $pricingRules, $pricingService, $reservationsByCourt, $closuresByCourt) {
                                 $startsAt = $slot['starts_at']->copy();
                                 $endsAt = $startsAt->copy()->addMinutes($minutes);
 
@@ -140,14 +142,12 @@ class BookingController extends Controller
                                         $reservationsByCourt,
                                         $closuresByCourt,
                                     ))
-                                    ->map(function (Court $court) use ($pricingRules, $startsAt, $endsAt): ?array {
-                                        $rule = $this->matchingPricingRule($pricingRules, $court, $startsAt, $endsAt);
-
-                                        if (! $rule) {
+                                    ->map(function (Court $court) use ($pricingRules, $pricingService, $startsAt, $endsAt): ?array {
+                                        try {
+                                            $price = $pricingService->calculateCourtPriceFromRules($court, $pricingRules, $startsAt, $endsAt);
+                                        } catch (RuntimeException) {
                                             return null;
                                         }
-
-                                        $price = $rule->priceForDuration((int) $startsAt->diffInMinutes($endsAt));
 
                                         return [
                                             'id' => $court->id,
@@ -259,33 +259,6 @@ class BookingController extends Controller
         return ! $reservationsByCourt
             ->get($court->id, collect())
             ->contains(fn (Reservation $reservation): bool => $this->periodsOverlap($reservation->starts_at, $reservation->ends_at, $startsAt, $endsAt));
-    }
-
-    protected function matchingPricingRule(Collection $pricingRules, Court $court, CarbonInterface $startsAt, CarbonInterface $endsAt): ?PricingRule
-    {
-        return $pricingRules
-            ->first(function (PricingRule $rule) use ($court, $startsAt, $endsAt): bool {
-                if ((int) $rule->sport_id !== (int) $court->sport_id) {
-                    return false;
-                }
-
-                $days = collect($rule->days_of_week ?? [])->map(fn ($day): int => (int) $day);
-
-                if ($days->isNotEmpty() && ! $days->contains((int) $startsAt->dayOfWeek)) {
-                    return false;
-                }
-
-                if ($rule->valid_from && $startsAt->toDateString() < $rule->valid_from->toDateString()) {
-                    return false;
-                }
-
-                if ($rule->valid_to && $startsAt->toDateString() > $rule->valid_to->toDateString()) {
-                    return false;
-                }
-
-                return substr((string) $rule->start_time, 0, 8) <= $startsAt->format('H:i:s')
-                    && substr((string) $rule->end_time, 0, 8) >= $endsAt->format('H:i:s');
-            });
     }
 
     protected function periodsOverlap(CarbonInterface $firstStart, CarbonInterface $firstEnd, CarbonInterface $secondStart, CarbonInterface $secondEnd): bool

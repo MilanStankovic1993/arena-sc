@@ -1,4 +1,4 @@
-<x-mail-layout title="Nova kontakt poruka | Arena SC">
+<x-mail-layout title="Nova kontakt poruka | Sportski centar Arena">
     <h1 style="margin:0 0 16px;color:#0f2a1f;font-size:28px;line-height:1.1;">Nova kontakt poruka</h1>
 
     <p style="margin:0 0 18px;color:#5b6874;font-size:15px;line-height:1.7;">
