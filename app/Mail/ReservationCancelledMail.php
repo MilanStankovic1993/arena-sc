@@ -16,8 +16,7 @@ class ReservationCancelledMail extends Mailable
     public function __construct(
         public Reservation $reservation,
         public string $context = 'customer',
-    ) {
-    }
+    ) {}
 
     public function envelope(): Envelope
     {

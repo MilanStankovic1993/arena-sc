@@ -2,7 +2,7 @@
     'title' => 'Rezervisi termin | Padel i Basket 3x3 | Arena Kraljevo',
     'metaDescription' => 'Online rezervacija termina za padel i basket 3x3 u Sportski centar Arena Kraljevo. Proverite slobodne slotove i cene termina.',
     'metaKeywords' => 'rezervisi termin, online rezervacija, padel kraljevo, basket 3x3 kraljevo, sportski centar arena',
-    'metaImage' => asset('media/home/hero-exterior.png'),
+    'metaImage' => asset('media/home/hero-exterior.webp'),
 ])
 
 @section('content')
@@ -338,6 +338,28 @@
 
             const formatMoney = (amount) => `${new Intl.NumberFormat('sr-RS').format(Number(amount || 0))} RSD`;
 
+            const escapeHtml = (value) => String(value ?? '').replace(/[&<>"']/g, (character) => ({
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#039;',
+            })[character]);
+
+            const safeImageUrl = (value) => {
+                if (!value) return '';
+
+                try {
+                    const url = new URL(value, window.location.origin);
+
+                    return url.origin === window.location.origin && ['http:', 'https:'].includes(url.protocol)
+                        ? url.href
+                        : '';
+                } catch {
+                    return '';
+                }
+            };
+
             const normalizeList = (value) => {
                 if (Array.isArray(value)) return value;
                 if (value && typeof value === 'object') return Object.values(value);
@@ -383,8 +405,10 @@
                 const classes = type === 'error'
                     ? 'border-red-200 bg-red-50 text-red-700'
                     : 'border-[color:var(--arena-border)] bg-[color:var(--arena-cream)] text-[color:var(--arena-ink)]';
-
-                feedbackBox.innerHTML = `<div class="rounded-[1.25rem] border px-4 py-3 text-sm ${classes}">${message}</div>`;
+                const feedback = document.createElement('div');
+                feedback.className = `rounded-[1.25rem] border px-4 py-3 text-sm ${classes}`;
+                feedback.textContent = String(message ?? '');
+                feedbackBox.replaceChildren(feedback);
             };
 
             const clearFeedback = () => {
@@ -423,7 +447,10 @@
                 const copy = message || `Za sport ${sport.name} online rezervacija trenutno nije dostupna. Posaljite upit ili nas pozovite i zakazacemo termin.`;
 
                 contactInline.hidden = false;
-                contactInline.innerHTML = `<p class="text-sm leading-7 text-[color:var(--arena-ink)]">${copy}</p>`;
+                const contactParagraph = document.createElement('p');
+                contactParagraph.className = 'text-sm leading-7 text-[color:var(--arena-ink)]';
+                contactParagraph.textContent = copy;
+                contactInline.replaceChildren(contactParagraph);
 
                 if (contactCard) {
                     contactCard.hidden = false;
@@ -478,33 +505,9 @@
                 });
             };
 
-            const renderPricing = (rules) => {
-                rules = normalizeList(rules);
+            const renderPricing = () => {
                 pricingCard.hidden = true;
-                return;
-
-                pricingList.innerHTML = '';
-                pricingCard.hidden = rules.length === 0;
-
-                rules.forEach((rule) => {
-                    const item = document.createElement('div');
-                    item.className = 'booking-mini-card';
-                    item.innerHTML = `
-                        <div class="flex flex-wrap items-start justify-between gap-3">
-                            <div>
-                                <p class="font-bold text-[color:var(--arena-forest)]">${rule.name}</p>
-                                <p class="mt-1 text-sm text-slate-500">${rule.days}</p>
-                            </div>
-                            <span class="info-chip">${rule.time}</span>
-                        </div>
-                        <div class="mt-4 grid gap-2 text-sm sm:grid-cols-3">
-                            <div><span class="block text-xs font-extrabold uppercase tracking-[0.18em] text-slate-500">1h</span><strong class="mt-1 block text-[color:var(--arena-forest)]">${formatMoney(rule.price60)}</strong></div>
-                            <div><span class="block text-xs font-extrabold uppercase tracking-[0.18em] text-slate-500">1,5h</span><strong class="mt-1 block text-[color:var(--arena-forest)]">${formatMoney(rule.price90)}</strong></div>
-                            <div><span class="block text-xs font-extrabold uppercase tracking-[0.18em] text-slate-500">2h</span><strong class="mt-1 block text-[color:var(--arena-forest)]">${formatMoney(rule.price120)}</strong></div>
-                        </div>
-                    `;
-                    pricingList.appendChild(item);
-                });
+                pricingList.replaceChildren();
             };
 
             const renderEquipment = (items) => {
@@ -516,22 +519,26 @@
 
                 items.forEach((item, index) => {
                     const wrapper = document.createElement('div');
+                    const imageUrl = safeImageUrl(item.image_url);
+                    const itemName = escapeHtml(item.name);
+                    const itemDescription = escapeHtml(item.description || 'Oprema za termin.');
+                    const itemId = Number.isInteger(Number(item.id)) ? Number(item.id) : '';
                     wrapper.className = 'booking-mini-card booking-equipment-item';
                     wrapper.innerHTML = `
                         <div class="booking-equipment-item__grid">
                             <div class="booking-equipment-item__image-shell">
-                                ${item.image_url
-                                    ? `<img src="${item.image_url}" alt="${item.name}" class="booking-equipment-item__image">`
-                                    : `<div class="booking-equipment-item__image-fallback"><img src="{{ asset('brand/arena-sc-mark.svg') }}" alt="Sportski centar Arena" class="h-10 w-10 opacity-80"></div>`
+                                ${imageUrl
+                                    ? `<img src="${escapeHtml(imageUrl)}" alt="${itemName}" loading="lazy" decoding="async" class="booking-equipment-item__image">`
+                                    : `<div class="booking-equipment-item__image-fallback"><img src="{{ asset('brand/arena-sc-mark.webp') }}" alt="Sportski centar Arena" width="640" height="360" loading="lazy" decoding="async" class="h-10 w-10 opacity-80"></div>`
                                 }
                             </div>
                             <div class="booking-equipment-item__copy">
                                 <div class="booking-equipment-item__top">
-                                    <p class="booking-equipment-item__name">${item.name}</p>
+                                    <p class="booking-equipment-item__name">${itemName}</p>
                                     <span class="booking-equipment-item__price">${formatMoney(item.price)}</span>
                                 </div>
-                                <p class="booking-equipment-item__description">${item.description || 'Oprema za termin.'}</p>
-                                <input type="hidden" name="equipment[${index}][equipment_id]" value="${item.id}">
+                                <p class="booking-equipment-item__description">${itemDescription}</p>
+                                <input type="hidden" name="equipment[${index}][equipment_id]" value="${itemId}">
                             </div>
                             <div class="booking-equipment-item__quantity">
                                 <label class="booking-equipment-item__quantity-label">Kolicina</label>
@@ -565,12 +572,13 @@
                 if (durationInput) durationInput.value = selectedDuration.minutes;
 
                 if (courtPreview) {
+                    const courtImageUrl = safeImageUrl(selectedCourt.image_url);
                     courtPreview.hidden = false;
                     courtPreviewName.textContent = selectedCourt.name;
                     courtPreviewMeta.textContent = `${selectedCourt.location || 'Sportski centar Arena'} | ${selectedCourt.surface || 'Standard'}`;
-                    courtPreviewImage.innerHTML = selectedCourt.image_url
-                        ? `<img src="${selectedCourt.image_url}" alt="${selectedCourt.name}" class="h-24 w-full object-cover">`
-                        : `<div class="flex h-24 items-center justify-center bg-[linear-gradient(145deg,rgba(15,42,31,0.96),rgba(26,26,26,0.92))]"><img src="{{ asset('brand/arena-sc-mark.svg') }}" alt="Sportski centar Arena" class="h-10 w-10 opacity-80"></div>`;
+                    courtPreviewImage.innerHTML = courtImageUrl
+                        ? `<img src="${escapeHtml(courtImageUrl)}" alt="${escapeHtml(selectedCourt.name)}" decoding="async" class="h-24 w-full object-cover">`
+                        : `<div class="flex h-24 items-center justify-center bg-[linear-gradient(145deg,rgba(15,42,31,0.96),rgba(26,26,26,0.92))]"><img src="{{ asset('brand/arena-sc-mark.webp') }}" alt="Sportski centar Arena" width="640" height="360" decoding="async" class="h-10 w-10 opacity-80"></div>`;
                 }
 
                 renderEquipment(availabilityPayload?.equipment ?? []);
@@ -591,7 +599,7 @@
                 header.className = 'booking-option-list__header';
                 header.innerHTML = `
                     <div>
-                        <p class="text-xs font-extrabold uppercase tracking-[0.26em] text-[color:var(--arena-forest-glow)]">${selectedDay.full_label} | ${selectedTime.time}</p>
+                        <p class="text-xs font-extrabold uppercase tracking-[0.26em] text-[color:var(--arena-forest-glow)]">${escapeHtml(selectedDay.full_label)} | ${escapeHtml(selectedTime.time)}</p>
                         <p class="mt-1 text-sm text-[color:var(--arena-muted)]">Izaberi teren, pa trajanje termina.</p>
                     </div>
                     <span class="info-chip-soft">Slobodni tereni</span>
@@ -621,12 +629,15 @@
 
                 courtGroups.forEach((group) => {
                     const card = document.createElement('div');
+                    const courtName = escapeHtml(group.court.name);
+                    const courtLocation = escapeHtml(group.court.location || 'Sportski centar Arena');
+                    const courtSurface = group.court.surface ? ` | ${escapeHtml(group.court.surface)}` : '';
                     card.className = 'booking-court-option-card';
                     card.innerHTML = `
                         <div class="booking-court-option-card__header">
                             <div>
-                                <p class="booking-court-option-card__title">${group.court.name}</p>
-                                <p class="booking-court-option-card__meta">${group.court.location || 'Sportski centar Arena'}${group.court.surface ? ` | ${group.court.surface}` : ''}</p>
+                                <p class="booking-court-option-card__title">${courtName}</p>
+                                <p class="booking-court-option-card__meta">${courtLocation}${courtSurface}</p>
                             </div>
                             <span class="info-chip-soft">${group.durations.length} opcije</span>
                         </div>
@@ -640,7 +651,7 @@
                         option.type = 'button';
                         option.className = 'booking-duration-choice';
                         option.innerHTML = `
-                            <span>${duration.label}</span>
+                            <span>${escapeHtml(duration.label)}</span>
                             <strong>${formatMoney(duration.court.price)}</strong>
                         `;
 
@@ -762,9 +773,9 @@
                     button.type = 'button';
                     button.className = 'booking-day-card';
                     button.innerHTML = `
-                        <span class="block text-xs font-extrabold uppercase tracking-[0.22em] opacity-70">${day.day_label}</span>
-                        <strong class="mt-2 block text-4xl font-black">${day.date_label}</strong>
-                        <span class="mt-1 block text-sm opacity-80">${day.month_label}</span>
+                        <span class="block text-xs font-extrabold uppercase tracking-[0.22em] opacity-70">${escapeHtml(day.day_label)}</span>
+                        <strong class="mt-2 block text-4xl font-black">${escapeHtml(day.date_label)}</strong>
+                        <span class="mt-1 block text-sm opacity-80">${escapeHtml(day.month_label)}</span>
                     `;
 
                     button.addEventListener('click', () => {

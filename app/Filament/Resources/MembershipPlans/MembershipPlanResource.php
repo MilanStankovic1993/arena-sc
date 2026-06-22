@@ -10,8 +10,8 @@ use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Forms\Components\Select;
-use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Resources\Resource;
 use Filament\Schemas\Components\Section;
@@ -75,6 +75,7 @@ class MembershipPlanResource extends Resource
                 TextInput::make('price')
                     ->label('Cena')
                     ->numeric()
+                    ->minValue(0)
                     ->prefix('RSD')
                     ->required()
                     ->columnSpan(3),

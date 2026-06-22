@@ -17,6 +17,7 @@ use App\Services\UserStatisticsService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
 class PublicSiteDataFlowTest extends TestCase
@@ -25,7 +26,29 @@ class PublicSiteDataFlowTest extends TestCase
 
     private function storageUrl(string $path): string
     {
-        return rtrim(config('app.url'), '/') . '/storage/' . ltrim($path, '/');
+        return rtrim(config('app.url'), '/').'/storage/'.ltrim($path, '/');
+    }
+
+    public function test_public_storage_fallback_serves_uploaded_admin_files(): void
+    {
+        Storage::fake('public');
+        $image = base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=');
+        Storage::disk('public')->put('equipment/test-image.png', $image);
+
+        $response = $this->get('/uploads/equipment/test-image.png');
+
+        $response->assertOk();
+        $this->assertSame($image, $response->streamedContent());
+    }
+
+    public function test_public_storage_fallback_rejects_temp_metadata_and_unsafe_image_types(): void
+    {
+        Storage::fake('public');
+        Storage::disk('public')->put('livewire-tmp/upload.json', '{"name":"private.png"}');
+        Storage::disk('public')->put('equipment/payload.svg', '<svg onload="alert(1)"></svg>');
+
+        $this->get('/uploads/livewire-tmp/upload.json')->assertNotFound();
+        $this->get('/uploads/equipment/payload.svg')->assertNotFound();
     }
 
     public function test_price_list_page_uses_admin_managed_pricing_and_membership_data(): void
@@ -482,13 +505,13 @@ class PublicSiteDataFlowTest extends TestCase
 
         foreach ([0, 1, 2] as $offset) {
             Cache::put(
-                'booking.availability.' . $sport->id . '.' . $startsAt->copy()->subDays($offset)->toDateString(),
+                'booking.availability.'.$sport->id.'.'.$startsAt->copy()->subDays($offset)->toDateString(),
                 ['stale' => true],
                 now()->addMinute(),
             );
 
             Cache::put(
-                'booking.availability.v2.' . $sport->id . '.' . $startsAt->copy()->subDays($offset)->toDateString(),
+                'booking.availability.v2.'.$sport->id.'.'.$startsAt->copy()->subDays($offset)->toDateString(),
                 ['stale' => true],
                 now()->addMinute(),
             );
@@ -508,8 +531,8 @@ class PublicSiteDataFlowTest extends TestCase
         foreach ([0, 1, 2] as $offset) {
             $cacheDate = $startsAt->copy()->subDays($offset)->toDateString();
 
-            $this->assertFalse(Cache::has('booking.availability.' . $sport->id . '.' . $cacheDate));
-            $this->assertFalse(Cache::has('booking.availability.v2.' . $sport->id . '.' . $cacheDate));
+            $this->assertFalse(Cache::has('booking.availability.'.$sport->id.'.'.$cacheDate));
+            $this->assertFalse(Cache::has('booking.availability.v2.'.$sport->id.'.'.$cacheDate));
         }
     }
 
@@ -828,8 +851,11 @@ class PublicSiteDataFlowTest extends TestCase
 
         $response->assertOk()
             ->assertSee('Padel mesec')
-            ->assertSee('Do ' . now()->addDays(20)->format('d.m.Y'))
-            ->assertSee('2 termina ukupno');
+            ->assertSee('Do '.now()->addDays(20)->format('d.m.Y'))
+            ->assertSee('2 termina ukupno')
+            ->assertSee('Moj nalog')
+            ->assertSee('Odjavi me')
+            ->assertDontSee('Profil');
     }
 
     public function test_booking_availability_requires_pricing_rule_for_public_slots(): void

@@ -20,7 +20,7 @@ class AnalyticsCourtPerformanceTable extends TableWidget
 
     protected static ?string $heading = 'Tabela ucinka terena';
 
-    protected int | string | array $columnSpan = 'full';
+    protected int|string|array $columnSpan = 'full';
 
     protected static ?int $sort = 4;
 
@@ -81,7 +81,7 @@ class AnalyticsCourtPerformanceTable extends TableWidget
                     ->sortable(),
                 TextColumn::make('filtered_duration_minutes')
                     ->label('Sati')
-                    ->formatStateUsing(fn (int|string|null $state): string => number_format(((int) $state) / 60, 1, ',', '.') . ' h')
+                    ->formatStateUsing(fn (int|string|null $state): string => number_format(((int) $state) / 60, 1, ',', '.').' h')
                     ->sortable(),
                 TextColumn::make('filtered_revenue')
                     ->label('Prihod')

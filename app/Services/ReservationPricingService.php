@@ -2,9 +2,11 @@
 
 namespace App\Services;
 
+use App\Enums\ReservationStatus;
 use App\Models\Court;
 use App\Models\Equipment;
 use App\Models\PricingRule;
+use App\Models\ReservationEquipment;
 use Carbon\CarbonInterface;
 use Illuminate\Support\Collection;
 use RuntimeException;
@@ -105,13 +107,60 @@ class ReservationPricingService
         return true;
     }
 
-    public function hydrateEquipmentPricing(array $equipmentSelections): Collection
-    {
-        return collect($equipmentSelections)
+    public function hydrateEquipmentPricing(
+        array $equipmentSelections,
+        int $sportId,
+        CarbonInterface $startsAt,
+        CarbonInterface $endsAt,
+    ): Collection {
+        $requestedQuantities = collect($equipmentSelections)
             ->filter(fn (array $item): bool => (int) ($item['quantity'] ?? 0) > 0)
-            ->map(function (array $item): array {
-                $equipment = Equipment::query()->findOrFail($item['equipment_id']);
-                $quantity = (int) $item['quantity'];
+            ->groupBy(fn (array $item): int => (int) $item['equipment_id'])
+            ->map(fn (Collection $items): int => $items->sum(fn (array $item): int => (int) $item['quantity']));
+
+        if ($requestedQuantities->isEmpty()) {
+            return collect();
+        }
+
+        $equipmentById = Equipment::query()
+            ->whereIn('id', $requestedQuantities->keys())
+            ->orderBy('id')
+            ->lockForUpdate()
+            ->get()
+            ->keyBy('id');
+
+        $reservedQuantities = ReservationEquipment::query()
+            ->join('reservations', 'reservations.id', '=', 'reservation_equipment.reservation_id')
+            ->whereIn('reservation_equipment.equipment_id', $requestedQuantities->keys())
+            ->where('reservations.status', ReservationStatus::Reserved->value)
+            ->where('reservations.starts_at', '<', $endsAt)
+            ->where('reservations.ends_at', '>', $startsAt)
+            ->groupBy('reservation_equipment.equipment_id')
+            ->selectRaw('reservation_equipment.equipment_id, SUM(reservation_equipment.quantity) as reserved_quantity')
+            ->pluck('reserved_quantity', 'reservation_equipment.equipment_id');
+
+        return $requestedQuantities
+            ->map(function (int $quantity, int $equipmentId) use ($equipmentById, $reservedQuantities, $sportId): array {
+                /** @var Equipment|null $equipment */
+                $equipment = $equipmentById->get($equipmentId);
+
+                if (! $equipment
+                    || ! $equipment->is_active
+                    || ! $equipment->is_rentable
+                    || $equipment->rental_price === null
+                    || ($equipment->sport_id !== null && (int) $equipment->sport_id !== $sportId)) {
+                    throw new RuntimeException('Izabrana oprema vise nije dostupna za ovaj sport.');
+                }
+
+                $availableQuantity = max(
+                    0,
+                    (int) $equipment->stock_quantity - (int) $reservedQuantities->get($equipmentId, 0),
+                );
+
+                if ($quantity > $availableQuantity) {
+                    throw new RuntimeException("Oprema {$equipment->name} nije dostupna u trazenoj kolicini.");
+                }
+
                 $unitPrice = (float) $equipment->rental_price;
 
                 return [

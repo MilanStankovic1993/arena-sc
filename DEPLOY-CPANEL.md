@@ -52,6 +52,10 @@ APP_MAINTENANCE_DRIVER=file
 
 BCRYPT_ROUNDS=12
 
+SEED_ADMIN_NAME="Arena Administrator"
+SEED_ADMIN_EMAIL=OVDE_UNESI_ADMIN_EMAIL
+SEED_ADMIN_PASSWORD=OVDE_UNESI_JAKU_UNIKATNU_LOZINKU
+
 LOG_CHANNEL=stack
 LOG_STACK=single
 LOG_DEPRECATIONS_CHANNEL=null
@@ -72,7 +76,7 @@ SESSION_DOMAIN=null
 
 BROADCAST_CONNECTION=log
 FILESYSTEM_DISK=public
-QUEUE_CONNECTION=sync
+QUEUE_CONNECTION=database
 
 CACHE_STORE=file
 
@@ -131,10 +135,21 @@ Na produkciji će slati mejlove za:
 - otkazivanje rezervacije:
   - obaveštenje korisniku
   - obaveštenje adminu
+- aktivaciju članarine
+- podsetnik pred istek članarine
 
 Zato je ispravan SMTP obavezan pre puštanja sajta uživo.
 
 ## 5. Deploy redosled
+
+Samo pri prvoj instalaciji, dok je `APP_KEY` u produkcionom `.env` prazan, pokreni:
+
+```bash
+php artisan key:generate
+```
+
+`APP_KEY` nikada ne generisi ponovo pri redovnom deploy-u. Rotacija kljuca prekida postojece
+sesije i moze uciniti ranije sifrovane podatke necitljivim.
 
 Ako postoji terminal / SSH:
 
@@ -143,7 +158,6 @@ cd /home/scarenar/arena-sc
 git pull
 composer install --no-dev --optimize-autoloader
 php artisan optimize:clear
-php artisan key:generate
 php artisan migrate --force
 php artisan storage:link
 php artisan config:cache
@@ -184,7 +198,22 @@ Tipično:
 - folderi `755` ili `775`
 - fajlovi `644`
 
-## 8. Produkcioni QA posle deploy-a
+## 8. Scheduler / cron
+
+U cPanel Cron Jobs dodaj zadatak koji se izvrsava svakog minuta:
+
+```cron
+* * * * * cd /home/scarenar/arena-sc && /usr/local/bin/php artisan schedule:run >> /dev/null 2>&1
+```
+
+Scheduler pokrece i kratkotrajni queue worker, pa kontakt i rezervacijski emailovi ne blokiraju HTTP zahtev. Proveri da je `QUEUE_CONNECTION=database` i da minutni cron radi.
+
+Za brz odziv PHP-a hosting mora imati ukljucen OPcache. U MultiPHP INI Editor-u proveri najmanje `opcache.enable=1` i `opcache.memory_consumption=128`; bez OPcache-a Laravel pri svakom zahtevu ponovo ucitava framework fajlove.
+
+Ako je PHP putanja na hostingu drugacija, uzmi tacnu PHP 8.3+ CLI putanju iz cPanel-a.
+Bez ovog cron-a automatski podsetnici za istek clanarine nece biti poslati.
+
+## 9. Produkcioni QA posle deploy-a
 
 Obavezno proveri:
 
@@ -225,7 +254,7 @@ Obavezno proveri:
 - kalendar radi
 - dugi `create/edit` modali skroluju normalno
 
-## 9. Ako server nema terminal
+## 10. Ako server nema terminal
 
 Ako nemaš terminal i `composer install` ne možeš da pokreneš ručno:
 - traži od hostinga da pokrene `composer install --no-dev --optimize-autoloader`
@@ -240,11 +269,13 @@ php artisan route:cache
 php artisan view:cache
 ```
 
-## 10. Seed podaci
+Od hostinga trazi i podesavanje minutnog cron zadatka za `php artisan schedule:run`.
 
-Ako koristiš `php artisan migrate:fresh --seed` ili `php artisan db:seed`, sistem kreira jedan superadmin nalog:
-- email: `milan.stankovic@radijator.rs`
-- password: `28Januar`
+## 11. Seed podaci
+
+Pre `php artisan migrate:fresh --seed` ili `php artisan db:seed` postavi
+`SEED_ADMIN_EMAIL` i jedinstveni `SEED_ADMIN_PASSWORD` od najmanje 12 karaktera.
+Ako ih ne postavis, katalog ce biti kreiran bez admin naloga.
 
 Seeder dodatno ubacuje osnovni produkcioni katalog:
 - sportove `Padel` i `Basket 3x3`

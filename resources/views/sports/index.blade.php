@@ -2,12 +2,12 @@
     'title' => 'Padel i Basket 3x3 tereni | Sportski centar Arena Kraljevo',
     'metaDescription' => 'Pregled svih padel i basket 3x3 terena u Sportski centar Arena Kraljevo. Pogledajte opise terena i rezervisite termin online.',
     'metaKeywords' => 'padel tereni, basket 3x3, kraljevo padel, kraljevo basket, sportski centar kraljevo, arena kraljevo',
-    'metaImage' => asset('media/home/sports-hero.png'),
+    'metaImage' => asset('media/home/sports-hero.webp'),
 ])
 
 @section('content')
     <div class="page-stack sports-page-stack">
-        <section class="sports-hero" style="background-image: linear-gradient(90deg, rgba(7, 16, 13, 0.82) 0%, rgba(7, 16, 13, 0.48) 44%, rgba(7, 16, 13, 0.82) 100%), url('{{ asset('media/home/sports-hero.png') }}');">
+        <section class="sports-hero" style="background-image: linear-gradient(90deg, rgba(7, 16, 13, 0.82) 0%, rgba(7, 16, 13, 0.48) 44%, rgba(7, 16, 13, 0.82) 100%), url('{{ asset('media/home/sports-hero.webp') }}');">
             <div class="site-grid sports-hero__inner">
                 <div class="sports-hero__content">
                     <span class="dark-eyebrow-chip">Tereni</span>

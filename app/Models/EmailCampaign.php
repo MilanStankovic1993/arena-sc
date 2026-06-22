@@ -36,6 +36,6 @@ class EmailCampaign extends Model
             return null;
         }
 
-        return asset('storage/' . ltrim($this->hero_image, '/'));
+        return route('public-storage.show', ['path' => ltrim($this->hero_image, '/')]);
     }
 }

@@ -11,8 +11,8 @@ use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Select;
-use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Resources\Resource;
 use Filament\Schemas\Components\Section;
@@ -48,7 +48,17 @@ class EquipmentResource extends Resource
                 Select::make('sport_id')->label('Sport')->relationship('sport', 'name')->searchable()->preload(),
                 TextInput::make('name')->label('Naziv')->required(),
                 TextInput::make('sku')->label('Sifra artikla')->unique(ignoreRecord: true),
-                FileUpload::make('image')->label('Slika')->image()->disk('public')->directory('equipment'),
+                FileUpload::make('image')
+                    ->label('Slika')
+                    ->image()
+                    ->acceptedFileTypes(['image/avif', 'image/jpeg', 'image/png', 'image/webp'])
+                    ->maxSize(4096)
+                    ->imageResizeMode('contain')
+                    ->imageResizeTargetWidth('1600')
+                    ->imageResizeTargetHeight('1200')
+                    ->imageResizeUpscale(false)
+                    ->disk('public')
+                    ->directory('equipment'),
                 Textarea::make('short_description')->label('Kratak opis')->rows(2)->columnSpanFull(),
                 Textarea::make('description')->label('Opis')->rows(4)->columnSpanFull(),
                 TextInput::make('rental_price')->label('Cena iznajmljivanja')->numeric()->prefix('RSD'),

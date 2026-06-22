@@ -12,6 +12,9 @@ class EquipmentController extends Controller
         return view('equipment.index', [
             'equipment' => Equipment::query()
                 ->where('is_active', true)
+                ->where(fn ($query) => $query
+                    ->whereNull('sport_id')
+                    ->orWhereHas('sport', fn ($sportQuery) => $sportQuery->where('is_active', true)))
                 ->with('sport')
                 ->orderByDesc('is_sellable')
                 ->orderBy('name')

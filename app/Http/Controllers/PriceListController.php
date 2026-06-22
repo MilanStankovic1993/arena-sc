@@ -13,12 +13,16 @@ class PriceListController extends Controller
         return view('price-list.index', [
             'pricingRules' => PricingRule::query()
                 ->where('is_active', true)
+                ->whereHas('sport', fn ($query) => $query->where('is_active', true))
                 ->with('sport')
                 ->orderBy('sport_id')
                 ->orderBy('start_time')
                 ->get(),
             'membershipPlans' => MembershipPlan::query()
                 ->where('is_active', true)
+                ->where(fn ($query) => $query
+                    ->whereNull('sport_id')
+                    ->orWhereHas('sport', fn ($sportQuery) => $sportQuery->where('is_active', true)))
                 ->with('sport')
                 ->orderBy('sort_order')
                 ->orderBy('price')

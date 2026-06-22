@@ -8,9 +8,11 @@
 
         <title>{{ config('app.name', 'Sportski centar Arena') }}</title>
         <link rel="icon" type="image/svg+xml" href="{{ asset('brand/favicon.svg') }}">
-        <link rel="alternate icon" href="{{ asset('favicon.ico') }}">
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Great+Vibes&display=swap">
 
-        @vite(['resources/css/app.css', 'resources/js/app.js'])
+        @vite('resources/css/app.css')
     </head>
     <body>
         <div class="auth-shell">
@@ -19,7 +21,7 @@
                     <div class="flex h-full flex-col justify-between gap-10">
                         <div>
                             <a href="{{ route('home') }}" class="premium-brand inline-flex">
-                                <img src="{{ asset('brand/arena-sc-mark.svg') }}" alt="Sportski centar Arena logo" class="brand-logo brand-logo--auth">
+                                <img src="{{ asset('brand/arena-sc-mark.webp') }}" alt="Sportski centar Arena logo" width="640" height="360" decoding="async" class="brand-logo brand-logo--auth">
                             </a>
 
                             <div class="mt-14 max-w-xl space-y-6">

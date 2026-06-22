@@ -8,6 +8,12 @@ return [
         'instagram' => env('CONTACT_INSTAGRAM', 'https://www.instagram.com/scarena.rs/'),
     ],
 
+    'seed_admin' => [
+        'name' => env('SEED_ADMIN_NAME', 'Arena Administrator'),
+        'email' => env('SEED_ADMIN_EMAIL'),
+        'password' => env('SEED_ADMIN_PASSWORD'),
+    ],
+
     'location' => [
         'name' => env('LOCATION_NAME', 'Sportski centar Arena'),
         'address' => env('LOCATION_ADDRESS', 'Adranska 114, Kraljevo'),

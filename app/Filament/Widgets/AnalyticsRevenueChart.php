@@ -14,7 +14,7 @@ class AnalyticsRevenueChart extends ChartWidget
 
     protected ?string $heading = 'Mesecni prihod - poslednjih 6 meseci';
 
-    protected int | string | array $columnSpan = 'full';
+    protected int|string|array $columnSpan = 'full';
 
     protected static ?int $sort = 2;
 

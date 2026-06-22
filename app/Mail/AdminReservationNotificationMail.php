@@ -16,8 +16,7 @@ class AdminReservationNotificationMail extends Mailable
     public function __construct(
         public Reservation $reservation,
         public string $mode = 'created',
-    ) {
-    }
+    ) {}
 
     public function envelope(): Envelope
     {

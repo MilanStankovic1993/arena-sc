@@ -15,8 +15,7 @@ class ReservationConfirmedMail extends Mailable
 
     public function __construct(
         public Reservation $reservation,
-    ) {
-    }
+    ) {}
 
     public function envelope(): Envelope
     {

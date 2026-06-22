@@ -62,7 +62,7 @@ class UserMembershipResource extends Resource
                     ->getOptionLabelFromRecordUsing(fn (MembershipPlan $record): string => sprintf(
                         '%s%s - %s RSD',
                         $record->name,
-                        $record->sport ? ' (' . $record->sport->name . ')' : ' (svi sportovi)',
+                        $record->sport ? ' ('.$record->sport->name.')' : ' (svi sportovi)',
                         number_format((float) $record->price, 0, ',', '.'),
                     ))
                     ->searchable()

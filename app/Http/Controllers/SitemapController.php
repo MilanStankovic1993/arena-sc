@@ -56,6 +56,7 @@ class SitemapController extends Controller
         ])->concat(
             Court::query()
                 ->where('is_active', true)
+                ->whereHas('sport', fn ($query) => $query->where('is_active', true))
                 ->get()
                 ->map(fn (Court $court): array => [
                     'loc' => route('courts.show', $court),

@@ -14,7 +14,7 @@ class AnalyticsCourtPerformanceWidget extends Widget
 
     protected string $view = 'filament.widgets.analytics-court-performance-widget';
 
-    protected int | string | array $columnSpan = [
+    protected int|string|array $columnSpan = [
         'xl' => 12,
     ];
 

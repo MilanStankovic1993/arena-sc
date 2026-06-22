@@ -45,6 +45,30 @@ class PricingRule extends Model
     protected static function booted(): void
     {
         static::saving(function (self $rule): void {
+            $errors = [];
+
+            if ((string) $rule->start_time >= (string) $rule->end_time) {
+                $errors['end_time'] = 'Vreme zavrsetka mora biti posle vremena pocetka.';
+            }
+
+            if ($rule->valid_from && $rule->valid_to && $rule->valid_from->gt($rule->valid_to)) {
+                $errors['valid_to'] = 'Datum zavrsetka vazenja mora biti isti ili posle datuma pocetka.';
+            }
+
+            foreach (['price_60', 'price_90', 'price_120'] as $priceField) {
+                if ((float) $rule->{$priceField} < 0) {
+                    $errors[$priceField] = 'Cena ne moze biti negativna.';
+                }
+            }
+
+            if ($errors !== []) {
+                throw ValidationException::withMessages($errors);
+            }
+
+            if (! $rule->is_active) {
+                return;
+            }
+
             $conflict = static::findConflictingRule($rule);
 
             if (! $conflict) {
@@ -99,6 +123,7 @@ class PricingRule extends Model
     {
         return static::query()
             ->where('sport_id', $rule->sport_id)
+            ->where('is_active', true)
             ->when($rule->exists, fn ($query) => $query->whereKeyNot($rule->getKey()))
             ->whereTime('start_time', '<', $rule->end_time)
             ->whereTime('end_time', '>', $rule->start_time)
@@ -114,7 +139,7 @@ class PricingRule extends Model
             });
     }
 
-    protected static function daysOverlap(null|array $existingDays, null|array $incomingDays): bool
+    protected static function daysOverlap(?array $existingDays, ?array $incomingDays): bool
     {
         $existingDays = array_values(array_map('intval', Arr::wrap($existingDays)));
         $incomingDays = array_values(array_map('intval', Arr::wrap($incomingDays)));

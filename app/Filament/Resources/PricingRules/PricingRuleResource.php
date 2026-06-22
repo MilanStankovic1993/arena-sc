@@ -82,9 +82,9 @@ class PricingRuleResource extends Resource
                 Toggle::make('is_active')->label('Aktivno pravilo')->default(true)->inline(false)->columnSpan(2),
                 DatePicker::make('valid_from')->label('Vazi od')->columnSpan(3),
                 DatePicker::make('valid_to')->label('Vazi do')->columnSpan(3),
-                TextInput::make('price_60')->label('Cena za 1h')->numeric()->prefix('RSD')->required()->columnSpan(4),
-                TextInput::make('price_90')->label('Cena za 1,5h')->numeric()->prefix('RSD')->required()->columnSpan(4),
-                TextInput::make('price_120')->label('Cena za 2h')->numeric()->prefix('RSD')->required()->columnSpan(4),
+                TextInput::make('price_60')->label('Cena za 1h')->numeric()->minValue(0)->prefix('RSD')->required()->columnSpan(4),
+                TextInput::make('price_90')->label('Cena za 1,5h')->numeric()->minValue(0)->prefix('RSD')->required()->columnSpan(4),
+                TextInput::make('price_120')->label('Cena za 2h')->numeric()->minValue(0)->prefix('RSD')->required()->columnSpan(4),
             ])
                 ->columns(12)
                 ->columnSpanFull()

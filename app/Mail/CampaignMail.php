@@ -17,8 +17,7 @@ class CampaignMail extends Mailable
     public function __construct(
         public EmailCampaign $campaign,
         public User $recipient,
-    ) {
-    }
+    ) {}
 
     public function envelope(): Envelope
     {

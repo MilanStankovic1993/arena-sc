@@ -10,12 +10,12 @@ use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Forms\Components\FileUpload;
-use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Resources\Resource;
-use Filament\Schemas\Schema;
 use Filament\Schemas\Components\Section;
+use Filament\Schemas\Schema;
 use Filament\Support\Enums\Width;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\IconColumn;
@@ -46,7 +46,17 @@ class SportResource extends Resource
                 TextInput::make('name')->label('Naziv')->required(),
                 Textarea::make('short_description')->label('Kratak opis')->rows(2),
                 Textarea::make('description')->label('Opis')->rows(5)->columnSpanFull(),
-                FileUpload::make('cover_image')->label('Naslovna slika')->image()->disk('public')->directory('sports'),
+                FileUpload::make('cover_image')
+                    ->label('Naslovna slika')
+                    ->image()
+                    ->acceptedFileTypes(['image/avif', 'image/jpeg', 'image/png', 'image/webp'])
+                    ->maxSize(4096)
+                    ->imageResizeMode('contain')
+                    ->imageResizeTargetWidth('1600')
+                    ->imageResizeTargetHeight('1200')
+                    ->imageResizeUpscale(false)
+                    ->disk('public')
+                    ->directory('sports'),
                 TextInput::make('sort_order')->label('Redosled')->numeric()->default(0),
                 Toggle::make('supports_online_booking')->label('Omogucena online rezervacija')->default(true),
                 Toggle::make('is_active')->label('Aktivan sport')->default(true),

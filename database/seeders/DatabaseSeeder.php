@@ -13,17 +13,7 @@ class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
-        User::query()->updateOrCreate(
-            ['email' => 'milan.stankovic@radijator.rs'],
-            [
-                'name' => 'Milan Stankovic',
-                'phone' => null,
-                'role' => UserRole::SuperAdmin,
-                'registered_at' => now()->toDateString(),
-                'email_verified_at' => now(),
-                'password' => '28Januar',
-            ],
-        );
+        $this->seedAdmin();
 
         $padel = Sport::query()->updateOrCreate(
             ['name' => 'Padel'],
@@ -69,17 +59,47 @@ class DatabaseSeeder extends Seeder
 
         $this->seedPricingRules($padel, [
             ['Padel radni dan pre podne', [1, 2, 3, 4, 5], '08:00:00', '18:00:00', 3000],
-            ['Padel radni dan popodne', [1, 2, 3, 4, 5], '18:00:00', '23:30:00', 3500],
+            ['Padel radni dan popodne', [1, 2, 3, 4, 5], '18:00:00', '23:00:00', 3500],
             ['Padel vikend pre podne', [6, 0], '08:00:00', '18:00:00', 4000],
-            ['Padel vikend popodne', [6, 0], '18:00:00', '23:30:00', 4500],
+            ['Padel vikend popodne', [6, 0], '18:00:00', '23:00:00', 4500],
         ]);
 
         $this->seedPricingRules($basket, [
             ['Basket radni dan pre podne', [1, 2, 3, 4, 5], '08:00:00', '18:00:00', 2000],
-            ['Basket radni dan popodne', [1, 2, 3, 4, 5], '18:00:00', '23:30:00', 2500],
+            ['Basket radni dan popodne', [1, 2, 3, 4, 5], '18:00:00', '23:00:00', 2500],
             ['Basket vikend pre podne', [6, 0], '08:00:00', '18:00:00', 3000],
-            ['Basket vikend popodne', [6, 0], '18:00:00', '23:30:00', 3500],
+            ['Basket vikend popodne', [6, 0], '18:00:00', '23:00:00', 3500],
         ]);
+    }
+
+    private function seedAdmin(): void
+    {
+        $email = trim((string) config('arena.seed_admin.email'));
+        $password = (string) config('arena.seed_admin.password');
+
+        if ($email === '' && $password === '') {
+            $this->command?->warn('SEED_ADMIN_EMAIL i SEED_ADMIN_PASSWORD nisu postavljeni; admin nalog nije kreiran.');
+
+            return;
+        }
+
+        if (! filter_var($email, FILTER_VALIDATE_EMAIL) || mb_strlen($password) < 12) {
+            throw new \RuntimeException(
+                'SEED_ADMIN_EMAIL mora biti validan, a SEED_ADMIN_PASSWORD mora imati najmanje 12 karaktera.'
+            );
+        }
+
+        User::query()->updateOrCreate(
+            ['email' => $email],
+            [
+                'name' => (string) config('arena.seed_admin.name'),
+                'phone' => null,
+                'role' => UserRole::SuperAdmin,
+                'registered_at' => now()->toDateString(),
+                'email_verified_at' => now(),
+                'password' => $password,
+            ],
+        );
     }
 
     private function seedPricingRules(Sport $sport, array $rules): void

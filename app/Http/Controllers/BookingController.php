@@ -13,9 +13,9 @@ use Carbon\Carbon;
 use Carbon\CarbonInterface;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\View\View;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\View\View;
 use RuntimeException;
 
 class BookingController extends Controller
@@ -32,7 +32,7 @@ class BookingController extends Controller
             'sports' => $sports,
             'initialState' => [
                 'sport' => $request->string('sport')->toString(),
-                'date' => Carbon::parse($request->input('date', now()->toDateString()))->format('Y-m-d'),
+                'date' => $this->initialBookingDate($request),
             ],
         ]);
     }
@@ -48,6 +48,10 @@ class BookingController extends Controller
             ->first();
 
         abort_unless($sport, 404);
+
+        $request->validate([
+            'date' => ['nullable', 'date_format:Y-m-d', 'after_or_equal:today'],
+        ]);
 
         if (! $sport->supports_online_booking) {
             return response()->json([
@@ -80,7 +84,7 @@ class BookingController extends Controller
         $periodStart = $selectedDay->copy()->startOfDay();
         $periodEnd = $selectedDay->copy()->addDays(2)->endOfDay();
 
-        $cacheKey = 'booking.availability.v2.' . $sport->id . '.' . $selectedDay->toDateString();
+        $cacheKey = 'booking.availability.v2.'.$sport->id.'.'.$selectedDay->toDateString();
 
         $payload = Cache::remember($cacheKey, now()->addSeconds(20), function () use ($sport, $courts, $scheduleService, $pricingService, $selectedDay, $periodStart, $periodEnd): array {
             $pricingRules = $sport->pricingRules()
@@ -121,90 +125,95 @@ class BookingController extends Controller
 
             $days = collect(range(0, 2))
                 ->map(function (int $offset) use ($selectedDay, $courts, $scheduleService, $pricingRules, $pricingService, $reservationsByCourt, $closuresByCourt, $now): array {
-                $day = $selectedDay->copy()->addDays($offset);
+                    $day = $selectedDay->copy()->addDays($offset);
 
-                $times = $scheduleService->buildDailySchedule($courts->first(), $day, 60)
-                    ->map(function (array $slot) use ($courts, $pricingRules, $pricingService, $reservationsByCourt, $closuresByCourt, $now) {
-                        if ($slot['starts_at']->lte($now)) {
-                            return null;
-                        }
+                    $times = $scheduleService->buildDailySchedule($courts->first(), $day, 60)
+                        ->map(function (array $slot) use ($courts, $pricingRules, $pricingService, $scheduleService, $reservationsByCourt, $closuresByCourt, $now) {
+                            if ($slot['starts_at']->lte($now)) {
+                                return null;
+                            }
 
-                        $durations = collect([60, 90, 120])
-                            ->map(function (int $minutes) use ($slot, $courts, $pricingRules, $pricingService, $reservationsByCourt, $closuresByCourt) {
-                                $startsAt = $slot['starts_at']->copy();
-                                $endsAt = $startsAt->copy()->addMinutes($minutes);
+                            $durations = collect([60, 90, 120])
+                                ->map(function (int $minutes) use ($slot, $courts, $pricingRules, $pricingService, $scheduleService, $reservationsByCourt, $closuresByCourt) {
+                                    $startsAt = $slot['starts_at']->copy();
+                                    $endsAt = $startsAt->copy()->addMinutes($minutes);
 
-                                $availableCourts = $courts
-                                    ->filter(fn (Court $court): bool => $this->courtIsAvailableFromLoadedData(
-                                        $court,
-                                        $startsAt,
-                                        $endsAt,
-                                        $reservationsByCourt,
-                                        $closuresByCourt,
-                                    ))
-                                    ->map(function (Court $court) use ($pricingRules, $pricingService, $startsAt, $endsAt): ?array {
-                                        try {
-                                            $price = $pricingService->calculateCourtPriceFromRules($court, $pricingRules, $startsAt, $endsAt);
-                                        } catch (RuntimeException) {
-                                            return null;
-                                        }
+                                    if (! $scheduleService->isWithinOperatingHours($startsAt, $endsAt)) {
+                                        return null;
+                                    }
 
-                                        return [
-                                            'id' => $court->id,
-                                            'name' => $court->name,
-                                            'price' => $price,
-                                            'starts_at' => $startsAt->format('Y-m-d H:i:s'),
-                                            'ends_at' => $endsAt->format('Y-m-d H:i:s'),
-                                        ];
-                                    })
-                                    ->filter()
-                                    ->values();
+                                    $availableCourts = $courts
+                                        ->filter(fn (Court $court): bool => $this->courtIsAvailableFromLoadedData(
+                                            $court,
+                                            $startsAt,
+                                            $endsAt,
+                                            $reservationsByCourt,
+                                            $closuresByCourt,
+                                        ))
+                                        ->map(function (Court $court) use ($pricingRules, $pricingService, $startsAt, $endsAt): ?array {
+                                            try {
+                                                $price = $pricingService->calculateCourtPriceFromRules($court, $pricingRules, $startsAt, $endsAt);
+                                            } catch (RuntimeException) {
+                                                return null;
+                                            }
 
-                                if ($availableCourts->isEmpty()) {
-                                    return null;
-                                }
+                                            return [
+                                                'id' => $court->id,
+                                                'name' => $court->name,
+                                                'price' => $price,
+                                                'starts_at' => $startsAt->format('Y-m-d H:i:s'),
+                                                'ends_at' => $endsAt->format('Y-m-d H:i:s'),
+                                            ];
+                                        })
+                                        ->filter()
+                                        ->values();
 
-                                return [
-                                    'minutes' => $minutes,
-                                    'label' => match ($minutes) {
-                                        90 => '1.5 sata',
-                                        120 => '2 sata',
-                                        default => '1 sat',
-                                    },
-                                    'price_from' => $availableCourts->min('price'),
-                                    'courts' => $availableCourts->all(),
-                                ];
-                            })
-                            ->filter()
-                            ->values();
+                                    if ($availableCourts->isEmpty()) {
+                                        return null;
+                                    }
 
-                        if ($durations->isEmpty()) {
-                            return null;
-                        }
+                                    return [
+                                        'minutes' => $minutes,
+                                        'label' => match ($minutes) {
+                                            90 => '1.5 sata',
+                                            120 => '2 sata',
+                                            default => '1 sat',
+                                        },
+                                        'price_from' => $availableCourts->min('price'),
+                                        'courts' => $availableCourts->all(),
+                                    ];
+                                })
+                                ->filter()
+                                ->values();
 
-                        return [
-                            'time' => $slot['starts_at']->format('H:i'),
-                            'starts_at' => $slot['starts_at']->format('Y-m-d H:i:s'),
-                            'durations' => $durations->all(),
-                        ];
-                    })
-                    ->filter()
-                    ->values();
+                            if ($durations->isEmpty()) {
+                                return null;
+                            }
 
-                return [
-                    'date' => $day->format('Y-m-d'),
-                    'day_label' => $day->translatedFormat('D'),
-                    'date_label' => $day->format('d'),
-                    'month_label' => $day->translatedFormat('M'),
-                    'full_label' => $day->format('d.m.Y'),
-                    'times' => $times->all(),
-                ];
-            })
-            ->values();
+                            return [
+                                'time' => $slot['starts_at']->format('H:i'),
+                                'starts_at' => $slot['starts_at']->format('Y-m-d H:i:s'),
+                                'durations' => $durations->all(),
+                            ];
+                        })
+                        ->filter()
+                        ->values();
+
+                    return [
+                        'date' => $day->format('Y-m-d'),
+                        'day_label' => $day->translatedFormat('D'),
+                        'date_label' => $day->format('d'),
+                        'month_label' => $day->translatedFormat('M'),
+                        'full_label' => $day->format('d.m.Y'),
+                        'times' => $times->all(),
+                    ];
+                })
+                ->values();
 
             $equipment = Equipment::query()
                 ->where('is_active', true)
                 ->where('is_rentable', true)
+                ->where('stock_quantity', '>', 0)
                 ->where(fn ($query) => $query->whereNull('sport_id')->orWhere('sport_id', $sport->id))
                 ->orderBy('name')
                 ->get()
@@ -228,7 +237,7 @@ class BookingController extends Controller
                 'pricingRules' => $pricingRules->map(fn ($rule): array => [
                     'name' => $rule->name,
                     'days' => $rule->days_label,
-                    'time' => substr($rule->start_time, 0, 5) . ' - ' . substr($rule->end_time, 0, 5),
+                    'time' => substr($rule->start_time, 0, 5).' - '.substr($rule->end_time, 0, 5),
                     'price60' => (float) $rule->price_60,
                     'price90' => (float) $rule->price_90,
                     'price120' => (float) $rule->price_120,
@@ -238,7 +247,9 @@ class BookingController extends Controller
             ];
         });
 
-        return response()->json($payload);
+        return response()
+            ->json($payload)
+            ->header('Cache-Control', 'private, max-age=10, stale-while-revalidate=20');
     }
 
     protected function courtIsAvailableFromLoadedData(
@@ -264,5 +275,28 @@ class BookingController extends Controller
     protected function periodsOverlap(CarbonInterface $firstStart, CarbonInterface $firstEnd, CarbonInterface $secondStart, CarbonInterface $secondEnd): bool
     {
         return $firstStart->lt($secondEnd) && $firstEnd->gt($secondStart);
+    }
+
+    protected function initialBookingDate(Request $request): string
+    {
+        $date = $request->string('date')->toString();
+
+        if (! preg_match('/^\d{4}-\d{2}-\d{2}$/', $date)) {
+            return now()->toDateString();
+        }
+
+        try {
+            $selectedDay = Carbon::createFromFormat('Y-m-d', $date)->startOfDay();
+        } catch (\Throwable) {
+            return now()->toDateString();
+        }
+
+        if ($selectedDay->toDateString() !== $date) {
+            return now()->toDateString();
+        }
+
+        return $selectedDay->isBefore(now()->startOfDay())
+            ? now()->toDateString()
+            : $selectedDay->toDateString();
     }
 }

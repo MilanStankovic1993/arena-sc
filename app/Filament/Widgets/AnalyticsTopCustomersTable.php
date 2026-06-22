@@ -2,9 +2,9 @@
 
 namespace App\Filament\Widgets;
 
+use App\Enums\ReservationStatus;
 use App\Models\User;
 use App\Services\AdminAnalyticsService;
-use App\Enums\ReservationStatus;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Filament\Widgets\Concerns\InteractsWithPageFilters;
@@ -19,7 +19,7 @@ class AnalyticsTopCustomersTable extends TableWidget
 
     protected static ?string $heading = 'Ucinak korisnika';
 
-    protected int | string | array $columnSpan = 'full';
+    protected int|string|array $columnSpan = 'full';
 
     protected static ?int $sort = 8;
 
@@ -76,7 +76,7 @@ class AnalyticsTopCustomersTable extends TableWidget
                     ->sortable(),
                 TextColumn::make('filtered_duration_minutes')
                     ->label('Sati')
-                    ->formatStateUsing(fn (int|string|null $state): string => number_format(((int) $state) / 60, 1, ',', '.') . ' h')
+                    ->formatStateUsing(fn (int|string|null $state): string => number_format(((int) $state) / 60, 1, ',', '.').' h')
                     ->sortable(),
                 TextColumn::make('filtered_revenue')
                     ->label('Vrednost termina')

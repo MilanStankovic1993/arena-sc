@@ -8,13 +8,14 @@ use Carbon\CarbonInterface;
 use Database\Factories\UserFactory;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Panel;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
-use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
-use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Validation\ValidationException;
 
 class User extends Authenticatable implements FilamentUser, MustVerifyEmail
 {
@@ -38,6 +39,37 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
         'password',
         'remember_token',
     ];
+
+    protected static function booted(): void
+    {
+        static::saving(function (User $user): void {
+            $wasSuperAdmin = $user->exists
+                && UserRole::tryFrom((string) $user->getRawOriginal('role')) === UserRole::SuperAdmin;
+
+            if ($wasSuperAdmin
+                && $user->role !== UserRole::SuperAdmin
+                && ! static::query()
+                    ->where('role', UserRole::SuperAdmin->value)
+                    ->whereKeyNot($user->getKey())
+                    ->exists()) {
+                throw ValidationException::withMessages([
+                    'role' => 'Poslednjem superadmin nalogu nije moguce promeniti ulogu.',
+                ]);
+            }
+        });
+
+        static::deleting(function (User $user): void {
+            if ($user->role === UserRole::SuperAdmin
+                && ! static::query()
+                    ->where('role', UserRole::SuperAdmin->value)
+                    ->whereKeyNot($user->getKey())
+                    ->exists()) {
+                throw ValidationException::withMessages([
+                    'user' => 'Poslednji superadmin nalog nije moguce obrisati.',
+                ]);
+            }
+        });
+    }
 
     public function reservations(): HasMany
     {
@@ -101,7 +133,7 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
             return 'Nema članarinu';
         }
 
-        return $membership->membershipPlan->name . ' do ' . $membership->ends_at->format('d.m.Y');
+        return $membership->membershipPlan->name.' do '.$membership->ends_at->format('d.m.Y');
     }
 
     public function canAccessPanel(Panel $panel): bool

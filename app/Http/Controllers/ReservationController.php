@@ -6,9 +6,10 @@ use App\Enums\ReservationStatus;
 use App\Http\Requests\StoreReservationRequest;
 use App\Models\Court;
 use App\Models\Reservation;
-use App\Services\ReservationAvailabilityService;
 use App\Services\MembershipReservationLimitService;
+use App\Services\ReservationAvailabilityService;
 use App\Services\ReservationPricingService;
+use App\Services\ReservationScheduleService;
 use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
@@ -39,10 +40,23 @@ class ReservationController extends Controller
         ReservationAvailabilityService $availabilityService,
         MembershipReservationLimitService $membershipLimitService,
         ReservationPricingService $pricingService,
+        ReservationScheduleService $scheduleService,
     ): RedirectResponse {
         $court = Court::query()->with('sport')->findOrFail($request->integer('court_id'));
         $startsAt = Carbon::parse($request->string('starts_at'));
         $endsAt = $startsAt->copy()->addMinutes($request->integer('duration_minutes'));
+
+        if (! $court->is_active || ! $court->sport?->is_active) {
+            return back()->withErrors([
+                'court_id' => 'Izabrani teren vise nije dostupan.',
+            ])->withInput();
+        }
+
+        if (! $scheduleService->isWithinOperatingHours($startsAt, $endsAt)) {
+            return back()->withErrors([
+                'starts_at' => 'Termin mora biti u okviru radnog vremena od 08:00 do 23:00.',
+            ])->withInput();
+        }
 
         if (! $availabilityService->isAvailable($court, $startsAt, $endsAt)) {
             return back()->withErrors([
@@ -64,33 +78,63 @@ class ReservationController extends Controller
             ])->withInput();
         }
 
-        $equipmentItems = $pricingService->hydrateEquipmentPricing($request->input('equipment', []));
-        try {
-            $courtPrice = $pricingService->calculateCourtPrice($court, $startsAt, $endsAt);
-        } catch (RuntimeException $exception) {
-            return back()->withErrors([
-                'starts_at' => $exception->getMessage(),
-            ])->withInput();
-        }
-
-        $equipmentPrice = $pricingService->calculateEquipmentPrice($equipmentItems);
         $status = ReservationStatus::Reserved;
 
-        DB::transaction(function () use (
+        $result = DB::transaction(function () use (
             $request,
             $court,
             $startsAt,
             $endsAt,
-            $equipmentItems,
-            $courtPrice,
-            $equipmentPrice,
-            $status
-        ): void {
+            $user,
+            $status,
+            $availabilityService,
+            $membershipLimitService,
+            $pricingService,
+        ): Reservation|array {
+            if ($user) {
+                $user = $user->newQuery()->lockForUpdate()->findOrFail($user->getKey());
+            }
+
+            $court = Court::query()
+                ->with('sport')
+                ->lockForUpdate()
+                ->findOrFail($court->getKey());
+
+            if (! $court->is_active || ! $court->sport?->is_active) {
+                return ['error' => 'Izabrani teren vise nije dostupan.'];
+            }
+
+            if (! $court->sport?->supports_online_booking) {
+                return ['contact_only' => true];
+            }
+
+            if (! $availabilityService->isAvailable($court, $startsAt, $endsAt)) {
+                return ['error' => 'Izabrani termin nije dostupan za ovaj teren.'];
+            }
+
+            if ($user && ! $membershipLimitService->canReserve($user, $court->sport_id, $startsAt)) {
+                return ['error' => $membershipLimitService->message($user, $court->sport_id, $startsAt)];
+            }
+
+            try {
+                $equipmentItems = $pricingService->hydrateEquipmentPricing(
+                    $request->input('equipment', []),
+                    $court->sport_id,
+                    $startsAt,
+                    $endsAt,
+                );
+                $courtPrice = $pricingService->calculateCourtPrice($court, $startsAt, $endsAt);
+            } catch (RuntimeException $exception) {
+                return ['error' => $exception->getMessage()];
+            }
+
+            $equipmentPrice = $pricingService->calculateEquipmentPrice($equipmentItems);
+
             $reservation = Reservation::create([
-                'user_id' => Auth::id(),
-                'guest_name' => Auth::check() ? null : $request->string('guest_name')->toString(),
-                'guest_phone' => Auth::check() ? null : $request->string('guest_phone')->toString(),
-                'guest_email' => Auth::check() ? null : $request->string('guest_email')->toString(),
+                'user_id' => $user?->getKey(),
+                'guest_name' => $user ? null : $request->string('guest_name')->toString(),
+                'guest_phone' => $user ? null : $request->string('guest_phone')->toString(),
+                'guest_email' => $user ? null : $request->string('guest_email')->toString(),
                 'sport_id' => $court->sport_id,
                 'court_id' => $court->id,
                 'status' => $status,
@@ -106,7 +150,21 @@ class ReservationController extends Controller
             foreach ($equipmentItems as $item) {
                 $reservation->equipmentItems()->create($item);
             }
-        });
+
+            return $reservation;
+        }, attempts: 3);
+
+        if (is_array($result)) {
+            if ($result['contact_only'] ?? false) {
+                return redirect()
+                    ->route('booking.index', ['sport' => $court->sport->slug])
+                    ->with('status', 'Za izabrani sport online rezervacija nije dostupna. Posaljite upit i kontaktiracemo vas.');
+            }
+
+            return back()->withErrors([
+                'starts_at' => $result['error'],
+            ])->withInput();
+        }
 
         if (Auth::check()) {
             return redirect()->route('dashboard')->with('status', 'Uspesno ste rezervisali termin.');
@@ -123,6 +181,12 @@ class ReservationController extends Controller
 
         if ($reservation->status === ReservationStatus::Cancelled) {
             return redirect()->route('dashboard')->with('status', 'Termin je vec otkazan.');
+        }
+
+        if (! $reservation->starts_at->isFuture()) {
+            return redirect()->route('dashboard')->withErrors([
+                'reservation' => 'Prosli termin nije moguce otkazati.',
+            ]);
         }
 
         $reservation->update([

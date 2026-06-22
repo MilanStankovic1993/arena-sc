@@ -7,8 +7,9 @@ use App\Enums\EventType;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 
 class Event extends Model
 {
@@ -46,6 +47,12 @@ class Event extends Model
     protected static function booted(): void
     {
         static::saving(function (Event $event): void {
+            if ($event->start_date && $event->end_date && $event->start_date->gt($event->end_date)) {
+                throw ValidationException::withMessages([
+                    'end_date' => 'Datum zavrsetka mora biti isti ili posle datuma pocetka.',
+                ]);
+            }
+
             if (filled($event->title)) {
                 $baseSlug = Str::slug($event->title);
                 $slug = $baseSlug;
@@ -86,6 +93,8 @@ class Event extends Model
 
     protected function coverImageUrl(): Attribute
     {
-        return Attribute::get(fn (): ?string => $this->cover_image ? Storage::disk('public')->url($this->cover_image) : null);
+        return Attribute::get(fn (): ?string => $this->cover_image
+            ? Storage::disk('public')->url($this->cover_image)
+            : null);
     }
 }

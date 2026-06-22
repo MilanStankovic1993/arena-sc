@@ -2,7 +2,7 @@
     'title' => 'Oprema i iznajmljivanje | Sportski centar Arena',
     'metaDescription' => 'Padel i sportska oprema za iznajmljivanje i prodaju u Sportski centar Arena. Pogledajte dostupnu opremu i cene.',
     'metaKeywords' => 'padel oprema, iznajmljivanje opreme, sportska oprema kraljevo, arena kraljevo, padel reketi kraljevo',
-    'metaImage' => asset('media/home/equipment-hero.png'),
+    'metaImage' => asset('media/home/equipment-hero.webp'),
 ])
 
 @section('content')
@@ -13,7 +13,7 @@
     <div class="page-stack equipment-page-stack">
         <section
             class="equipment-hero"
-            style="background-image: linear-gradient(90deg, rgba(7, 16, 13, 0.84) 0%, rgba(7, 16, 13, 0.48) 44%, rgba(7, 16, 13, 0.82) 100%), url('{{ asset('media/home/equipment-hero.png') }}');"
+            style="background-image: linear-gradient(90deg, rgba(7, 16, 13, 0.84) 0%, rgba(7, 16, 13, 0.48) 44%, rgba(7, 16, 13, 0.82) 100%), url('{{ asset('media/home/equipment-hero.webp') }}');"
         >
             <div class="site-grid equipment-hero__inner">
                 <div class="equipment-hero__content">

@@ -14,8 +14,7 @@ class ContactMessageConfirmationMail extends Mailable
 
     public function __construct(
         public array $payload,
-    ) {
-    }
+    ) {}
 
     public function envelope(): Envelope
     {

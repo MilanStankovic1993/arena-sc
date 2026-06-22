@@ -6,8 +6,8 @@ use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class Court extends Model
 {
@@ -74,6 +74,8 @@ class Court extends Model
 
     protected function imageUrl(): Attribute
     {
-        return Attribute::get(fn (): ?string => $this->image ? Storage::disk('public')->url($this->image) : null);
+        return Attribute::get(fn (): ?string => $this->image
+            ? Storage::disk('public')->url($this->image)
+            : null);
     }
 }

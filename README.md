@@ -105,9 +105,9 @@ Proveri:
 
 ## Seed admin nalog
 
-Posle `php artisan migrate:fresh --seed` sistem kreira samo jedan superadmin nalog:
-- email: `milan.stankovic@radijator.rs`
-- password: `28Januar`
+Admin se kreira samo kada su u okruzenju postavljeni `SEED_ADMIN_EMAIL` i
+`SEED_ADMIN_PASSWORD` (najmanje 12 karaktera). Lozinku nikada ne upisuj u Git.
+Ako vrednosti nisu postavljene, seeder bezbedno preskace kreiranje admin naloga.
 
 Seeder dodatno kreira osnovni katalog za produkciju:
 - sportove `Padel` i `Basket 3x3`

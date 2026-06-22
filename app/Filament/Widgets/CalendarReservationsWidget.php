@@ -47,7 +47,7 @@ class CalendarReservationsWidget extends CalendarWidget
         return 'Kalendar rezervacija';
     }
 
-    protected function getEvents(FetchInfo $info): Collection | array
+    protected function getEvents(FetchInfo $info): Collection|array
     {
         return Reservation::query()
             ->where('starts_at', '<', $info->end)

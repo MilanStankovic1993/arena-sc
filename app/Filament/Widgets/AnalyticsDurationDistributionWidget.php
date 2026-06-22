@@ -14,7 +14,7 @@ class AnalyticsDurationDistributionWidget extends Widget
 
     protected string $view = 'filament.widgets.analytics-duration-distribution-widget';
 
-    protected int | string | array $columnSpan = 'full';
+    protected int|string|array $columnSpan = 'full';
 
     protected static ?int $sort = 7;
 

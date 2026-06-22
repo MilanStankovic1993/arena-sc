@@ -14,7 +14,7 @@ class AnalyticsTimePopularityWidget extends Widget
 
     protected string $view = 'filament.widgets.analytics-time-popularity-widget';
 
-    protected int | string | array $columnSpan = [
+    protected int|string|array $columnSpan = [
         'md' => 1,
         'xl' => 6,
     ];

@@ -8,7 +8,7 @@
         <div style="max-width:680px;margin:0 auto;padding:32px 18px;">
             <div style="background:#0f2a1f;border-radius:20px;padding:28px 28px 24px;box-shadow:0 18px 50px rgba(15,42,31,0.18);">
                 <div style="margin-bottom:24px;">
-                    <img src="{{ asset('brand/arena-sc-mark.svg') }}" alt="Sportski centar Arena" style="display:block;max-width:220px;height:auto;">
+                    <img src="{{ asset('brand/arena-sc-mark-email.png') }}" alt="Sportski centar Arena" style="display:block;max-width:220px;height:auto;">
                 </div>
 
                 <div style="background:#ffffff;border-radius:18px;padding:28px;">

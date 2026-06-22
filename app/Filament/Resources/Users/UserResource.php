@@ -2,9 +2,10 @@
 
 namespace App\Filament\Resources\Users;
 
+use App\Enums\ReservationStatus;
 use App\Enums\UserRole;
-use App\Models\EmailCampaign;
 use App\Filament\Resources\Users\Pages\ManageUsers;
+use App\Models\EmailCampaign;
 use App\Models\MembershipPlan;
 use App\Models\Reservation;
 use App\Models\User;
@@ -29,8 +30,8 @@ use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
-use Filament\Support\Icons\Heroicon;
 use Filament\Support\Enums\Width;
+use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\SelectFilter;
@@ -99,7 +100,7 @@ class UserResource extends Resource
                         ->content(fn (?User $record): string => static::money(static::stats($record)['averageSpend'] ?? 0)),
                     Placeholder::make('stats_cancel_rate')
                         ->label('Stopa otkazivanja')
-                        ->content(fn (?User $record): string => number_format(static::stats($record)['cancellationRate'] ?? 0, 1, ',', '.') . '%'),
+                        ->content(fn (?User $record): string => number_format(static::stats($record)['cancellationRate'] ?? 0, 1, ',', '.').'%'),
                     Placeholder::make('stats_last')
                         ->label('Poslednji termin')
                         ->content(fn (?User $record): string => static::dateTime(static::stats($record)['lastReservationAt'] ?? null)),
@@ -168,7 +169,7 @@ class UserResource extends Resource
                     ->color('info')
                     ->slideOver()
                     ->modalWidth(Width::FiveExtraLarge)
-                    ->modalHeading(fn (User $record): string => 'Statistika korisnika - ' . $record->name)
+                    ->modalHeading(fn (User $record): string => 'Statistika korisnika - '.$record->name)
                     ->modalSubmitAction(false)
                     ->modalCancelActionLabel('Zatvori')
                     ->modalContent(fn (User $record): View => view('filament.resources.users.statistics', [
@@ -193,7 +194,7 @@ class UserResource extends Resource
                                     $plan->id => sprintf(
                                         '%s%s - %s RSD',
                                         $plan->name,
-                                        $plan->sport ? ' (' . $plan->sport->name . ')' : ' (svi sportovi)',
+                                        $plan->sport ? ' ('.$plan->sport->name.')' : ' (svi sportovi)',
                                         number_format((float) $plan->price, 0, ',', '.'),
                                     ),
                                 ])
@@ -240,7 +241,7 @@ class UserResource extends Resource
 
                         Notification::make()
                             ->title('Članarina je dodeljena korisniku.')
-                            ->body('Vazi do ' . $endsAt->format('d.m.Y') . '.')
+                            ->body('Vazi do '.$endsAt->format('d.m.Y').'.')
                             ->success()
                             ->send();
                     }),
@@ -290,8 +291,8 @@ class UserResource extends Resource
                             Notification::make()
                                 ->title('Kampanja je poslata odabranim korisnicima.')
                                 ->body("Poslato korisnicima: {$sent}.")
-                            ->success()
-                            ->send();
+                                ->success()
+                                ->send();
                         }),
                     BulkAction::make('pridruziTerminu')
                         ->label('Pridruzi terminu')
@@ -303,7 +304,7 @@ class UserResource extends Resource
                                 ->label('Termin')
                                 ->options(fn (): array => Reservation::query()
                                     ->with(['user', 'sport', 'court'])
-                                    ->where('status', \App\Enums\ReservationStatus::Reserved->value)
+                                    ->where('status', ReservationStatus::Reserved->value)
                                     ->orderByDesc('starts_at')
                                     ->limit(150)
                                     ->get()
@@ -374,14 +375,14 @@ class UserResource extends Resource
         return [
             'name' => $membership->membershipPlan->name,
             'endsAt' => $membership->ends_at->format('d.m.Y'),
-            'limit' => $membership->membershipPlan->reservation_limit . ' termina ukupno',
+            'limit' => $membership->membershipPlan->reservation_limit.' termina ukupno',
             'sport' => $membership->membershipPlan->sport?->name ?? 'Svi sportovi',
         ];
     }
 
     protected static function money(float|int $amount): string
     {
-        return number_format((float) $amount, 0, ',', '.') . ' RSD';
+        return number_format((float) $amount, 0, ',', '.').' RSD';
     }
 
     protected static function dateTime($value): string

@@ -60,6 +60,6 @@ class UserStatisticsService
         $label = (string) $filtered->keys()->first();
         $count = (int) $filtered->first();
 
-        return $label . ' (' . $count . ')';
+        return $label.' ('.$count.')';
     }
 }

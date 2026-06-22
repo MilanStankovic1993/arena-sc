@@ -40,11 +40,11 @@ class MailFlowsTest extends TestCase
         $response->assertRedirect(route('home'));
         $response->assertSessionHas('status');
 
-        Mail::assertSent(ContactMessageReceivedMail::class, function (ContactMessageReceivedMail $mail) {
+        Mail::assertQueued(ContactMessageReceivedMail::class, function (ContactMessageReceivedMail $mail) {
             return $mail->hasTo('info@scarena.rs');
         });
 
-        Mail::assertSent(ContactMessageConfirmationMail::class, function (ContactMessageConfirmationMail $mail) {
+        Mail::assertQueued(ContactMessageConfirmationMail::class, function (ContactMessageConfirmationMail $mail) {
             return $mail->hasTo('milan@example.com');
         });
     }
@@ -102,11 +102,11 @@ class MailFlowsTest extends TestCase
 
         $response->assertRedirect(route('dashboard'));
 
-        Mail::assertSent(ReservationConfirmedMail::class, function (ReservationConfirmedMail $mail) use ($user) {
+        Mail::assertQueued(ReservationConfirmedMail::class, function (ReservationConfirmedMail $mail) use ($user) {
             return $mail->hasTo($user->email);
         });
 
-        Mail::assertSent(AdminReservationNotificationMail::class, function (AdminReservationNotificationMail $mail) {
+        Mail::assertQueued(AdminReservationNotificationMail::class, function (AdminReservationNotificationMail $mail) {
             return $mail->mode === 'created' && $mail->hasTo('info@scarena.rs');
         });
     }
@@ -159,11 +159,11 @@ class MailFlowsTest extends TestCase
 
         $response->assertRedirect(route('dashboard'));
 
-        Mail::assertSent(ReservationCancelledMail::class, function (ReservationCancelledMail $mail) use ($user) {
+        Mail::assertQueued(ReservationCancelledMail::class, function (ReservationCancelledMail $mail) use ($user) {
             return $mail->hasTo($user->email);
         });
 
-        Mail::assertSent(AdminReservationNotificationMail::class, function (AdminReservationNotificationMail $mail) {
+        Mail::assertQueued(AdminReservationNotificationMail::class, function (AdminReservationNotificationMail $mail) {
             return $mail->mode === 'cancelled' && $mail->hasTo('info@scarena.rs');
         });
     }

@@ -10,8 +10,8 @@ use Carbon\Carbon;
 use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Query\Builder as QueryBuilder;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 
 class AdminAnalyticsService
 {
@@ -56,7 +56,7 @@ class AdminAnalyticsService
     {
         $resolved = $this->resolveFilters($filters);
 
-        return $resolved['startDate']->format('d.m.Y') . ' - ' . $resolved['endDate']->format('d.m.Y');
+        return $resolved['startDate']->format('d.m.Y').' - '.$resolved['endDate']->format('d.m.Y');
     }
 
     public function selectedUserLabel(array $filters = []): ?string
@@ -175,18 +175,23 @@ class AdminAnalyticsService
             ->orderBy('name')
             ->get();
 
-        $reservations = $this->reservationQuery($filters)
-            ->get(['court_id', 'status', 'total_price']);
+        $statistics = $this->reservationQuery($filters)
+            ->select('court_id')
+            ->selectRaw('COUNT(*) as reservations_count')
+            ->selectRaw(
+                'SUM(CASE WHEN status = ? THEN total_price ELSE 0 END) as revenue',
+                [ReservationStatus::Reserved->value],
+            )
+            ->groupBy('court_id')
+            ->get()
+            ->keyBy('court_id');
 
-        $grouped = $reservations->groupBy('court_id');
-        $maxCount = max((int) $courts->map(fn (Court $court) => $grouped->get($court->id, collect())->count())->max(), 1);
+        $maxCount = max((int) $statistics->max('reservations_count'), 1);
 
-        return $courts->map(function (Court $court) use ($grouped, $maxCount): array {
-            $items = $grouped->get($court->id, collect());
-            $count = $items->count();
-            $revenue = $items
-                ->filter(fn (Reservation $reservation): bool => in_array($reservation->status?->value, $this->revenueStatuses(), true))
-                ->sum(fn (Reservation $reservation): float => (float) $reservation->total_price);
+        return $courts->map(function (Court $court) use ($statistics, $maxCount): array {
+            $courtStatistics = $statistics->get($court->id);
+            $count = (int) ($courtStatistics?->reservations_count ?? 0);
+            $revenue = (float) ($courtStatistics?->revenue ?? 0);
 
             return [
                 'name' => $court->name,
@@ -211,10 +216,16 @@ class AdminAnalyticsService
             7 => 'Ned',
         ];
 
+        $weekdayExpression = DB::getDriverName() === 'sqlite'
+            ? "CASE strftime('%w', starts_at) WHEN '0' THEN 7 ELSE CAST(strftime('%w', starts_at) AS INTEGER) END"
+            : 'WEEKDAY(starts_at) + 1';
+
         $counts = $this->reservationQuery($filters)
             ->where('status', '!=', ReservationStatus::Cancelled->value)
-            ->get(['starts_at'])
-            ->countBy(fn (Reservation $reservation) => $reservation->starts_at->isoWeekday());
+            ->selectRaw("{$weekdayExpression} as bucket, COUNT(*) as aggregate")
+            ->groupBy('bucket')
+            ->pluck('aggregate', 'bucket')
+            ->map(fn ($count): int => (int) $count);
 
         $maxCount = max((int) $counts->max(), 1);
 
@@ -231,10 +242,16 @@ class AdminAnalyticsService
 
     public function popularityByHour(array $filters = []): Collection
     {
+        $hourExpression = DB::getDriverName() === 'sqlite'
+            ? "strftime('%H:00', starts_at)"
+            : "DATE_FORMAT(starts_at, '%H:00')";
+
         $counts = $this->reservationQuery($filters)
             ->where('status', '!=', ReservationStatus::Cancelled->value)
-            ->get(['starts_at'])
-            ->countBy(fn (Reservation $reservation) => $reservation->starts_at->format('H:00'))
+            ->selectRaw("{$hourExpression} as bucket, COUNT(*) as aggregate")
+            ->groupBy('bucket')
+            ->pluck('aggregate', 'bucket')
+            ->map(fn ($count): int => (int) $count)
             ->sortDesc()
             ->take(6);
 
@@ -253,8 +270,10 @@ class AdminAnalyticsService
     {
         $counts = $this->reservationQuery($filters)
             ->where('status', '!=', ReservationStatus::Cancelled->value)
-            ->get(['duration_minutes'])
-            ->countBy('duration_minutes')
+            ->selectRaw('duration_minutes, COUNT(*) as aggregate')
+            ->groupBy('duration_minutes')
+            ->pluck('aggregate', 'duration_minutes')
+            ->map(fn ($count): int => (int) $count)
             ->sortKeys();
 
         $total = max((int) $counts->sum(), 1);
@@ -276,7 +295,7 @@ class AdminAnalyticsService
             60 => '1h',
             90 => '1,5h',
             120 => '2h',
-            default => rtrim(rtrim(number_format($minutes / 60, 2, ',', ''), '0'), ',') . 'h',
+            default => rtrim(rtrim(number_format($minutes / 60, 2, ',', ''), '0'), ',').'h',
         };
     }
 

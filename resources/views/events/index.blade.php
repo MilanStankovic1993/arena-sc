@@ -2,14 +2,14 @@
     'title' => 'Turniri, lige i dogadjaji | Sportski centar Arena',
     'metaDescription' => 'Pratite turnire, lige, rezultate i sportske dogadjaje u Sportski centar Arena Kraljevo za padel i basket 3x3.',
     'metaKeywords' => 'padel turnir, padel liga, basket 3x3 turnir, dogadjaji kraljevo, sportski centar arena',
-    'metaImage' => asset('media/home/events-hero.png'),
+    'metaImage' => asset('media/home/events-hero.webp'),
 ])
 
 @section('content')
     <div class="page-stack events-page-stack">
         <section
             class="events-hero"
-            style="background-image: linear-gradient(90deg, rgba(7, 16, 13, 0.88) 0%, rgba(7, 16, 13, 0.46) 48%, rgba(7, 16, 13, 0.82) 100%), url('{{ asset('media/home/sports-hero.png') }}');"
+            style="background-image: linear-gradient(90deg, rgba(7, 16, 13, 0.88) 0%, rgba(7, 16, 13, 0.46) 48%, rgba(7, 16, 13, 0.82) 100%), url('{{ asset('media/home/sports-hero.webp') }}');"
         >
             <div class="site-grid events-hero__inner">
                 <div class="events-hero__content">
@@ -35,7 +35,7 @@
                     <a href="{{ route('events.show', ['event' => $featuredEvent->slug]) }}" class="events-feature-card">
                         <div class="events-feature-card__media">
                             @if ($featuredEvent->cover_image_url)
-                                <img src="{{ $featuredEvent->cover_image_url }}" alt="{{ $featuredEvent->title }}" class="events-feature-card__image">
+                                <img src="{{ $featuredEvent->cover_image_url }}" alt="{{ $featuredEvent->title }}" decoding="async" class="events-feature-card__image">
                             @else
                                 <div class="events-feature-card__fallback"></div>
                             @endif
@@ -82,7 +82,7 @@
                         <a href="{{ route('events.show', ['event' => $event->slug]) }}" class="events-card">
                             <div class="events-card__media">
                                 @if ($event->cover_image_url)
-                                    <img src="{{ $event->cover_image_url }}" alt="{{ $event->title }}" class="events-card__image">
+                                    <img src="{{ $event->cover_image_url }}" alt="{{ $event->title }}" loading="lazy" decoding="async" class="events-card__image">
                                 @else
                                     <div class="events-card__fallback"></div>
                                 @endif

@@ -2,20 +2,14 @@
     'title' => 'O nama | Sportski centar Arena Kraljevo',
     'metaDescription' => 'Upoznajte Sportski centar Arena u Kraljevu. Premium prostor za padel, basket 3x3, rekreaciju, dogadjaje i sportsku zajednicu.',
     'metaKeywords' => 'o nama sportski centar, sportski centar kraljevo, arena kraljevo, padel kraljevo, basket kraljevo',
-    'metaImage' => asset('media/home/about-hero.png'),
+    'metaImage' => asset('media/home/about-hero.webp'),
 ])
 
 @section('content')
-    @php
-        $locationName = config('arena.location.name');
-        $locationLabel = config('arena.location.label');
-        $mapsUrl = config('arena.location.maps_url');
-        $mapEmbedUrl = config('arena.location.map_embed_url');
-    @endphp
     <div class="page-stack about-page-stack">
         <section
             class="about-hero"
-            style="background-image: linear-gradient(90deg, rgba(7, 16, 13, 0.86) 0%, rgba(7, 16, 13, 0.46) 42%, rgba(7, 16, 13, 0.78) 100%), url('{{ asset('media/home/about-hero.png') }}');"
+            style="background-image: linear-gradient(90deg, rgba(7, 16, 13, 0.86) 0%, rgba(7, 16, 13, 0.46) 42%, rgba(7, 16, 13, 0.78) 100%), url('{{ asset('media/home/about-hero.webp') }}');"
         >
             <div class="site-grid about-hero__inner">
                 <div class="about-hero__content">
@@ -29,7 +23,7 @@
             <div class="about-section-stack">
                 <div
                     class="about-story-panel"
-                    style="background-image: linear-gradient(90deg, rgba(245, 245, 242, 0.96) 0%, rgba(245, 245, 242, 0.88) 42%, rgba(245, 245, 242, 0.16) 100%), url('{{ asset('media/home/about-story.png') }}');"
+                    style="background-image: linear-gradient(90deg, rgba(245, 245, 242, 0.96) 0%, rgba(245, 245, 242, 0.88) 42%, rgba(245, 245, 242, 0.16) 100%), url('{{ asset('media/home/about-story.webp') }}');"
                 >
                     <div class="about-story-panel__copy">
                         <span class="eyebrow-chip">Sportski centar Arena</span>
@@ -48,50 +42,6 @@
                     </div>
                 </div>
 
-                <div class="about-location-card">
-                    <div class="about-location-card__copy">
-                        <span class="eyebrow-chip">Lokacija</span>
-                        <h2 class="section-title-dark mt-5">Nalazimo se na jednoj lokaciji za padel, basket 3x3 i kompletan premium ambijent.</h2>
-                        <p class="about-location-card__text mt-6">
-                            Pogledaj gde se nalazimo i otvori direktnu navigaciju do sportskog centra.
-                        </p>
-
-                        <a
-                            href="{{ $mapsUrl }}"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            class="arena-button-primary"
-                        >
-                            Otvori Google mapu
-                        </a>
-                    </div>
-
-                    <div class="about-location-card__map-shell">
-                        <iframe
-                            src="{{ $mapEmbedUrl }}"
-                            loading="lazy"
-                            class="about-location-card__map"
-                            title="Lokacija {{ $locationName }}"
-                        ></iframe>
-
-                        <div class="about-location-card__map-meta">
-                            <div>
-                                <span class="dark-eyebrow-chip">Lokacija na mapi</span>
-                                <h3 class="card-title-dark mt-4">{{ $locationName }}</h3>
-                                <p class="about-location-card__map-text">{{ $locationLabel }}</p>
-                            </div>
-
-                            <a
-                                href="{{ $mapsUrl }}"
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                class="about-location-card__map-cta"
-                            >
-                                Otvori Google Maps
-                            </a>
-                        </div>
-                    </div>
-                </div>
             </div>
         </section>
     </div>

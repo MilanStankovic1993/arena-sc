@@ -2,8 +2,8 @@
 
 namespace App\Filament\Pages;
 
-use App\Filament\Widgets\AnalyticsCourtPerformanceWidget;
 use App\Filament\Widgets\AnalyticsCourtPerformanceTable;
+use App\Filament\Widgets\AnalyticsCourtPerformanceWidget;
 use App\Filament\Widgets\AnalyticsDurationDistributionWidget;
 use App\Filament\Widgets\AnalyticsRevenueChart;
 use App\Filament\Widgets\AnalyticsSummaryWidget;
@@ -36,7 +36,7 @@ class Statistics extends BaseDashboard
 
     protected static string $routePath = 'statistika';
 
-    public function getColumns(): int | array
+    public function getColumns(): int|array
     {
         return [
             'md' => 2,

@@ -2,12 +2,15 @@
 
 namespace App\Services;
 
+use App\Enums\UserRole;
 use App\Mail\CampaignMail;
 use App\Models\EmailCampaign;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
+use Throwable;
 
 class EmailCampaignService
 {
@@ -20,8 +23,16 @@ class EmailCampaignService
             ->filter(fn (User $user) => filled($user->email))
             ->unique('id')
             ->each(function (User $user) use ($campaign, &$count): void {
-                Mail::to($user->email)->send(new CampaignMail($campaign, $user));
-                $count++;
+                try {
+                    Mail::to($user->email)->send(new CampaignMail($campaign, $user));
+                    $count++;
+                } catch (Throwable $exception) {
+                    Log::error('Campaign email failed.', [
+                        'campaign_id' => $campaign->id,
+                        'user_id' => $user->id,
+                        'error' => $exception->getMessage(),
+                    ]);
+                }
             });
 
         if ($count > 0) {
@@ -37,7 +48,7 @@ class EmailCampaignService
     public function allCustomers(): EloquentCollection
     {
         return User::query()
-            ->where('role', \App\Enums\UserRole::Customer->value)
+            ->where('role', UserRole::Customer->value)
             ->whereNotNull('email')
             ->where('email', '!=', '')
             ->orderBy('name')

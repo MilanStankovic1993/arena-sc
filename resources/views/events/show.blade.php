@@ -2,7 +2,7 @@
     'title' => $event->title . ' | Dogadjaji | Arena Kraljevo',
     'metaDescription' => trim(($event->summary ?: $event->description ?: 'Turnir ili liga u Sportski centar Arena Kraljevo.') . ' Pogledajte ucesnike, raspored i rezultate.'),
     'metaKeywords' => strtolower($event->title . ', ' . $event->type->label() . ', padel turnir, padel liga, basket 3x3, sportski dogadjaji kraljevo'),
-    'metaImage' => $event->cover_image_url ?: asset('media/home/events-hero.png'),
+    'metaImage' => $event->cover_image_url ?: asset('media/home/events-hero.webp'),
     'metaType' => 'article',
 ])
 
@@ -10,7 +10,7 @@
     <div class="page-stack">
         <section
             class="event-detail-hero"
-            style="background-image: linear-gradient(180deg, rgba(7, 16, 13, 0.62) 0%, rgba(7, 16, 13, 0.78) 48%, rgba(7, 16, 13, 0.9) 100%), url('{{ $event->cover_image_url ?: asset('media/home/events-hero.png') }}');"
+            style="background-image: linear-gradient(180deg, rgba(7, 16, 13, 0.62) 0%, rgba(7, 16, 13, 0.78) 48%, rgba(7, 16, 13, 0.9) 100%), url('{{ $event->cover_image_url ?: asset('media/home/events-hero.webp') }}');"
         >
             <div class="site-grid event-detail-hero__inner">
                 <div class="event-detail-hero__content">

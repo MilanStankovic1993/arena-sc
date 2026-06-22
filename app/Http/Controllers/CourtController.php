@@ -10,6 +10,8 @@ class CourtController extends Controller
     public function show(Court $court): View
     {
         $court->load('sport');
+        abort_unless($court->is_active && $court->sport?->is_active, 404);
+
         $pricingRules = $court->sport->pricingRules()
             ->where('is_active', true)
             ->orderBy('start_time')

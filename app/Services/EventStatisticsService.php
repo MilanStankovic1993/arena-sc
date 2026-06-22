@@ -93,6 +93,7 @@ class EventStatisticsService
             ->values()
             ->map(function (array $row, int $index): array {
                 $row['position'] = $index + 1;
+
                 return $row;
             });
     }
@@ -164,7 +165,7 @@ class EventStatisticsService
                 $event->matches()->create([
                     'home_entry_id' => $round % 2 === 0 ? $home->id : $away->id,
                     'away_entry_id' => $round % 2 === 0 ? $away->id : $home->id,
-                    'round_label' => ($round + 1) . '. kolo',
+                    'round_label' => ($round + 1).'. kolo',
                     'status' => 'scheduled',
                 ]);
 

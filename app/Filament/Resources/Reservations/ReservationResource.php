@@ -13,6 +13,7 @@ use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
+use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
@@ -77,10 +78,14 @@ class ReservationResource extends Resource
                     ->default(ReservationStatus::Reserved->value),
                 DateTimePicker::make('starts_at')->label('Pocetak')->required(),
                 DateTimePicker::make('ends_at')->label('Kraj')->required(),
-                TextInput::make('duration_minutes')->label('Trajanje (min)')->numeric()->default(60)->required(),
-                TextInput::make('court_price')->label('Cena terena')->numeric()->prefix('RSD')->required(),
-                TextInput::make('equipment_price')->label('Cena opreme')->numeric()->prefix('RSD')->required(),
-                TextInput::make('total_price')->label('Ukupno')->numeric()->prefix('RSD')->required(),
+                Select::make('duration_minutes')->label('Trajanje')->options([
+                    60 => '60 minuta',
+                    90 => '90 minuta',
+                    120 => '120 minuta',
+                ])->default(60)->required(),
+                TextInput::make('court_price')->label('Cena terena')->numeric()->minValue(0)->prefix('RSD')->required(),
+                TextInput::make('equipment_price')->label('Cena opreme')->numeric()->minValue(0)->prefix('RSD')->required(),
+                TextInput::make('total_price')->label('Ukupno')->numeric()->minValue(0)->prefix('RSD')->required(),
                 Textarea::make('customer_note')->label('Napomena korisnika')->rows(3)->columnSpanFull(),
                 Textarea::make('admin_note')->label('Interna napomena')->rows(3)->columnSpanFull(),
                 Textarea::make('cancellation_reason')
@@ -96,9 +101,9 @@ class ReservationResource extends Resource
                     ->addActionLabel('Dodaj stavku opreme')
                     ->schema([
                         Select::make('equipment_id')->relationship('equipment', 'name')->required()->searchable()->preload(),
-                        TextInput::make('quantity')->label('Kolicina')->numeric()->default(1)->required(),
-                        TextInput::make('unit_price')->label('Cena po komadu')->numeric()->prefix('RSD')->required(),
-                        TextInput::make('line_total')->label('Ukupno')->numeric()->prefix('RSD')->required(),
+                        TextInput::make('quantity')->label('Kolicina')->numeric()->minValue(1)->default(1)->required(),
+                        TextInput::make('unit_price')->label('Cena po komadu')->numeric()->minValue(0)->prefix('RSD')->required(),
+                        TextInput::make('line_total')->label('Ukupno')->numeric()->minValue(0)->prefix('RSD')->required(),
                     ])
                     ->columns(4)
                     ->defaultItems(0),
@@ -136,8 +141,8 @@ class ReservationResource extends Resource
                 SelectFilter::make('court')->relationship('court', 'name'),
                 Filter::make('period')
                     ->schema([
-                        \Filament\Forms\Components\DatePicker::make('from')->label('Od'),
-                        \Filament\Forms\Components\DatePicker::make('until')->label('Do'),
+                        DatePicker::make('from')->label('Od'),
+                        DatePicker::make('until')->label('Do'),
                     ])
                     ->query(function ($query, array $data) {
                         return $query
@@ -173,11 +178,11 @@ class ReservationResource extends Resource
                 DeleteAction::make(),
             ])
             ->headerActions([
-                \Filament\Actions\Action::make('calendar_view')
+                Action::make('calendar_view')
                     ->label('Kalendar')
                     ->icon('heroicon-o-calendar')
-                    ->color('warning') 
-                    ->url(fn (): string => static::getUrl('calendar')), 
+                    ->color('warning')
+                    ->url(fn (): string => static::getUrl('calendar')),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([

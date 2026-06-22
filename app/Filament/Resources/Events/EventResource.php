@@ -16,13 +16,13 @@ use Filament\Actions\EditAction;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Select;
-use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
+use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
-use Filament\Notifications\Notification;
 use Filament\Support\Enums\Width;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\IconColumn;
@@ -64,7 +64,17 @@ class EventResource extends Resource
                 TextInput::make('cta_label')->label('CTA tekst'),
                 DatePicker::make('start_date')->label('Pocetak'),
                 DatePicker::make('end_date')->label('Kraj'),
-                FileUpload::make('cover_image')->label('Naslovna slika')->image()->disk('public')->directory('events'),
+                FileUpload::make('cover_image')
+                    ->label('Naslovna slika')
+                    ->image()
+                    ->acceptedFileTypes(['image/avif', 'image/jpeg', 'image/png', 'image/webp'])
+                    ->maxSize(4096)
+                    ->imageResizeMode('contain')
+                    ->imageResizeTargetWidth('1600')
+                    ->imageResizeTargetHeight('1200')
+                    ->imageResizeUpscale(false)
+                    ->disk('public')
+                    ->directory('events'),
                 Toggle::make('is_featured')->label('Izdvoji na sajtu'),
                 Textarea::make('summary')->label('Kratak opis')->rows(3)->columnSpanFull(),
                 Textarea::make('description')->label('Opis')->rows(5)->columnSpanFull(),

@@ -52,7 +52,17 @@ class EmailCampaignResource extends Resource
                 TextInput::make('subject')->label('Naslov mejla')->required(),
                 TextInput::make('preheader')->label('Kratki uvod'),
                 TextInput::make('heading')->label('Veliki naslov'),
-                FileUpload::make('hero_image')->label('Naslovna slika')->image()->disk('public')->directory('campaigns'),
+                FileUpload::make('hero_image')
+                    ->label('Naslovna slika')
+                    ->image()
+                    ->acceptedFileTypes(['image/avif', 'image/jpeg', 'image/png', 'image/webp'])
+                    ->maxSize(4096)
+                    ->imageResizeMode('contain')
+                    ->imageResizeTargetWidth('1600')
+                    ->imageResizeTargetHeight('1200')
+                    ->imageResizeUpscale(false)
+                    ->disk('public')
+                    ->directory('campaigns'),
                 Textarea::make('intro')->label('Uvod')->rows(3)->columnSpanFull(),
                 Textarea::make('body')->label('Glavni tekst')->rows(10)->required()->columnSpanFull(),
                 TextInput::make('cta_label')->label('Tekst dugmeta'),

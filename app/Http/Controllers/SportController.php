@@ -12,8 +12,13 @@ class SportController extends Controller
         return view('sports.index', [
             'sports' => Sport::query()
                 ->where('is_active', true)
-                ->with(['courts', 'equipment'])
-                ->withCount('pricingRules')
+                ->with([
+                    'courts' => fn ($query) => $query->where('is_active', true),
+                    'equipment' => fn ($query) => $query->where('is_active', true),
+                ])
+                ->withCount([
+                    'pricingRules' => fn ($query) => $query->where('is_active', true),
+                ])
                 ->orderBy('sort_order')
                 ->get(),
         ]);

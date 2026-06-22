@@ -41,11 +41,11 @@ class AppServiceProvider extends ServiceProvider
                 absolute: false,
             );
 
-            return url($path);
+            return rtrim((string) config('app.url'), '/').'/'.ltrim($path, '/');
         });
 
         VerifyEmail::toMailUsing(function (object $notifiable, string $url) {
-            return (new MailMessage())
+            return (new MailMessage)
                 ->subject('Potvrdite email adresu | Sportski centar Arena')
                 ->view('emails.auth.verify-email', [
                     'url' => $url,
@@ -53,8 +53,14 @@ class AppServiceProvider extends ServiceProvider
                 ]);
         });
 
-        ResetPassword::toMailUsing(function (object $notifiable, string $url) {
-            return (new MailMessage())
+        ResetPassword::toMailUsing(function (object $notifiable, string $token) {
+            $path = route('password.reset', [
+                'token' => $token,
+                'email' => $notifiable->getEmailForPasswordReset(),
+            ], absolute: false);
+            $url = rtrim((string) config('app.url'), '/').'/'.ltrim($path, '/');
+
+            return (new MailMessage)
                 ->subject('Reset lozinke | Sportski centar Arena')
                 ->greeting('Zahtev za reset lozinke')
                 ->line('Primili smo zahtev za promenu lozinke na vasem nalogu.')

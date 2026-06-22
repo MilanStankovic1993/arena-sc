@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\EventMatches;
 
 use App\Filament\Resources\EventMatches\Pages\ManageEventMatches;
+use App\Models\EventEntry;
 use App\Models\EventMatch;
 use BackedEnum;
 use Filament\Actions\BulkActionGroup;
@@ -11,10 +12,11 @@ use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Select;
-use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
 use Filament\Resources\Resource;
 use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
 use Filament\Support\Enums\Width;
 use Filament\Support\Icons\Heroicon;
@@ -43,7 +45,7 @@ class EventMatchResource extends Resource
     {
         return $schema->components([
             Section::make('Mec')->schema([
-                Select::make('event_id')->label('Dogadjaj')->relationship('event', 'title')->required()->searchable()->preload(),
+                Select::make('event_id')->label('Dogadjaj')->relationship('event', 'title')->required()->searchable()->preload()->live(),
                 TextInput::make('round_label')->label('Kolo / faza'),
                 DateTimePicker::make('scheduled_at')->label('Termin'),
                 Select::make('status')->label('Status')->options([
@@ -51,10 +53,26 @@ class EventMatchResource extends Resource
                     'finished' => 'Zavrsen',
                     'cancelled' => 'Otkazan',
                 ])->required(),
-                Select::make('home_entry_id')->label('Domacin')->relationship('homeEntry', 'team_name')->searchable()->preload(),
-                Select::make('away_entry_id')->label('Gost')->relationship('awayEntry', 'team_name')->searchable()->preload(),
-                TextInput::make('home_score')->label('Rezultat domacin')->numeric(),
-                TextInput::make('away_score')->label('Rezultat gost')->numeric(),
+                Select::make('home_entry_id')
+                    ->label('Domacin')
+                    ->options(fn (Get $get): array => EventEntry::query()
+                        ->where('event_id', $get('event_id'))
+                        ->orderBy('team_name')
+                        ->pluck('team_name', 'id')
+                        ->all())
+                    ->searchable()
+                    ->preload(),
+                Select::make('away_entry_id')
+                    ->label('Gost')
+                    ->options(fn (Get $get): array => EventEntry::query()
+                        ->where('event_id', $get('event_id'))
+                        ->orderBy('team_name')
+                        ->pluck('team_name', 'id')
+                        ->all())
+                    ->searchable()
+                    ->preload(),
+                TextInput::make('home_score')->label('Rezultat domacin')->numeric()->minValue(0),
+                TextInput::make('away_score')->label('Rezultat gost')->numeric()->minValue(0),
                 Textarea::make('notes')->label('Napomena')->rows(3)->columnSpanFull(),
             ])->columns(2),
         ]);
