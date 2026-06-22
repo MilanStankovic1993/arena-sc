@@ -573,6 +573,16 @@ class PublicSiteDataFlowTest extends TestCase
             'is_active' => true,
         ]);
 
+        $equipment = Equipment::query()->create([
+            'sport_id' => $sport->id,
+            'name' => 'Padel reket',
+            'slug' => 'padel-reket',
+            'rental_price' => 400,
+            'stock_quantity' => 4,
+            'is_rentable' => true,
+            'is_active' => true,
+        ]);
+
         $startsAt = now()->addDay()->setTime(11, 0, 0);
 
         $response = $this->post(route('reservations.store'), [
@@ -583,7 +593,10 @@ class PublicSiteDataFlowTest extends TestCase
             'guest_phone' => '+38160111222',
             'guest_email' => 'gost@example.com',
             'customer_note' => 'Guest rezervacija',
-            'equipment' => [],
+            'equipment' => [[
+                'equipment_id' => $equipment->id,
+                'quantity' => 0,
+            ]],
         ]);
 
         $response->assertRedirect(route('booking.index', ['sport' => 'padel']));

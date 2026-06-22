@@ -24,7 +24,7 @@ class StoreReservationRequest extends FormRequest
             'customer_note' => ['nullable', 'string', 'max:1000'],
             'equipment' => ['nullable', 'array'],
             'equipment.*.equipment_id' => ['nullable', 'required_with:equipment.*.quantity', 'integer', 'exists:equipment,id'],
-            'equipment.*.quantity' => ['nullable', 'required_with:equipment.*.equipment_id', 'integer', 'min:1', 'max:20'],
+            'equipment.*.quantity' => ['nullable', 'required_with:equipment.*.equipment_id', 'integer', 'min:0', 'max:20'],
         ];
     }
 }
