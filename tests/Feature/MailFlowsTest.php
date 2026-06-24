@@ -102,12 +102,17 @@ class MailFlowsTest extends TestCase
 
         $response->assertRedirect(route('dashboard'));
 
-        Mail::assertQueued(ReservationConfirmedMail::class, function (ReservationConfirmedMail $mail) use ($user) {
-            return $mail->hasTo($user->email);
+        Mail::assertQueued(ReservationConfirmedMail::class, function (ReservationConfirmedMail $mail) use ($startsAt, $user) {
+            $expectedTerm = '10:00 - 11:00 ('.$startsAt->format('d.m.Y').')';
+
+            return $mail->hasTo($user->email)
+                && str_contains($mail->render(), $expectedTerm);
         });
 
-        Mail::assertQueued(AdminReservationNotificationMail::class, function (AdminReservationNotificationMail $mail) {
-            return $mail->mode === 'created' && $mail->hasTo('info@scarena.rs');
+        Mail::assertQueued(AdminReservationNotificationMail::class, function (AdminReservationNotificationMail $mail) use ($startsAt) {
+            return $mail->mode === 'created'
+                && $mail->hasTo('info@scarena.rs')
+                && str_contains($mail->render(), '10:00 - 11:00 ('.$startsAt->format('d.m.Y').')');
         });
     }
 
@@ -159,12 +164,19 @@ class MailFlowsTest extends TestCase
 
         $response->assertRedirect(route('dashboard'));
 
-        Mail::assertQueued(ReservationCancelledMail::class, function (ReservationCancelledMail $mail) use ($user) {
-            return $mail->hasTo($user->email);
+        Mail::assertQueued(ReservationCancelledMail::class, function (ReservationCancelledMail $mail) use ($reservation, $user) {
+            $expectedTerm = '12:00 - 13:00 ('.$reservation->starts_at->format('d.m.Y').')';
+
+            return $mail->hasTo($user->email)
+                && str_contains($mail->render(), $expectedTerm);
         });
 
-        Mail::assertQueued(AdminReservationNotificationMail::class, function (AdminReservationNotificationMail $mail) {
-            return $mail->mode === 'cancelled' && $mail->hasTo('info@scarena.rs');
+        Mail::assertQueued(AdminReservationNotificationMail::class, function (AdminReservationNotificationMail $mail) use ($reservation) {
+            $expectedTerm = '12:00 - 13:00 ('.$reservation->starts_at->format('d.m.Y').')';
+
+            return $mail->mode === 'cancelled'
+                && $mail->hasTo('info@scarena.rs')
+                && str_contains($mail->render(), $expectedTerm);
         });
     }
 

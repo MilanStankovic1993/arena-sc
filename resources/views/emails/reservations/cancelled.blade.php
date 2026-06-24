@@ -8,7 +8,7 @@
     <div style="display:grid;gap:12px;">
         <div style="padding:14px 16px;border:1px solid #e8e5db;border-radius:14px;background:#f5f5f2;"><strong>Sport:</strong> {{ $reservation->sport->name }}</div>
         <div style="padding:14px 16px;border:1px solid #e8e5db;border-radius:14px;background:#f5f5f2;"><strong>Teren:</strong> {{ $reservation->court->name }}</div>
-        <div style="padding:14px 16px;border:1px solid #e8e5db;border-radius:14px;background:#f5f5f2;"><strong>Termin:</strong> {{ $reservation->starts_at->format('d.m.Y H:i') }} - {{ $reservation->ends_at->format('H:i') }}</div>
+        <div style="padding:14px 16px;border:1px solid #e8e5db;border-radius:14px;background:#f5f5f2;"><strong>Termin:</strong> {{ $reservation->starts_at->format('H:i') }} - {{ $reservation->ends_at->format('H:i') }} ({{ $reservation->starts_at->format('d.m.Y') }})</div>
         @if ($reservation->cancellation_reason)
             <div style="padding:14px 16px;border:1px solid #e8e5db;border-radius:14px;background:#f5f5f2;"><strong>Razlog:</strong> {{ $reservation->cancellation_reason }}</div>
         @endif
