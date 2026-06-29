@@ -248,7 +248,9 @@
                                     <textarea name="customer_note" rows="3" class="booking-textarea mt-2">{{ old('customer_note') }}</textarea>
                                 </div>
 
-                                <button class="arena-button-primary w-full justify-center">Potvrdi rezervaciju</button>
+                                <div class="booking-submit-bar">
+                                    <button class="arena-button-primary w-full justify-center">Potvrdi rezervaciju</button>
+                                </div>
                             </form>
                         </div>
                         </div>

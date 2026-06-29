@@ -16,6 +16,8 @@ class ReservationFlashDialogTest extends TestCase
             ->get(route('booking.index'))
             ->assertOk()
             ->assertSee('arena-flash-dialog__panel--success', false)
+            ->assertSee('data-flash-close', false)
+            ->assertSee('href="'.route('booking.index').'"', false)
             ->assertSee('Rezervacija je evidentirana')
             ->assertSee('Uspesno ste rezervisali termin.');
     }
@@ -28,6 +30,7 @@ class ReservationFlashDialogTest extends TestCase
             ->post(route('reservations.store'), [])
             ->assertOk()
             ->assertSee('arena-flash-dialog__panel--error', false)
+            ->assertSee('data-flash-close', false)
             ->assertSee('Rezervacija nije prosla')
             ->assertSee('Izaberi teren pre potvrde rezervacije.');
     }

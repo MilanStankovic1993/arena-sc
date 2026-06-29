@@ -2165,7 +2165,9 @@
     }
 
     .booking-modal {
-        @apply fixed inset-0 z-[80] flex items-center justify-center p-4 sm:p-6;
+        @apply fixed inset-0 z-[80] flex items-start justify-center overflow-hidden p-3 sm:items-center sm:p-6;
+        min-height: 100svh;
+        min-height: 100dvh;
     }
 
     .booking-modal[hidden] {
@@ -2177,8 +2179,19 @@
     }
 
     .booking-modal__panel {
-        @apply relative max-h-[min(90vh,58rem)] w-full max-w-[64rem] overflow-y-auto;
+        @apply relative w-full max-w-[64rem] overflow-y-auto;
+        max-height: min(calc(100svh - 1.5rem), 58rem);
+        max-height: min(calc(100dvh - 1.5rem), 58rem);
+        padding-bottom: max(1.5rem, env(safe-area-inset-bottom));
         box-shadow: 0 34px 90px rgba(0, 0, 0, 0.34);
+        overscroll-behavior: contain;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    @supports not (height: 100dvh) {
+        .booking-modal__panel {
+            max-height: min(calc(100vh - 1.5rem), 58rem);
+        }
     }
 
     .booking-modal__close {
@@ -2199,6 +2212,21 @@
 
     .booking-confirm-stack {
         @apply space-y-5;
+    }
+
+    .booking-submit-bar {
+        @apply sticky bottom-0 z-10 -mx-4 rounded-t-[1.1rem] border-t px-4 pb-1 pt-3 sm:static sm:mx-0 sm:border-0 sm:bg-transparent sm:px-0 sm:pb-0 sm:pt-0;
+        border-color: rgba(15, 42, 31, 0.12);
+        background:
+            linear-gradient(180deg, rgba(245, 245, 242, 0.72), rgba(245, 245, 242, 0.98) 34%, rgba(245, 245, 242, 0.98));
+        backdrop-filter: blur(16px);
+        padding-bottom: max(0.25rem, env(safe-area-inset-bottom));
+    }
+
+    @media (max-width: 639px) {
+        .booking-submit-bar .arena-button-primary {
+            @apply min-h-[3.35rem] text-base;
+        }
     }
 
     .booking-confirm-topline {
