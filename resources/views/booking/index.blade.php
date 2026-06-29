@@ -883,6 +883,20 @@
                 });
             }
 
+            const bookingForm = app.querySelector('[data-booking-form]');
+
+            bookingForm?.addEventListener('submit', () => {
+                const submitButton = bookingForm.querySelector('button[type="submit"], button:not([type])');
+
+                if (submitButton) {
+                    submitButton.disabled = true;
+                    submitButton.classList.add('opacity-70', 'cursor-not-allowed');
+                    submitButton.textContent = 'Saljemo rezervaciju...';
+                }
+
+                setFeedback('Saljemo rezervaciju. Molimo sacekaj potvrdu.', 'info');
+            });
+
             prevWindowButton.addEventListener('click', () => {
                 const candidate = new Date(windowStart);
                 candidate.setDate(candidate.getDate() - 3);

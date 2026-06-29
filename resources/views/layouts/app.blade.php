@@ -28,14 +28,10 @@
 
             @include('layouts.partials.site-header')
 
+            @include('layouts.partials.flash-dialog')
+
             <main class="account-grid">
                 <div class="account-stack">
-                    @if (session('status'))
-                        <div class="site-success-banner">
-                            {{ session('status') }}
-                        </div>
-                    @endif
-
                     @isset($header)
                         <div class="page-hero overflow-hidden">
                             {{ $header }}

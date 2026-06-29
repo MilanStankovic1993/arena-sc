@@ -105,15 +105,9 @@
 
             @include('layouts.partials.site-header')
 
-            <main>
-                @if (session('status'))
-                    <div class="site-grid pt-6">
-                        <div class="site-success-banner">
-                            {{ session('status') }}
-                        </div>
-                    </div>
-                @endif
+            @include('layouts.partials.flash-dialog')
 
+            <main>
                 @yield('content')
             </main>
 

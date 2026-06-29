@@ -135,6 +135,92 @@
         text-transform: uppercase;
     }
 
+    .arena-flash-dialog-open {
+        overflow: hidden;
+    }
+
+    .arena-flash-dialog {
+        @apply fixed inset-0 z-[90] flex items-center justify-center px-4 py-6;
+    }
+
+    .arena-flash-dialog__shade {
+        @apply absolute inset-0 bg-[rgba(6,12,10,0.68)] backdrop-blur-sm;
+    }
+
+    .arena-flash-dialog__panel {
+        @apply relative w-full max-w-xl rounded-[1.4rem] border p-6 text-[color:var(--arena-forest)] outline-none sm:p-7;
+        background:
+            radial-gradient(circle at top right, rgba(200, 184, 154, 0.28), transparent 16rem),
+            linear-gradient(135deg, rgba(255, 255, 255, 0.98), rgba(245, 245, 242, 0.96));
+        border-color: rgba(255, 255, 255, 0.72);
+        box-shadow:
+            0 34px 90px rgba(0, 0, 0, 0.32),
+            inset 0 1px 0 rgba(255, 255, 255, 0.78);
+    }
+
+    .arena-flash-dialog__panel--success {
+        border-color: rgba(22, 163, 74, 0.24);
+    }
+
+    .arena-flash-dialog__panel--error {
+        border-color: rgba(220, 38, 38, 0.28);
+    }
+
+    .arena-flash-dialog__panel::before {
+        content: '';
+        position: absolute;
+        inset: 0 auto 0 0;
+        width: 0.45rem;
+        border-radius: 1.4rem 0 0 1.4rem;
+        background: linear-gradient(180deg, var(--arena-sand), var(--arena-forest-glow));
+    }
+
+    .arena-flash-dialog__panel--error::before {
+        background: linear-gradient(180deg, #ef4444, #991b1b);
+    }
+
+    .arena-flash-dialog__close {
+        @apply absolute right-4 top-4 inline-flex h-10 w-10 items-center justify-center rounded-full border transition hover:scale-105;
+        border-color: var(--arena-border);
+        background: rgba(255, 255, 255, 0.72);
+        color: var(--arena-forest);
+    }
+
+    .arena-flash-dialog__eyebrow {
+        @apply inline-flex rounded-full px-3 py-1 text-xs font-extrabold uppercase tracking-[0.24em];
+        background: rgba(15, 42, 31, 0.08);
+        color: var(--arena-forest-glow);
+    }
+
+    .arena-flash-dialog__title {
+        @apply mt-5 pr-12 text-4xl leading-none sm:text-5xl;
+        color: var(--arena-forest);
+    }
+
+    .arena-flash-dialog__body {
+        @apply mt-4 space-y-3 text-sm font-semibold leading-7 sm:text-base;
+        color: var(--arena-muted);
+    }
+
+    .arena-flash-dialog__list {
+        @apply space-y-2 rounded-[1rem] border px-4 py-3;
+        border-color: rgba(220, 38, 38, 0.18);
+        background: rgba(254, 242, 242, 0.82);
+        color: #991b1b;
+    }
+
+    .arena-flash-dialog__list li {
+        @apply pl-1;
+    }
+
+    .arena-flash-dialog__list li::marker {
+        color: #dc2626;
+    }
+
+    .arena-flash-dialog__action {
+        @apply mt-6 w-full justify-center;
+    }
+
     .premium-brand {
         @apply flex items-center py-3;
     }
