@@ -249,7 +249,7 @@
                                 </div>
 
                                 <div class="booking-submit-bar">
-                                    <button class="arena-button-primary w-full justify-center">Potvrdi rezervaciju</button>
+                                    <button type="submit" class="arena-button-primary w-full justify-center">Potvrdi rezervaciju</button>
                                 </div>
                             </form>
                         </div>

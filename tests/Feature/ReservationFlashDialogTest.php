@@ -22,6 +22,15 @@ class ReservationFlashDialogTest extends TestCase
             ->assertSee('Uspesno ste rezervisali termin.');
     }
 
+    public function test_booking_confirmation_button_is_an_explicit_submit_button(): void
+    {
+        $this
+            ->get(route('booking.index'))
+            ->assertOk()
+            ->assertSee('type="submit"', false)
+            ->assertSee('Potvrdi rezervaciju');
+    }
+
     public function test_booking_validation_errors_are_visible_as_popup_dialog(): void
     {
         $this
