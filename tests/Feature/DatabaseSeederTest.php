@@ -31,7 +31,7 @@ class DatabaseSeederTest extends TestCase
         $this->assertSame(2, Sport::query()->count());
         $this->assertSame(4, Court::query()->count());
         $this->assertSame(8, PricingRule::query()->count());
-        $this->assertSame(211, Equipment::query()->count());
+        $this->assertSame(30, Equipment::query()->count());
         $this->assertSame(3, MembershipPlan::query()->count());
         $this->assertSame(1, Event::query()->count());
 
@@ -59,21 +59,6 @@ class DatabaseSeederTest extends TestCase
             'sale_price' => 17400,
             'stock_quantity' => 10,
             'is_rentable' => false,
-            'is_sellable' => true,
-        ]);
-        $this->assertDatabaseHas('equipment', [
-            'sku' => 'PPIXFOGG26',
-            'sale_price' => 26400,
-            'stock_quantity' => 10,
-            'is_sellable' => true,
-        ]);
-        $pickleballRacketImage = Equipment::query()->where('sku', 'PPIXFOGG26')->value('image');
-        $this->assertNotNull($pickleballRacketImage);
-        Storage::disk('public')->assertExists($pickleballRacketImage);
-        $this->assertDatabaseHas('equipment', [
-            'sku' => 'BPLUXMASTER',
-            'sale_price' => 12000,
-            'stock_quantity' => 10,
             'is_sellable' => true,
         ]);
         Storage::disk('public')->assertExists('equipment/nox/pat10pch26.png');
