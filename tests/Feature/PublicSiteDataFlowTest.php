@@ -26,7 +26,7 @@ class PublicSiteDataFlowTest extends TestCase
 
     private function storageUrl(string $path): string
     {
-        return rtrim(config('app.url'), '/').'/storage/'.ltrim($path, '/');
+        return route('public-storage.show', ['path' => $path]);
     }
 
     public function test_public_storage_fallback_serves_uploaded_admin_files(): void
