@@ -2164,6 +2164,11 @@
         overflow: hidden;
     }
 
+    .booking-modal-open .booking-sidebar {
+        position: relative;
+        z-index: 81;
+    }
+
     .booking-modal {
         @apply fixed inset-0 z-[80] flex items-start justify-center overflow-hidden p-3 sm:items-center sm:p-6;
         min-height: 100svh;

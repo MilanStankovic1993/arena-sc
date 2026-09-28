@@ -49,6 +49,6 @@ return [
     ],
 
     'booking' => [
-        'is_open' => (bool) env('ONLINE_BOOKING_OPEN', true),
+        'is_open' => filter_var(env('ONLINE_BOOKING_OPEN', false), FILTER_VALIDATE_BOOLEAN),
     ],
 ];

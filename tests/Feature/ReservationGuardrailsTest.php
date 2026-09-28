@@ -59,6 +59,17 @@ class ReservationGuardrailsTest extends TestCase
         $this->assertDatabaseCount('reservations', 0);
     }
 
+    public function test_booking_page_shows_opening_message_while_online_booking_is_closed(): void
+    {
+        config()->set('arena.booking.is_open', false);
+
+        $this
+            ->get(route('booking.index'))
+            ->assertOk()
+            ->assertSee('Uskoro otvaramo')
+            ->assertDontSee('Potvrdi rezervaciju');
+    }
+
     public function test_public_reservation_rejects_a_deactivated_court(): void
     {
         [$sport, $court] = $this->createSportCourtAndPricing('Padel', 'padel');
