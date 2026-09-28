@@ -67,6 +67,9 @@ class DatabaseSeederTest extends TestCase
             'stock_quantity' => 10,
             'is_sellable' => true,
         ]);
+        $pickleballRacketImage = Equipment::query()->where('sku', 'PPIXFOGG26')->value('image');
+        $this->assertNotNull($pickleballRacketImage);
+        Storage::disk('public')->assertExists($pickleballRacketImage);
         $this->assertDatabaseHas('equipment', [
             'sku' => 'BPLUXMASTER',
             'sale_price' => 12000,

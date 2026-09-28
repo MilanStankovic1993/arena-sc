@@ -26,8 +26,10 @@ class NoxEquipmentSeeder extends Seeder
 
         foreach ($items as $item) {
             $image = $item['image'];
-            $imagePath = null;
-            $sourcePath = $image ? database_path("seeders/assets/nox-equipment/{$image}") : null;
+            $imagePath = $image;
+            $sourcePath = $image && ! str_starts_with($image, 'equipment/')
+                ? database_path("seeders/assets/nox-equipment/{$image}")
+                : null;
 
             if ($sourcePath && is_file($sourcePath)) {
                 $imagePath = "equipment/nox/{$image}";
@@ -107,6 +109,7 @@ class NoxEquipmentSeeder extends Seeder
 
         try {
             $sharedStrings = $this->sharedStrings($zip);
+            $images = $this->catalogImages($zip);
             $sheets = [
                 'sheet2.xml' => ['code' => 'B', 'name' => 'C', 'prices' => ['F']],
                 'sheet3.xml' => ['code' => 'B', 'name' => 'D', 'prices' => ['E']],
@@ -139,7 +142,12 @@ class NoxEquipmentSeeder extends Seeder
                         continue;
                     }
 
-                    $items[$sku] ??= $this->sale($sku, $name, (int) round((float) $price), null);
+                    $items[$sku] ??= $this->sale(
+                        $sku,
+                        $name,
+                        (int) round((float) $price),
+                        $this->storeCatalogImage($images[$sheet][(int) $row['__row']] ?? null, $sku),
+                    );
                 }
             }
 
@@ -176,7 +184,7 @@ class NoxEquipmentSeeder extends Seeder
         $rows = [];
 
         foreach ($worksheet->sheetData->row as $row) {
-            $values = [];
+            $values = ['__row' => (string) $row->attributes()['r']];
 
             foreach ($row->children($namespace)->c as $cell) {
                 $attributes = $cell->attributes();
@@ -195,6 +203,110 @@ class NoxEquipmentSeeder extends Seeder
         }
 
         return $rows;
+    }
+
+    /** @return array<string, array<int, array{contents: string, extension: string}>> */
+    private function catalogImages(ZipArchive $zip): array
+    {
+        $images = [];
+
+        for ($sheetNumber = 2; $sheetNumber <= 11; $sheetNumber++) {
+            $sheet = "sheet{$sheetNumber}.xml";
+            $sheetXml = $zip->getFromName("xl/worksheets/{$sheet}");
+            $sheetRelations = $zip->getFromName("xl/worksheets/_rels/{$sheet}.rels");
+
+            if ($sheetXml === false || $sheetRelations === false) {
+                continue;
+            }
+
+            $worksheet = new SimpleXMLElement($sheetXml);
+            $relationships = new SimpleXMLElement($sheetRelations);
+            $relationshipNamespace = 'http://schemas.openxmlformats.org/officeDocument/2006/relationships';
+            $drawingId = (string) ($worksheet->children('http://schemas.openxmlformats.org/spreadsheetml/2006/main')->drawing
+                ->attributes($relationshipNamespace)['id'] ?? '');
+
+            if ($drawingId === '') {
+                continue;
+            }
+
+            $drawingTarget = $this->relationshipTarget($relationships, $drawingId);
+
+            if ($drawingTarget === null) {
+                continue;
+            }
+
+            $drawingName = basename($drawingTarget);
+            $drawingXml = $zip->getFromName("xl/drawings/{$drawingName}");
+            $drawingRelationsXml = $zip->getFromName("xl/drawings/_rels/{$drawingName}.rels");
+
+            if ($drawingXml === false || $drawingRelationsXml === false) {
+                continue;
+            }
+
+            $drawing = new SimpleXMLElement($drawingXml);
+            $drawingRelations = new SimpleXMLElement($drawingRelationsXml);
+            $drawingNamespace = 'http://schemas.openxmlformats.org/drawingml/2006/spreadsheetDrawing';
+            $pictureNamespace = 'http://schemas.openxmlformats.org/drawingml/2006/main';
+
+            foreach ($drawing->children($drawingNamespace) as $anchor) {
+                $from = $anchor->children($drawingNamespace)->from;
+                $rowNumber = (int) ($from->children($drawingNamespace)->row ?? -1) + 1;
+                $blip = $anchor->xpath('.//*[local-name()="blip"]')[0] ?? null;
+
+                if (! $blip instanceof SimpleXMLElement || $rowNumber < 1) {
+                    continue;
+                }
+
+                $embedId = (string) $blip->attributes($relationshipNamespace)['embed'];
+                $imageTarget = $this->relationshipTarget($drawingRelations, $embedId);
+
+                if ($imageTarget === null) {
+                    continue;
+                }
+
+                $imageName = basename($imageTarget);
+                $contents = $zip->getFromName("xl/media/{$imageName}");
+
+                if ($contents === false) {
+                    continue;
+                }
+
+                $images[$sheet][$rowNumber] = [
+                    'contents' => $contents,
+                    'extension' => strtolower(pathinfo($imageName, PATHINFO_EXTENSION)),
+                ];
+            }
+        }
+
+        return $images;
+    }
+
+    private function relationshipTarget(SimpleXMLElement $relationships, string $id): ?string
+    {
+        foreach ($relationships->children('http://schemas.openxmlformats.org/package/2006/relationships') as $relationship) {
+            $attributes = $relationship->attributes();
+
+            if ((string) $attributes['Id'] === $id) {
+                return (string) $attributes['Target'];
+            }
+        }
+
+        return null;
+    }
+
+    /** @param array{contents: string, extension: string}|null $image */
+    private function storeCatalogImage(?array $image, string $sku): ?string
+    {
+        if ($image === null || ! in_array($image['extension'], ['jpg', 'jpeg', 'png', 'webp'], true)) {
+            return null;
+        }
+
+        $filename = strtolower($sku).'.'.$image['extension'];
+        $path = "equipment/nox/catalog/{$filename}";
+
+        Storage::disk('public')->put($path, $image['contents']);
+
+        return $path;
     }
 
     /** @return array<string, int|string|bool|null> */
