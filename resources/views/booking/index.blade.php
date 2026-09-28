@@ -249,7 +249,11 @@
                                 </div>
 
                                 <div class="booking-submit-bar">
-                                    <button type="submit" class="arena-button-primary w-full justify-center">Potvrdi rezervaciju</button>
+                                    @if (config('arena.booking.is_open'))
+                                        <button type="submit" class="arena-button-primary w-full justify-center">Potvrdi rezervaciju</button>
+                                    @else
+                                        <button type="button" class="arena-button-primary w-full justify-center" data-booking-opening>Uskoro otvaramo</button>
+                                    @endif
                                 </div>
                             </form>
                         </div>
@@ -886,6 +890,7 @@
             }
 
             const bookingForm = app.querySelector('[data-booking-form]');
+            const bookingOpeningButton = app.querySelector('[data-booking-opening]');
 
             bookingForm?.addEventListener('submit', () => {
                 const submitButton = bookingForm.querySelector('button[type="submit"], button:not([type])');
@@ -897,6 +902,10 @@
                 }
 
                 setFeedback('Saljemo rezervaciju. Molimo sacekaj potvrdu.', 'info');
+            });
+
+            bookingOpeningButton?.addEventListener('click', () => {
+                setFeedback('Online rezervacije uskoro otvaramo.', 'info');
             });
 
             prevWindowButton.addEventListener('click', () => {

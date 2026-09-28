@@ -42,6 +42,23 @@ class ReservationGuardrailsTest extends TestCase
         $this->assertDatabaseCount('reservations', 0);
     }
 
+    public function test_public_reservation_is_not_created_while_online_booking_is_closed(): void
+    {
+        config()->set('arena.booking.is_open', false);
+        [$sport, $court] = $this->createSportCourtAndPricing('Padel', 'padel');
+
+        $response = $this->actingAs(User::factory()->create())->post(route('reservations.store'), [
+            'court_id' => $court->id,
+            'starts_at' => now()->addDay()->setTime(10, 0)->format('Y-m-d H:i:s'),
+            'duration_minutes' => 60,
+            'equipment' => [],
+        ]);
+
+        $response->assertRedirect(route('booking.index'))
+            ->assertSessionHas('status', 'Online rezervacije uskoro otvaramo.');
+        $this->assertDatabaseCount('reservations', 0);
+    }
+
     public function test_public_reservation_rejects_a_deactivated_court(): void
     {
         [$sport, $court] = $this->createSportCourtAndPricing('Padel', 'padel');

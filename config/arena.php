@@ -47,4 +47,8 @@ return [
     'memberships' => [
         'expiry_reminder_days' => (int) env('MEMBERSHIP_EXPIRY_REMINDER_DAYS', 3),
     ],
+
+    'booking' => [
+        'is_open' => (bool) env('ONLINE_BOOKING_OPEN', true),
+    ],
 ];

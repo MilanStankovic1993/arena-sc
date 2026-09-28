@@ -42,6 +42,12 @@ class ReservationController extends Controller
         ReservationPricingService $pricingService,
         ReservationScheduleService $scheduleService,
     ): RedirectResponse {
+        if (! config('arena.booking.is_open')) {
+            return redirect()
+                ->route('booking.index')
+                ->with('status', 'Online rezervacije uskoro otvaramo.');
+        }
+
         $court = Court::query()->with('sport')->findOrFail($request->integer('court_id'));
         $startsAt = Carbon::parse($request->string('starts_at'));
         $endsAt = $startsAt->copy()->addMinutes($request->integer('duration_minutes'));
