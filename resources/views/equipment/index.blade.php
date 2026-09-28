@@ -47,7 +47,10 @@
                                                 loading="lazy"
                                             >
                                         @else
-                                            <div class="equipment-feature-card__fallback"></div>
+                                            <div class="equipment-feature-card__fallback" role="img" aria-label="NOX padel oprema">
+                                                <span>NOX</span>
+                                                <small>PADEL OPREMA</small>
+                                            </div>
                                         @endif
                                     </div>
 

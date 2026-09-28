@@ -854,9 +854,27 @@
     .equipment-feature-card__fallback {
         position: absolute;
         inset: 0;
+        display: grid;
+        place-content: center;
+        gap: 0.4rem;
+        text-align: center;
         background:
             radial-gradient(circle at top right, rgba(200, 184, 154, 0.18), transparent 24rem),
             linear-gradient(160deg, rgba(10, 18, 15, 0.98), rgba(15, 42, 31, 0.94));
+    }
+
+    .equipment-feature-card__fallback span {
+        font-family: 'Anton', sans-serif;
+        font-size: clamp(2.4rem, 4vw, 4.5rem);
+        letter-spacing: 0.08em;
+        color: rgba(226, 204, 170, 0.92);
+    }
+
+    .equipment-feature-card__fallback small {
+        font-family: 'Anton', sans-serif;
+        font-size: 0.72rem;
+        letter-spacing: 0.2em;
+        color: rgba(245, 245, 242, 0.72);
     }
 
     .equipment-feature-card__body {

@@ -63,6 +63,7 @@ class DatabaseSeederTest extends TestCase
         ]);
         Storage::disk('public')->assertExists('equipment/nox/pat10pch26.png');
         Storage::disk('public')->assertExists('equipment/nox/cal26luxwhgr.jpg');
+        $this->assertDatabaseHas('equipment', ['sku' => 'CAHMCNLVBLBAG', 'image' => null]);
         $this->assertDatabaseHas('membership_plans', ['slug' => 'padel-mesec']);
         $this->assertDatabaseHas('events', ['slug' => 'arena-padel-open']);
     }

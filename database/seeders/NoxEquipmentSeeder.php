@@ -15,10 +15,11 @@ class NoxEquipmentSeeder extends Seeder
 
         foreach ($this->items() as $item) {
             $image = $item['image'];
-            $imagePath = "equipment/nox/{$image}";
-            $sourcePath = database_path("seeders/assets/nox-equipment/{$image}");
+            $imagePath = null;
+            $sourcePath = $image ? database_path("seeders/assets/nox-equipment/{$image}") : null;
 
-            if (is_file($sourcePath)) {
+            if ($sourcePath && is_file($sourcePath)) {
+                $imagePath = "equipment/nox/{$image}";
                 Storage::disk('public')->put($imagePath, file_get_contents($sourcePath));
             }
 
@@ -55,14 +56,14 @@ class NoxEquipmentSeeder extends Seeder
             $this->sale('MOCPROSCAMEL', 'PRO SERIES CAMEL BACKPACK', 7900, 'mocproscamel.jpg'),
             $this->sale('BPAT10TEWH', 'AT10 TEAM WHITE PADELBAG', 8900, 'bpat10tewh.jpg'),
 
-            $this->sale('PRTNXNEBLBAG', 'BAG OF 6 NOX BLACK PROTECTORS', 1100, 'prtnxneblbag.png'),
-            $this->sale('PRTNXROBLBAG', 'BAG OF 6 NOX RED PROTECTORS', 1100, 'prtnxroblbag.png'),
-            $this->sale('PRTNXAZBLBAG', 'BAG OF 6 NOX BLUE PROTECTORS', 1100, 'prtnxazblbag.png'),
-            $this->sale('MUBLAM2UDBOX', 'BLISTER WITH 2 WHITE/BLUE LOGO WRISTBANDS', 900, 'mublam2udbox.png', 'Pakovanje sadrži šest blistera.'),
-            $this->sale('MULBLNEG2UDBOX', 'BAG WITH 2 WHITE/BLACK LOGO LONG WRISTBANDS', 900, 'mulblneg2udbox.png', 'Pakovanje sadrži šest blistera.'),
+            $this->sale('PRTNXNEBLBAG', 'BAG OF 6 NOX BLACK PROTECTORS', 1100, null),
+            $this->sale('PRTNXROBLBAG', 'BAG OF 6 NOX RED PROTECTORS', 1100, null),
+            $this->sale('PRTNXAZBLBAG', 'BAG OF 6 NOX BLUE PROTECTORS', 1100, null),
+            $this->sale('MUBLAM2UDBOX', 'BLISTER WITH 2 WHITE/BLUE LOGO WRISTBANDS', 900, null, 'Pakovanje sadrži šest blistera.'),
+            $this->sale('MULBLNEG2UDBOX', 'BAG WITH 2 WHITE/BLACK LOGO LONG WRISTBANDS', 900, null, 'Pakovanje sadrži šest blistera.'),
             $this->sale('OVPRO120BL', 'CAN WITH 120 WHITE PRO OVERGRIPS', 300, 'ovpro120bl.png'),
-            $this->sale('CAHMCNLVBLBAG', 'MID LENGTH BLACK/WHITE TECHNICAL SOCKS', 799, 'cahmcnlvblbag.png', 'Muške čarape 39–45. Pakovanje od šest pari.'),
-            $this->sale('CAHMCBLVAZBAG', 'MID LENGTH WHITE/BLUE TECHNICAL SOCKS', 799, 'cahmcblvazbag.png', 'Muške čarape 39–45. Pakovanje od šest pari.'),
+            $this->sale('CAHMCNLVBLBAG', 'MID LENGTH BLACK/WHITE TECHNICAL SOCKS', 799, null, 'Muške čarape 39–45. Pakovanje od šest pari.'),
+            $this->sale('CAHMCBLVAZBAG', 'MID LENGTH WHITE/BLUE TECHNICAL SOCKS', 799, null, 'Muške čarape 39–45. Pakovanje od šest pari.'),
             $this->sale('BOTNOXWH', 'WHITE NOX BOTTLE 550 ml', 1560, 'botnoxwh.jpg', 'Aluminijumska flašica od 550 ml.'),
             $this->sale('BOLS20LLAVGENIUS1226', 'BAG WITH 20 AT10 GENIUS 12K 26 RUBBER KEYCHAINS', 720, 'bols20llavgenius1226.png'),
             $this->sale('BOLS20LLAVGENIUS1826', 'BAG WITH 20 AT10 GENIUS 18K 26 RUBBER KEYCHAINS', 720, 'bols20llavgenius1826.png'),
@@ -74,7 +75,7 @@ class NoxEquipmentSeeder extends Seeder
     }
 
     /** @return array<string, int|string|bool> */
-    private function sale(string $sku, string $name, int $salePrice, string $image, ?string $description = null): array
+    private function sale(string $sku, string $name, int $salePrice, ?string $image, ?string $description = null): array
     {
         return [
             'sku' => $sku,
@@ -90,7 +91,7 @@ class NoxEquipmentSeeder extends Seeder
     }
 
     /** @return array<string, int|string|bool> */
-    private function rental(string $sku, string $name, string $image, ?string $description = null): array
+    private function rental(string $sku, string $name, ?string $image, ?string $description = null): array
     {
         return [
             'sku' => $sku,
