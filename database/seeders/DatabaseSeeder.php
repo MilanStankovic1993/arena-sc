@@ -80,6 +80,7 @@ class DatabaseSeeder extends Seeder
         ]);
 
         $this->seedEquipment($padel, $basket);
+        $this->call(NoxEquipmentSeeder::class);
         $this->seedMembershipPlans($padel, $basket);
         $this->seedEvents();
     }
