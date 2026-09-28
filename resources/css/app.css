@@ -820,7 +820,7 @@
     }
 
     .equipment-cards-grid {
-        @apply grid gap-6 lg:grid-cols-2;
+        @apply grid gap-4 sm:grid-cols-2 xl:grid-cols-4;
     }
 
     .equipment-feature-card {
@@ -834,49 +834,54 @@
     }
 
     .equipment-feature-card__media {
-        @apply relative overflow-hidden;
-        min-height: 20rem;
+        @apply relative flex items-center justify-center overflow-hidden p-4;
+        aspect-ratio: 4 / 3;
         background:
             linear-gradient(160deg, rgba(10, 18, 15, 0.98), rgba(15, 42, 31, 0.94));
     }
 
     .equipment-feature-card__image,
     .equipment-feature-card__fallback {
-        position: absolute;
-        inset: 0;
         width: 100%;
         height: 100%;
     }
 
     .equipment-feature-card__image {
-        object-fit: cover;
-        filter: brightness(0.94) contrast(1.04) saturate(1.04);
-        transform: scale(1.01);
+        object-fit: contain;
+        filter: brightness(0.98) contrast(1.02) saturate(1.02);
     }
 
     .equipment-feature-card__fallback {
+        position: absolute;
+        inset: 0;
         background:
             radial-gradient(circle at top right, rgba(200, 184, 154, 0.18), transparent 24rem),
             linear-gradient(160deg, rgba(10, 18, 15, 0.98), rgba(15, 42, 31, 0.94));
     }
 
     .equipment-feature-card__body {
-        @apply space-y-6 p-6 sm:p-7;
+        @apply space-y-4 p-5;
+    }
+
+    .equipment-feature-card__title {
+        font-family: 'Anton', sans-serif;
+        font-size: clamp(1.5rem, 1.65vw, 2rem);
+        line-height: 0.98;
+        color: var(--arena-forest);
     }
 
     .equipment-feature-card__description {
         color: var(--arena-muted);
-        font-size: 0.98rem;
-        line-height: 1.85;
-        max-width: 36rem;
+        font-size: 0.9rem;
+        line-height: 1.6;
     }
 
     .equipment-feature-card__prices {
-        @apply grid gap-3 sm:grid-cols-2;
+        @apply grid gap-3;
     }
 
     .equipment-price-box {
-        @apply rounded-[1rem] border px-4 py-4;
+        @apply rounded-[1rem] border px-4 py-3;
         border-color: rgba(15, 42, 31, 0.12);
         background: rgba(245, 245, 242, 0.78);
     }
@@ -897,7 +902,7 @@
     .equipment-price-box__value {
         margin-top: 0.55rem;
         font-family: 'Anton', sans-serif;
-        font-size: 1.7rem;
+        font-size: 1.45rem;
         line-height: 1;
         color: var(--arena-forest);
     }

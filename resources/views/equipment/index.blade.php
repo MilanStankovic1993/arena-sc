@@ -55,7 +55,7 @@
                                         <div class="flex items-start justify-between gap-4">
                                             <div>
                                                 <p class="sports-court-card__sport">{{ $item->sport?->name ?? 'Oprema' }}</p>
-                                                <h3 class="card-title mt-3">{{ $item->name }}</h3>
+                                                <h3 class="equipment-feature-card__title mt-3">{{ $item->name }}</h3>
                                             </div>
                                             <span class="info-chip">{{ $item->stock_quantity }} kom</span>
                                         </div>
