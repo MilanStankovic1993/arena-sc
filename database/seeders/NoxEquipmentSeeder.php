@@ -6,6 +6,9 @@ use App\Models\Equipment;
 use App\Models\Sport;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Storage;
+use RuntimeException;
+use SimpleXMLElement;
+use ZipArchive;
 
 class NoxEquipmentSeeder extends Seeder
 {
@@ -13,7 +16,15 @@ class NoxEquipmentSeeder extends Seeder
     {
         $padel = Sport::query()->where('slug', 'padel')->firstOrFail();
 
-        foreach ($this->items() as $item) {
+        $items = collect($this->items())->keyBy('sku');
+
+        foreach ($this->excelItems() as $item) {
+            if (! $items->has($item['sku'])) {
+                $items->put($item['sku'], $item);
+            }
+        }
+
+        foreach ($items as $item) {
             $image = $item['image'];
             $imagePath = null;
             $sourcePath = $image ? database_path("seeders/assets/nox-equipment/{$image}") : null;
@@ -36,7 +47,7 @@ class NoxEquipmentSeeder extends Seeder
         }
     }
 
-    /** @return array<int, array<string, int|string|bool>> */
+    /** @return array<int, array<string, int|string|bool|null>> */
     private function items(): array
     {
         return [
@@ -74,7 +85,119 @@ class NoxEquipmentSeeder extends Seeder
         ];
     }
 
-    /** @return array<string, int|string|bool> */
+    /**
+     * Imports every product family from the red and yellow NOX catalog blocks.
+     * Green rows are represented by the manually curated rental items above.
+     *
+     * @return array<int, array<string, int|string|bool|null>>
+     */
+    private function excelItems(): array
+    {
+        $catalogPath = database_path('seeders/assets/nox-equipment-catalog.xlsx');
+
+        if (! is_file($catalogPath)) {
+            throw new RuntimeException('NOX equipment catalog file is missing.');
+        }
+
+        $zip = new ZipArchive;
+
+        if ($zip->open($catalogPath) !== true) {
+            throw new RuntimeException('Unable to read the NOX equipment catalog.');
+        }
+
+        try {
+            $sharedStrings = $this->sharedStrings($zip);
+            $sheets = [
+                'sheet2.xml' => ['code' => 'B', 'name' => 'C', 'prices' => ['F']],
+                'sheet3.xml' => ['code' => 'B', 'name' => 'D', 'prices' => ['E']],
+                'sheet4.xml' => ['code' => 'B', 'name' => 'H', 'prices' => ['F', 'E']],
+                'sheet5.xml' => ['code' => 'B', 'name' => 'E', 'prices' => ['I']],
+                'sheet6.xml' => ['code' => 'B', 'name' => 'C', 'prices' => ['F']],
+                'sheet7.xml' => ['code' => 'B', 'name' => 'C', 'prices' => ['F']],
+                'sheet8.xml' => ['code' => 'C', 'name' => 'D', 'prices' => ['G']],
+                'sheet9.xml' => ['code' => 'C', 'name' => 'D', 'prices' => ['G']],
+                'sheet10.xml' => ['code' => 'B', 'name' => 'H', 'prices' => ['E']],
+                'sheet11.xml' => ['code' => 'B', 'name' => 'G', 'prices' => ['E']],
+            ];
+            $items = [];
+
+            foreach ($sheets as $sheet => $columns) {
+                $xml = $zip->getFromName("xl/worksheets/{$sheet}");
+
+                if ($xml === false) {
+                    continue;
+                }
+
+                foreach ($this->sheetRows($xml, $sharedStrings) as $row) {
+                    $sku = trim((string) ($row[$columns['code']] ?? ''));
+                    $name = trim(preg_replace('/\s+/', ' ', (string) ($row[$columns['name']] ?? '')) ?? '');
+                    $price = collect($columns['prices'])
+                        ->map(fn (string $column) => $row[$column] ?? null)
+                        ->first(fn (mixed $value) => is_numeric($value));
+
+                    if ($sku === '' || $name === '' || ! is_numeric($price)) {
+                        continue;
+                    }
+
+                    $items[$sku] ??= $this->sale($sku, $name, (int) round((float) $price), null);
+                }
+            }
+
+            return array_values($items);
+        } finally {
+            $zip->close();
+        }
+    }
+
+    /** @return array<int, string> */
+    private function sharedStrings(ZipArchive $zip): array
+    {
+        $xml = $zip->getFromName('xl/sharedStrings.xml');
+
+        if ($xml === false) {
+            return [];
+        }
+
+        $document = new SimpleXMLElement($xml);
+        $document->registerXPathNamespace('main', 'http://schemas.openxmlformats.org/spreadsheetml/2006/main');
+
+        return array_map(
+            fn (SimpleXMLElement $string): string => trim(html_entity_decode(strip_tags($string->asXML()), ENT_QUOTES | ENT_XML1)),
+            $document->xpath('//main:si') ?: [],
+        );
+    }
+
+    /** @return array<int, array<string, string|float>> */
+    private function sheetRows(string $xml, array $sharedStrings): array
+    {
+        $document = new SimpleXMLElement($xml);
+        $namespace = 'http://schemas.openxmlformats.org/spreadsheetml/2006/main';
+        $worksheet = $document->children($namespace);
+        $rows = [];
+
+        foreach ($worksheet->sheetData->row as $row) {
+            $values = [];
+
+            foreach ($row->children($namespace)->c as $cell) {
+                $attributes = $cell->attributes();
+                $reference = (string) $attributes['r'];
+                $column = preg_replace('/\d+/', '', $reference);
+                $value = (string) ($cell->children($namespace)->v ?? '');
+
+                if ((string) $attributes['t'] === 's' && $value !== '') {
+                    $value = $sharedStrings[(int) $value] ?? '';
+                }
+
+                $values[$column] = $value;
+            }
+
+            $rows[] = $values;
+        }
+
+        return $rows;
+    }
+
+    /** @return array<string, int|string|bool|null> */
     private function sale(string $sku, string $name, int $salePrice, ?string $image, ?string $description = null): array
     {
         return [
@@ -90,7 +213,7 @@ class NoxEquipmentSeeder extends Seeder
         ];
     }
 
-    /** @return array<string, int|string|bool> */
+    /** @return array<string, int|string|bool|null> */
     private function rental(string $sku, string $name, ?string $image, ?string $description = null): array
     {
         return [
