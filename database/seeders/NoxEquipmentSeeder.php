@@ -49,7 +49,7 @@ class NoxEquipmentSeeder extends Seeder
             $this->sale('CAL26LUXWHGR', 'AT10 LUX WHITE/GREY SHOES', 17400, 'cal26luxwhgr.jpg', 'Patike za padel. Dostupne veličine 36–48.'),
             $this->sale('CAL26LUXFGRA', 'AT10 LUX FEATHER GRAY/RAVEN SHOES', 17400, 'cal26luxfgra.jpg', 'Patike za padel. Dostupne veličine 39–48.'),
             $this->sale('MOCPROSCAMEL', 'PRO SERIES CAMEL BACKPACK', 7900, 'mocproscamel.jpg'),
-            $this->sale('BPAT10TEWH', 'AT10 TEAM WHITE PADELBAG', 8900, 'bpat10tewh.jpg'),
+            $this->sale('BPAT10TEWH', 'AT10 TEAM WHITE PADELBAG', 8900, 'BPAT10TEWH.webp'),
             $this->sale('PRTNXNEBLBAG', 'BAG OF 6 NOX BLACK PROTECTORS', 1100, 'PRTNXNEBLBAG.webp'),
             $this->sale('PRTNXROBLBAG', 'BAG OF 6 NOX RED PROTECTORS', 1100, 'PRTNXROBLBAG.webp'),
             $this->sale('PRTNXAZBLBAG', 'BAG OF 6 NOX BLUE PROTECTORS', 1100, 'PRTNXAZBLBAG.webp'),
