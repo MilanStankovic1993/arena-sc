@@ -2,6 +2,8 @@
 
 namespace App\Filament\Widgets;
 
+use App\Filament\Resources\Reservations\PhoneReservationForm;
+use App\Filament\Resources\Reservations\ReservationResource;
 use App\Models\Court;
 use App\Models\Reservation;
 use App\Models\Sport;
@@ -14,6 +16,7 @@ use Guava\Calendar\Filament\Actions\ViewAction;
 use Guava\Calendar\Filament\CalendarWidget;
 use Guava\Calendar\ValueObjects\CalendarEvent;
 use Guava\Calendar\ValueObjects\CalendarResource;
+use Guava\Calendar\ValueObjects\DateClickInfo;
 use Guava\Calendar\ValueObjects\FetchInfo;
 use Illuminate\Support\Collection;
 
@@ -27,11 +30,22 @@ class CalendarReservationsWidget extends CalendarWidget
 
     protected bool $eventClickEnabled = true;
 
+    protected bool $dateClickEnabled = true;
+
     protected ?string $defaultEventClickAction = 'view';
 
     public function getHeaderActions(): array
     {
         return [
+            PhoneReservationForm::action()->visible(fn () => ReservationResource::canCreate())
+                ->fillForm(fn (array $arguments): array => [
+                    'court_id' => $arguments['court_id'] ?? null,
+                    'booking_date' => $arguments['booking_date'] ?? now()->toDateString(),
+                    'booking_time' => $arguments['booking_time'] ?? null,
+                    'duration_minutes' => 60,
+                    'customer_type' => 'guest',
+                ])
+                ->after(fn () => $this->refreshRecords()),
             Action::make('view_day')
                 ->label('Dan')
                 ->color($this->calendarView === CalendarViewType::ResourceTimeGridDay ? 'primary' : 'gray')
@@ -45,6 +59,21 @@ class CalendarReservationsWidget extends CalendarWidget
                 ->color($this->calendarView === CalendarViewType::DayGridMonth ? 'primary' : 'gray')
                 ->action(fn () => $this->switchView(CalendarViewType::DayGridMonth)),
         ];
+    }
+
+    protected function onDateClick(DateClickInfo $info): void
+    {
+        if (! ReservationResource::canCreate()) {
+            return;
+        }
+
+        $resourceId = (string) ($info->resource?->getId() ?? '');
+        $courtId = str_starts_with($resourceId, 'court-') ? (int) substr($resourceId, 6) : null;
+        $this->mountAction('create', [
+            'court_id' => $courtId,
+            'booking_date' => $info->date->toDateString(),
+            'booking_time' => $info->allDay ? null : $info->date->format('H:i'),
+        ]);
     }
 
     public function switchView(CalendarViewType $view): void

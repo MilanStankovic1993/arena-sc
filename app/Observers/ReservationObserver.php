@@ -176,6 +176,7 @@ class ReservationObserver
                         return [
                             'booking.availability.'.$sportId.'.'.$cacheDate,
                             'booking.availability.v2.'.$sportId.'.'.$cacheDate,
+                            'booking.availability.v3.'.$sportId.'.'.$cacheDate,
                         ];
                     })
                     ->all();
