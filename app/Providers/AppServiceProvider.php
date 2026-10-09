@@ -6,6 +6,9 @@ use App\Models\Reservation;
 use App\Models\UserMembership;
 use App\Observers\ReservationObserver;
 use App\Observers\UserMembershipObserver;
+use Filament\Forms\Components\DateTimePicker;
+use Filament\Schemas\Schema;
+use Filament\Tables\Table;
 use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Auth\Notifications\VerifyEmail;
 use Illuminate\Notifications\Messages\MailMessage;
@@ -27,6 +30,20 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        DateTimePicker::configureUsing(function (DateTimePicker $picker): void {
+            if ($picker->hasTime()) {
+                $picker->native(false)
+                    ->seconds(false)
+                    ->displayFormat($picker->hasDate() ? 'd.m.Y H:i' : 'H:i');
+            }
+        });
+        Table::configureUsing(fn (Table $table) => $table
+            ->defaultDateTimeDisplayFormat('d.m.Y H:i')
+            ->defaultTimeDisplayFormat('H:i'));
+        Schema::configureUsing(fn (Schema $schema) => $schema
+            ->defaultDateTimeDisplayFormat('d.m.Y H:i')
+            ->defaultTimeDisplayFormat('H:i'));
+
         Reservation::observe(ReservationObserver::class);
         UserMembership::observe(UserMembershipObserver::class);
 

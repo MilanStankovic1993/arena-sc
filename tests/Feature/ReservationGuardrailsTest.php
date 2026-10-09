@@ -119,6 +119,25 @@ class ReservationGuardrailsTest extends TestCase
         $this->assertSame([60], collect($lateSlot['durations'])->pluck('minutes')->all());
     }
 
+    public function test_custom_2359_pricing_is_extended_and_last_slot_is_offered(): void
+    {
+        [$sport] = $this->createSportCourtAndPricing('Padel', 'padel');
+        $rule = PricingRule::query()->sole();
+        $rule->update(['name' => 'Cene termina 2', 'end_time' => '23:59:00']);
+
+        $migration = require database_path('migrations/2026_10_09_130000_extend_custom_evening_pricing_until_midnight.php');
+        $migration->up();
+        $this->assertSame('00:00:00', $rule->fresh()->end_time);
+
+        $response = $this->getJson(route('booking.availability', [
+            'sport' => $sport->slug,
+            'date' => now()->addDay()->toDateString(),
+        ]))->assertOk();
+        $lastSlot = collect($response->json('days.0.times'))->firstWhere('time', '23:00');
+        $this->assertNotNull($lastSlot);
+        $this->assertSame([60], collect($lastSlot['durations'])->pluck('minutes')->all());
+    }
+
     public function test_reservation_can_end_at_midnight_with_correct_price(): void
     {
         config()->set('arena.booking.is_open', true);

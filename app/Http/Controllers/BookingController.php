@@ -84,7 +84,7 @@ class BookingController extends Controller
         $periodStart = $selectedDay->copy()->startOfDay();
         $periodEnd = $selectedDay->copy()->addDays(2)->endOfDay();
 
-        $cacheKey = 'booking.availability.v2.'.$sport->id.'.'.$selectedDay->toDateString();
+        $cacheKey = 'booking.availability.v3.'.$sport->id.'.'.$selectedDay->toDateString();
 
         $payload = Cache::remember($cacheKey, now()->addSeconds(20), function () use ($sport, $courts, $scheduleService, $pricingService, $selectedDay, $periodStart, $periodEnd): array {
             $pricingRules = $sport->pricingRules()
