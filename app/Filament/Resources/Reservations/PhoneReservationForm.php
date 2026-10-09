@@ -21,6 +21,7 @@ use Filament\Schemas\Components\Text;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Components\Utilities\Set;
 use Filament\Support\Enums\Width;
+use Illuminate\Validation\ValidationException;
 use RuntimeException;
 
 class PhoneReservationForm
@@ -31,7 +32,18 @@ class PhoneReservationForm
             ->label('Nova rezervacija')->modalHeading('Rezervacija telefonom')
             ->modalWidth(Width::ThreeExtraLarge)->modalSubmitActionLabel('Sacuvaj rezervaciju')
             ->createAnother(false)->schema(static::components())
-            ->using(fn (array $data): Reservation => app(AdminReservationService::class)->create($data));
+            ->using(function (array $data, $livewire): Reservation {
+                try {
+                    return app(AdminReservationService::class)->create($data);
+                } catch (ValidationException $exception) {
+                    $errors = [];
+                    foreach ($exception->errors() as $field => $messages) {
+                        $statePath = $livewire->getSchema($livewire->getMountedActionSchemaName())->getStatePath();
+                        $errors[$statePath.'.'.$field] = $messages;
+                    }
+                    throw ValidationException::withMessages($errors);
+                }
+            });
     }
 
     public static function components(): array
@@ -54,14 +66,14 @@ class PhoneReservationForm
                     ->helperText('Prikazani su slobodni termini za izabrano trajanje.'),
             ]),
             Section::make('2. Za koga rezervisemo?')->columns(2)->columnSpanFull()->schema([
-                ToggleButtons::make('customer_type')->label('')->options(['guest' => 'Gost', 'user' => 'Postojeci korisnik'])->inline()->default('guest')->required()->live()->columnSpanFull(),
+                ToggleButtons::make('customer_type')->label('Vrsta korisnika')->options(['guest' => 'Gost', 'user' => 'Postojeci korisnik'])->inline()->default('guest')->required()->live()->columnSpanFull(),
                 Select::make('user_id')->label('Pronađi korisnika')->options(fn () => User::query()->orderBy('name')->get()->mapWithKeys(fn (User $user) => [$user->id => $user->name.' · '.($user->phone ?: $user->email)])->all())
                     ->searchable()->visible(fn (Get $get) => $get('customer_type') === 'user')->required(fn (Get $get) => $get('customer_type') === 'user')->columnSpanFull(),
                 TextInput::make('guest_name')->label('Ime i prezime')->maxLength(255)->visible(fn (Get $get) => $get('customer_type') !== 'user')->required(fn (Get $get) => $get('customer_type') !== 'user'),
                 TextInput::make('guest_phone')->label('Telefon')->tel()->maxLength(50)->visible(fn (Get $get) => $get('customer_type') !== 'user')->required(fn (Get $get) => $get('customer_type') !== 'user'),
             ]),
             Section::make('Oprema (opciono)')->collapsible()->collapsed()->columnSpanFull()->schema([
-                Repeater::make('equipment')->label('')->defaultItems(0)->addActionLabel('Dodaj opremu')->columns(2)->live()->schema([
+                Repeater::make('equipment')->label('Stavke opreme')->defaultItems(0)->addActionLabel('Dodaj opremu')->columns(2)->live()->schema([
                     Select::make('equipment_id')->label('Artikal')->options(fn (Get $get) => Equipment::query()
                         ->where('is_active', true)->where('is_rentable', true)->where('stock_quantity', '>', 0)
                         ->where(fn ($query) => $query->whereNull('sport_id')->orWhere('sport_id', Court::find($get('../../court_id'))?->sport_id))

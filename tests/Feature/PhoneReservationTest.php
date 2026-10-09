@@ -82,4 +82,47 @@ class PhoneReservationTest extends TestCase
 
         $this->assertSame('23:00', Reservation::query()->sole()->starts_at->format('H:i'));
     }
+
+    public function test_registered_customer_and_special_price_are_saved_correctly(): void
+    {
+        $customer = User::factory()->create();
+        Livewire::test(ManageReservations::class)->callAction('create', data: [
+            ...$this->data(), 'customer_type' => 'user', 'user_id' => $customer->id,
+            'court_price_override' => 2500,
+        ])->assertHasNoActionErrors();
+        $reservation = Reservation::query()->sole();
+        $this->assertSame($customer->id, $reservation->user_id);
+        $this->assertNull($reservation->guest_name);
+        $this->assertSame(2500.0, (float) $reservation->total_price);
+        $this->assertTrue($reservation->participants()->whereKey($customer->id)->exists());
+    }
+
+    public function test_missing_guest_phone_prevents_creation(): void
+    {
+        Livewire::test(ManageReservations::class)->callAction('create', data: [
+            ...$this->data(), 'guest_phone' => '',
+        ])->assertHasActionErrors(['guest_phone']);
+        $this->assertDatabaseCount('reservations', 0);
+    }
+
+    public function test_equipment_stock_failure_does_not_leave_partial_reservation(): void
+    {
+        $equipment = Equipment::query()->where('sku', 'PAT10PCH26')->sole();
+        Livewire::test(ManageReservations::class)->callAction('create', data: [
+            ...$this->data(), 'equipment' => [['equipment_id' => $equipment->id, 'quantity' => 11]],
+        ])->assertHasActionErrors(['equipment']);
+        $this->assertDatabaseCount('reservations', 0);
+        $this->assertDatabaseCount('reservation_equipment', 0);
+    }
+
+    public function test_changing_duration_resets_selected_time_and_checks_midnight_boundary(): void
+    {
+        Livewire::test(ManageReservations::class)->mountAction('create')->fillForm($this->data())
+            ->fillForm(['duration_minutes' => 90])
+            ->assertSchemaStateSet(['booking_time' => null]);
+        $data = $this->data();
+        $times = app(AdminReservationService::class)->times($data['court_id'], $data['booking_date'], 90);
+        $this->assertArrayHasKey('22:30', $times);
+        $this->assertArrayNotHasKey('23:00', $times);
+    }
 }
