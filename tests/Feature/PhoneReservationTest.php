@@ -12,6 +12,7 @@ use App\Mail\ReservationSeriesMail;
 use App\Models\Court;
 use App\Models\CourtClosure;
 use App\Models\Equipment;
+use App\Models\PricingRule;
 use App\Models\Reservation;
 use App\Models\User;
 use App\Services\AdminReservationService;
@@ -222,5 +223,122 @@ class PhoneReservationTest extends TestCase
             ->assertHasNoActionErrors();
         $this->assertSame('cancelled', $first->fresh()->status->value);
         $this->assertSame($count - 1, Reservation::where('series_id', $first->series_id)->where('status', 'reserved')->count());
+    }
+
+    public function test_each_week_uses_its_own_effective_price(): void
+    {
+        $data = $this->recurringData();
+        $firstDay = Carbon::parse($data['booking_date']);
+        $data['repeat_until'] = $firstDay->copy()->addWeeks(2)->toDateString();
+        $court = Court::findOrFail($data['court_id']);
+        $rule = PricingRule::where('sport_id', $court->sport_id)->where('name', 'Padel radni dan popodne')->sole();
+        $originalPrice = (float) $rule->price_90;
+        $newRule = $rule->replicate();
+        $rule->update(['valid_to' => $firstDay->copy()->addDays(6)->toDateString()]);
+        $newRule->fill(['name' => 'Novi cenovnik', 'valid_from' => $firstDay->copy()->addWeek()->toDateString(), 'price_90' => 8888])->save();
+        app(AdminReservationService::class)->create($data);
+        $prices = Reservation::orderBy('starts_at')->get()->map(fn ($r) => (float) $r->court_price)->all();
+        $this->assertSame([$originalPrice, 8888.0, 8888.0], $prices);
+    }
+
+    public function test_skipping_all_dates_is_rejected_without_records_or_mail(): void
+    {
+        $data = $this->recurringData();
+        $skip = app(AdminReservationService::class)->dates($data)->all();
+        Livewire::test(ManageReservations::class)->callAction('create', data: [...$data, 'skip_dates' => $skip])->assertHasActionErrors(['repeat_until']);
+        $this->assertDatabaseCount('reservations', 0);
+        Mail::assertNothingQueued();
+    }
+
+    public function test_end_date_is_inclusive_and_series_can_end_at_midnight(): void
+    {
+        $data = $this->recurringData();
+        $first = Carbon::parse($data['booking_date']);
+        $data = [...$data, 'booking_time' => '22:30', 'repeat_until' => $first->copy()->addWeeks(2)->toDateString()];
+        app(AdminReservationService::class)->create($data);
+        $records = Reservation::orderBy('starts_at')->get();
+        $this->assertCount(3, $records);
+        foreach ($records as $record) {
+            $this->assertSame('00:00', $record->ends_at->format('H:i'));
+            $this->assertSame($record->starts_at->copy()->addDay()->toDateString(), $record->ends_at->toDateString());
+        }
+        $this->assertSame($data['repeat_until'], $records->last()->starts_at->toDateString());
+        $data['repeat_until'] = $first->copy()->addWeeks(2)->subDay()->toDateString();
+        $this->assertCount(2, app(AdminReservationService::class)->dates($data));
+    }
+
+    public function test_shortage_on_one_future_date_rolls_back_entire_series(): void
+    {
+        $data = $this->recurringData();
+        $equipment = Equipment::where('sku', 'PAT10PCH26')->sole();
+        $service = app(AdminReservationService::class);
+        $conflict = Carbon::parse($data['booking_date'])->addWeek()->toDateString();
+        $otherCourt = Court::where('slug', 'padel-teren-2')->sole();
+        $service->create([...$data, 'repeat_weekly' => false, 'court_id' => $otherCourt->id, 'booking_date' => $conflict,
+            'equipment' => [['equipment_id' => $equipment->id, 'quantity' => 9]],
+        ]);
+        Mail::fake();
+        $data['equipment'] = [['equipment_id' => $equipment->id, 'quantity' => 2]];
+        Livewire::test(ManageReservations::class)->callAction('create', data: $data)->assertHasActionErrors(['skip_dates']);
+        $this->assertDatabaseCount('reservations', 1);
+        $this->assertDatabaseCount('reservation_equipment', 1);
+        Mail::assertNothingQueued();
+        Livewire::test(ManageReservations::class)->callAction('create', data: [...$data, 'skip_dates' => [$conflict]])->assertHasNoActionErrors();
+        $this->assertSame($service->dates($data)->count() - 1, Reservation::whereNotNull('series_id')->count());
+    }
+
+    public function test_public_availability_cache_is_refreshed_after_series_create_and_cancel(): void
+    {
+        $data = $this->recurringData();
+        $data['repeat_until'] = $data['booking_date'];
+        $url = route('booking.availability', ['sport' => 'padel', 'date' => $data['booking_date']]);
+        $before = $this->getJson($url)->assertOk()->json('days.0.times');
+        $this->assertNotNull(collect($before)->firstWhere('time', '19:00'));
+        $service = app(AdminReservationService::class);
+        $first = $service->create($data);
+        $during = $this->getJson($url)->assertOk()->json('days.0.times');
+        $time = collect($during)->firstWhere('time', '19:00');
+        $courtIds = collect($time['durations'] ?? [])->flatMap(fn ($duration) => collect($duration['courts'])->pluck('id'));
+        $this->assertFalse($courtIds->contains($data['court_id']));
+        $service->cancelRemaining($first);
+        $after = $this->getJson($url)->assertOk()->json('days.0.times');
+        $time = collect($after)->firstWhere('time', '19:00');
+        $courtIds = collect($time['durations'])->flatMap(fn ($duration) => collect($duration['courts'])->pluck('id'));
+        $this->assertTrue($courtIds->contains($data['court_id']));
+    }
+
+    public function test_calendar_series_reports_conflicts_and_can_be_saved_after_explicit_skip(): void
+    {
+        $data = $this->recurringData();
+        $conflict = Carbon::parse($data['booking_date'])->addWeek()->toDateString();
+        app(AdminReservationService::class)->create([...$data, 'repeat_weekly' => false, 'booking_date' => $conflict]);
+        $arguments = ['court_id' => $data['court_id'], 'booking_date' => $data['booking_date'], 'booking_time' => '19:00'];
+        $fields = ['duration_minutes' => 90, 'booking_time' => '19:00', 'customer_type' => 'guest', 'guest_name' => 'Serija', 'guest_phone' => '0601234567', 'repeat_weekly' => true, 'repeat_until' => $data['repeat_until']];
+        Livewire::test(CalendarReservationsWidget::class)->callAction('create', data: $fields, arguments: $arguments)->assertHasActionErrors(['skip_dates']);
+        $this->assertDatabaseCount('reservations', 1);
+        Livewire::test(CalendarReservationsWidget::class)->callAction('create', data: [...$fields, 'skip_dates' => [$conflict]], arguments: $arguments)->assertHasNoActionErrors();
+        $this->assertGreaterThan(1, Reservation::count());
+    }
+
+    public function test_invalid_date_during_preview_returns_empty_instead_of_crashing_the_form(): void
+    {
+        $preview = app(AdminReservationService::class)->preview([...$this->recurringData(), 'booking_date' => 'not-a-date']);
+        $this->assertTrue($preview->isEmpty());
+    }
+
+    public function test_invalid_repeat_range_is_rejected_without_creating_reservations(): void
+    {
+        $data = $this->recurringData();
+        $service = app(AdminReservationService::class);
+        foreach ([Carbon::parse($data['booking_date'])->subDay()->toDateString(), Carbon::parse($data['booking_date'])->addYear()->addDay()->toDateString()] as $endDate) {
+            try {
+                $service->create([...$data, 'repeat_until' => $endDate]);
+                $this->fail('Invalid repeat range was accepted.');
+            } catch (ValidationException $exception) {
+                $this->assertArrayHasKey('repeat_until', $exception->errors());
+            }
+        }
+        $this->assertDatabaseCount('reservations', 0);
+        Mail::assertNothingQueued();
     }
 }

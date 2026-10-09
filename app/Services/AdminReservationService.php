@@ -98,6 +98,9 @@ class AdminReservationService
     {
         Validator::make($data, [
             'booking_date' => ['required', 'date_format:Y-m-d', 'after_or_equal:today'],
+        ])->validate();
+
+        Validator::make($data, [
             'repeat_until' => ['required', 'date_format:Y-m-d', 'after_or_equal:booking_date', 'before_or_equal:'.Carbon::parse($data['booking_date'])->addYear()->toDateString()],
         ])->validate();
         $dates = collect();
