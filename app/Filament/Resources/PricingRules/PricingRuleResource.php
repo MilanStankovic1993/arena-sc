@@ -77,8 +77,8 @@ class PricingRuleResource extends Resource
                     ->gridDirection('row')
                     ->helperText('Ako nista ne oznacis, pravilo vazi za sve dane.')
                     ->columnSpanFull(),
-                TimePicker::make('start_time')->label('Od')->seconds(false)->required()->columnSpan(2),
-                TimePicker::make('end_time')->label('Do')->seconds(false)->required()->columnSpan(2),
+                TimePicker::make('start_time')->label('Od')->native(false)->displayFormat('H:i')->seconds(false)->required()->columnSpan(2),
+                TimePicker::make('end_time')->label('Do')->native(false)->displayFormat('H:i')->seconds(false)->helperText('00:00 oznacava ponoc na kraju dana.')->required()->columnSpan(2),
                 Toggle::make('is_active')->label('Aktivno pravilo')->default(true)->inline(false)->columnSpan(2),
                 DatePicker::make('valid_from')->label('Vazi od')->columnSpan(3),
                 DatePicker::make('valid_to')->label('Vazi do')->columnSpan(3),

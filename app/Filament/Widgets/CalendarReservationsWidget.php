@@ -122,7 +122,12 @@ class CalendarReservationsWidget extends CalendarWidget
             'nowIndicator' => true,
             'height' => 'auto',
             'slotMinTime' => '07:00:00',
-            'slotMaxTime' => '23:00:00',
+            'slotMaxTime' => '24:00:00',
+            'slotLabelFormat' => [
+                'hour' => '2-digit',
+                'minute' => '2-digit',
+                'hour12' => false,
+            ],
             'slotDuration' => '00:30:00',
             'datesAboveResources' => true,
             'eventMaxStack' => 4,

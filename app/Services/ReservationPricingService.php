@@ -52,6 +52,10 @@ class ReservationPricingService
 
             $ruleEnd = $cursor->copy()->setTimeFromTimeString(substr((string) $rule->end_time, 0, 8));
 
+            if ($rule->closingTimeForComparison() === '24:00') {
+                $ruleEnd = $cursor->copy()->startOfDay()->addDay();
+            }
+
             if ($ruleEnd->lte($cursor)) {
                 throw new RuntimeException('Cenovnik termina nije definisan za izabrani sport, dan, vreme i trajanje.');
             }
@@ -72,16 +76,22 @@ class ReservationPricingService
 
     protected function ruleCoversPeriod(PricingRule $rule, Court $court, CarbonInterface $startsAt, CarbonInterface $endsAt): bool
     {
+        $ruleEnd = $startsAt->copy()->startOfDay()->setTimeFromTimeString((string) $rule->end_time);
+
+        if ($rule->closingTimeForComparison() === '24:00') {
+            $ruleEnd = $startsAt->copy()->startOfDay()->addDay();
+        }
+
         return $this->ruleAppliesToDate($rule, $court, $startsAt)
             && substr((string) $rule->start_time, 0, 8) <= $startsAt->format('H:i:s')
-            && substr((string) $rule->end_time, 0, 8) >= $endsAt->format('H:i:s');
+            && $endsAt->lte($ruleEnd);
     }
 
     protected function ruleCoversMoment(PricingRule $rule, Court $court, CarbonInterface $startsAt): bool
     {
         return $this->ruleAppliesToDate($rule, $court, $startsAt)
             && substr((string) $rule->start_time, 0, 8) <= $startsAt->format('H:i:s')
-            && substr((string) $rule->end_time, 0, 8) > $startsAt->format('H:i:s');
+            && $rule->closingTimeForComparison() > $startsAt->format('H:i');
     }
 
     protected function ruleAppliesToDate(PricingRule $rule, Court $court, CarbonInterface $startsAt): bool

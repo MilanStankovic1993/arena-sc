@@ -76,8 +76,8 @@ class ReservationResource extends Resource
                     ->options(collect(ReservationStatus::cases())->mapWithKeys(fn (ReservationStatus $status) => [$status->value => $status->label()])->all())
                     ->required()
                     ->default(ReservationStatus::Reserved->value),
-                DateTimePicker::make('starts_at')->label('Pocetak')->required(),
-                DateTimePicker::make('ends_at')->label('Kraj')->required(),
+                DateTimePicker::make('starts_at')->label('Pocetak')->native(false)->displayFormat('d.m.Y H:i')->seconds(false)->required(),
+                DateTimePicker::make('ends_at')->label('Kraj')->native(false)->displayFormat('d.m.Y H:i')->seconds(false)->required(),
                 Select::make('duration_minutes')->label('Trajanje')->options([
                     60 => '60 minuta',
                     90 => '90 minuta',
@@ -131,8 +131,8 @@ class ReservationResource extends Resource
                     ->label('Status')
                     ->badge()
                     ->formatStateUsing(fn (ReservationStatus|string|null $state): string => $state instanceof ReservationStatus ? $state->label() : (ReservationStatus::tryFrom((string) $state)?->label() ?? (string) $state)),
-                TextColumn::make('starts_at')->label('Pocetak')->dateTime()->sortable(),
-                TextColumn::make('ends_at')->label('Kraj')->dateTime(),
+                TextColumn::make('starts_at')->label('Pocetak')->dateTime('d.m.Y H:i')->sortable(),
+                TextColumn::make('ends_at')->label('Kraj')->dateTime('d.m.Y H:i'),
                 TextColumn::make('participants_count')->counts('participants')->label('Ucesnika'),
                 TextColumn::make('total_price')->label('Ukupno')->money('RSD', divideBy: 1)->sortable(),
             ])

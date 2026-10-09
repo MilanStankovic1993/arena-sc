@@ -11,13 +11,11 @@ class ReservationScheduleService
 {
     private const OPENING_TIME = '08:00:00';
 
-    private const CLOSING_TIME = '23:00:00';
-
     public function buildDailySchedule(Court $court, Carbon $day, int $durationMinutes): Collection
     {
         $slots = collect();
         $opening = $day->copy()->setTimeFromTimeString(self::OPENING_TIME);
-        $closing = $day->copy()->setTimeFromTimeString(self::CLOSING_TIME);
+        $closing = $day->copy()->startOfDay()->addDay();
 
         for ($slot = $opening->copy(); $slot->copy()->addMinutes($durationMinutes)->lte($closing); $slot->addMinutes(30)) {
             $endsAt = $slot->copy()->addMinutes($durationMinutes);
@@ -34,7 +32,7 @@ class ReservationScheduleService
     public function isWithinOperatingHours(CarbonInterface $startsAt, CarbonInterface $endsAt): bool
     {
         $opening = $startsAt->copy()->startOfDay()->setTimeFromTimeString(self::OPENING_TIME);
-        $closing = $startsAt->copy()->startOfDay()->setTimeFromTimeString(self::CLOSING_TIME);
+        $closing = $startsAt->copy()->startOfDay()->addDay();
 
         return $endsAt->gt($startsAt)
             && $startsAt->gte($opening)

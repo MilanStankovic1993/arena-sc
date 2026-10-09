@@ -47,7 +47,7 @@ class PricingRule extends Model
         static::saving(function (self $rule): void {
             $errors = [];
 
-            if ((string) $rule->start_time >= (string) $rule->end_time) {
+            if (substr((string) $rule->start_time, 0, 5) >= $rule->closingTimeForComparison()) {
                 $errors['end_time'] = 'Vreme zavrsetka mora biti posle vremena pocetka.';
             }
 
@@ -119,17 +119,24 @@ class PricingRule extends Model
         };
     }
 
+    public function closingTimeForComparison(): string
+    {
+        $time = substr((string) $this->end_time, 0, 5);
+
+        return $time === '00:00' ? '24:00' : $time;
+    }
+
     public static function findConflictingRule(self $rule): ?self
     {
         return static::query()
             ->where('sport_id', $rule->sport_id)
             ->where('is_active', true)
             ->when($rule->exists, fn ($query) => $query->whereKeyNot($rule->getKey()))
-            ->whereTime('start_time', '<', $rule->end_time)
-            ->whereTime('end_time', '>', $rule->start_time)
             ->get()
             ->first(function (self $existingRule) use ($rule): bool {
-                return static::daysOverlap($existingRule->days_of_week, $rule->days_of_week)
+                return substr((string) $existingRule->start_time, 0, 5) < $rule->closingTimeForComparison()
+                    && $existingRule->closingTimeForComparison() > substr((string) $rule->start_time, 0, 5)
+                    && static::daysOverlap($existingRule->days_of_week, $rule->days_of_week)
                     && static::dateRangesOverlap(
                         $existingRule->valid_from,
                         $existingRule->valid_to,

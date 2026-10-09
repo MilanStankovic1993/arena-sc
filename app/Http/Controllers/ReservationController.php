@@ -60,7 +60,7 @@ class ReservationController extends Controller
 
         if (! $scheduleService->isWithinOperatingHours($startsAt, $endsAt)) {
             return back()->withErrors([
-                'starts_at' => 'Termin mora biti u okviru radnog vremena od 08:00 do 23:00.',
+                'starts_at' => 'Termin mora biti u okviru radnog vremena od 08:00 do 00:00 (ponoc).',
             ])->withInput();
         }
 

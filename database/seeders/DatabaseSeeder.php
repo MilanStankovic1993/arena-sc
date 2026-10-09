@@ -67,16 +67,16 @@ class DatabaseSeeder extends Seeder
 
         $this->seedPricingRules($padel, [
             ['Padel radni dan pre podne', [1, 2, 3, 4, 5], '08:00:00', '18:00:00', 3000],
-            ['Padel radni dan popodne', [1, 2, 3, 4, 5], '18:00:00', '23:00:00', 3500],
+            ['Padel radni dan popodne', [1, 2, 3, 4, 5], '18:00:00', '00:00:00', 3500],
             ['Padel vikend pre podne', [6, 0], '08:00:00', '18:00:00', 4000],
-            ['Padel vikend popodne', [6, 0], '18:00:00', '23:00:00', 4500],
+            ['Padel vikend popodne', [6, 0], '18:00:00', '00:00:00', 4500],
         ]);
 
         $this->seedPricingRules($basket, [
             ['Basket radni dan pre podne', [1, 2, 3, 4, 5], '08:00:00', '18:00:00', 2000],
-            ['Basket radni dan popodne', [1, 2, 3, 4, 5], '18:00:00', '23:00:00', 2500],
+            ['Basket radni dan popodne', [1, 2, 3, 4, 5], '18:00:00', '00:00:00', 2500],
             ['Basket vikend pre podne', [6, 0], '08:00:00', '18:00:00', 3000],
-            ['Basket vikend popodne', [6, 0], '18:00:00', '23:00:00', 3500],
+            ['Basket vikend popodne', [6, 0], '18:00:00', '00:00:00', 3500],
         ]);
 
         $this->seedEquipment($padel, $basket);

@@ -93,7 +93,7 @@ class ReservationGuardrailsTest extends TestCase
 
         $response = $this->actingAs($user)->post(route('reservations.store'), [
             'court_id' => $court->id,
-            'starts_at' => now()->addDay()->setTime(22, 30)->format('Y-m-d H:i:s'),
+            'starts_at' => now()->addDay()->setTime(23, 30)->format('Y-m-d H:i:s'),
             'duration_minutes' => 60,
             'equipment' => [],
         ]);
@@ -113,10 +113,29 @@ class ReservationGuardrailsTest extends TestCase
 
         $response->assertOk();
 
-        $lateSlot = collect($response->json('days.0.times'))->firstWhere('time', '22:00');
+        $lateSlot = collect($response->json('days.0.times'))->firstWhere('time', '23:00');
 
         $this->assertNotNull($lateSlot);
         $this->assertSame([60], collect($lateSlot['durations'])->pluck('minutes')->all());
+    }
+
+    public function test_reservation_can_end_at_midnight_with_correct_price(): void
+    {
+        config()->set('arena.booking.is_open', true);
+        [$sport, $court] = $this->createSportCourtAndPricing('Padel', 'padel');
+        $startsAt = now()->addDay()->setTime(23, 0);
+
+        $response = $this->actingAs(User::factory()->create())->post(route('reservations.store'), [
+            'court_id' => $court->id,
+            'starts_at' => $startsAt->format('Y-m-d H:i:s'),
+            'duration_minutes' => 60,
+            'equipment' => [],
+        ]);
+
+        $response->assertSessionHasNoErrors();
+        $reservation = Reservation::query()->sole();
+        $this->assertSame($startsAt->copy()->addHour()->format('Y-m-d H:i:s'), $reservation->ends_at->format('Y-m-d H:i:s'));
+        $this->assertSame(2800.0, (float) $reservation->court_price);
     }
 
     public function test_public_reservation_rejects_equipment_from_another_sport(): void
@@ -243,7 +262,7 @@ class ReservationGuardrailsTest extends TestCase
             'name' => 'Dnevni blok',
             'days_of_week' => [],
             'start_time' => '08:00:00',
-            'end_time' => '23:00:00',
+            'end_time' => '00:00:00',
             'price_60' => 2800,
             'price_90' => 4000,
             'price_120' => 5200,

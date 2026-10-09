@@ -208,7 +208,7 @@ class ReservationObserver
 
         if (! app(ReservationScheduleService::class)->isWithinOperatingHours($reservation->starts_at, $reservation->ends_at)) {
             throw ValidationException::withMessages([
-                'starts_at' => 'Termin mora biti u okviru radnog vremena od 08:00 do 23:00.',
+                'starts_at' => 'Termin mora biti u okviru radnog vremena od 08:00 do 00:00 (ponoc).',
             ]);
         }
 
