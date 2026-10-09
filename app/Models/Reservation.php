@@ -10,8 +10,11 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Reservation extends Model
 {
+    public bool $suppressNotification = false;
+
     protected $fillable = [
         'user_id',
+        'series_id',
         'guest_name',
         'guest_phone',
         'guest_email',

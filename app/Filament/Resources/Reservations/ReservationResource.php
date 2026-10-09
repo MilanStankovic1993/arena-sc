@@ -6,6 +6,7 @@ use App\Enums\ReservationStatus;
 use App\Filament\Resources\Reservations\Pages\ManageReservations;
 use App\Models\Reservation;
 use App\Models\User;
+use App\Services\AdminReservationService;
 use App\Services\ReservationParticipantService;
 use BackedEnum;
 use Filament\Actions\Action;
@@ -135,6 +136,7 @@ class ReservationResource extends Resource
                 TextColumn::make('ends_at')->label('Kraj')->dateTime('d.m.Y H:i'),
                 TextColumn::make('participants_count')->counts('participants')->label('Ucesnika'),
                 TextColumn::make('total_price')->label('Ukupno')->money('RSD', divideBy: 1)->sortable(),
+                TextColumn::make('series_id')->label('Ponavljanje')->formatStateUsing(fn ($state) => filled($state) ? 'Nedeljna serija' : '')->badge()->toggleable(),
             ])
             ->filters([
                 SelectFilter::make('status')->options(collect(ReservationStatus::cases())->mapWithKeys(fn (ReservationStatus $status) => [$status->value => $status->label()])->all()),
@@ -175,6 +177,22 @@ class ReservationResource extends Resource
                             ->send();
                     }),
                 EditAction::make()->modalWidth(Width::Screen),
+                Action::make('cancel_one')->label('Otkazi termin')->icon(Heroicon::OutlinedXMark)->color('danger')
+                    ->visible(fn (Reservation $record) => $record->status === ReservationStatus::Reserved && static::canEdit($record))
+                    ->requiresConfirmation()->modalHeading('Otkazati samo ovaj termin?')
+                    ->modalDescription('Ostali termini iz serije ostaju rezervisani.')
+                    ->action(function (Reservation $record): void {
+                        $record->update(['status' => ReservationStatus::Cancelled, 'cancellation_reason' => 'Otkazano od administratora.']);
+                        Notification::make()->title('Termin je otkazan.')->success()->send();
+                    }),
+                Action::make('cancel_series')->label('Otkazi preostalu seriju')->icon(Heroicon::OutlinedXCircle)->color('danger')
+                    ->visible(fn (Reservation $record) => filled($record->series_id) && static::canEdit($record))
+                    ->requiresConfirmation()->modalHeading('Otkazati sve preostale termine ove serije?')
+                    ->modalDescription('Otkazuju se svi termini ove serije koji jos nisu poceli. Prosli termini ostaju sacuvani.')
+                    ->action(function (Reservation $record): void {
+                        $count = app(AdminReservationService::class)->cancelRemaining($record);
+                        Notification::make()->title("Otkazano termina: {$count}")->success()->send();
+                    }),
                 DeleteAction::make(),
             ])
             ->headerActions([

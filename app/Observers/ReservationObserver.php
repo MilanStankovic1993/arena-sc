@@ -64,6 +64,7 @@ class ReservationObserver
         $reservationId = $reservation->getKey();
         $wasCreated = $reservation->wasRecentlyCreated && $reservation->status === ReservationStatus::Reserved;
         $wasCancelled = $reservation->wasChanged('status') && $reservation->status === ReservationStatus::Cancelled;
+        $suppressNotification = $reservation->suppressNotification || ($wasCreated && filled($reservation->series_id));
 
         if ($reservation->user_id) {
             $reservation->participants()->syncWithoutDetaching([$reservation->user_id]);
@@ -71,10 +72,10 @@ class ReservationObserver
 
         app(UserReservationStatsService::class)->recalculateMany($this->affectedUserIds($reservation));
 
-        DB::afterCommit(function () use ($cacheKeys, $reservationId, $wasCreated, $wasCancelled): void {
+        DB::afterCommit(function () use ($cacheKeys, $reservationId, $wasCreated, $wasCancelled, $suppressNotification): void {
             $this->clearAvailabilityCache($cacheKeys);
 
-            if (! $wasCreated && ! $wasCancelled) {
+            if ($suppressNotification || (! $wasCreated && ! $wasCancelled)) {
                 return;
             }
 
