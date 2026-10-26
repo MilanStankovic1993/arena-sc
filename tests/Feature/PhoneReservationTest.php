@@ -105,12 +105,15 @@ class PhoneReservationTest extends TestCase
         $this->assertTrue($reservation->participants()->whereKey($customer->id)->exists());
     }
 
-    public function test_missing_guest_phone_prevents_creation(): void
+    public function test_admin_can_create_guest_booking_without_phone_or_email(): void
     {
         Livewire::test(ManageReservations::class)->callAction('create', data: [
-            ...$this->data(), 'guest_phone' => '',
-        ])->assertHasActionErrors(['guest_phone']);
-        $this->assertDatabaseCount('reservations', 0);
+            ...$this->data(), 'guest_phone' => null, 'guest_email' => null,
+        ])->assertHasNoActionErrors();
+        $reservation = Reservation::query()->sole();
+        $this->assertNull($reservation->guest_phone);
+        $this->assertNull($reservation->guest_email);
+        $this->assertSame('Telefonski gost', $reservation->guest_name);
     }
 
     public function test_equipment_stock_failure_does_not_leave_partial_reservation(): void

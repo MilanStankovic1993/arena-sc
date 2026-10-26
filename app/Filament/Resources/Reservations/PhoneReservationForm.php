@@ -84,7 +84,7 @@ class PhoneReservationForm
                 Select::make('user_id')->label('Pronađi korisnika')->options(fn () => User::query()->orderBy('name')->get()->mapWithKeys(fn (User $user) => [$user->id => $user->name.' · '.($user->phone ?: $user->email)])->all())
                     ->searchable()->visible(fn (Get $get) => $get('customer_type') === 'user')->required(fn (Get $get) => $get('customer_type') === 'user')->columnSpanFull(),
                 TextInput::make('guest_name')->label('Ime i prezime')->maxLength(255)->visible(fn (Get $get) => $get('customer_type') !== 'user')->required(fn (Get $get) => $get('customer_type') !== 'user'),
-                TextInput::make('guest_phone')->label('Telefon')->tel()->maxLength(50)->visible(fn (Get $get) => $get('customer_type') !== 'user')->required(fn (Get $get) => $get('customer_type') !== 'user'),
+                TextInput::make('guest_phone')->label('Telefon (opciono)')->tel()->maxLength(50)->visible(fn (Get $get) => $get('customer_type') !== 'user'),
             ]),
             Section::make('Oprema (opciono)')->collapsible()->collapsed()->columnSpanFull()->schema([
                 Repeater::make('equipment')->label('Stavke opreme')->defaultItems(0)->addActionLabel('Dodaj opremu')->columns(2)->live()->schema([
@@ -102,6 +102,8 @@ class PhoneReservationForm
                 Textarea::make('admin_note')->label('Interna napomena')->rows(2),
             ]),
             Section::make('3. Pregled rezervacije')->columnSpanFull()->schema([
+                Toggle::make('is_gift')->label('Poklon — besplatna rezervacija')->default(false)->live()
+                    ->helperText('Cena celog termina sa opremom je 0 RSD. Termin ostaje zauzet, ali ne ulazi u komercijalnu statistiku. Kod ponavljanja važi za celu novu seriju.'),
                 Text::make(fn (Get $get) => static::summary($get)),
                 CheckboxList::make('skip_dates')->label('Datumi koje zelite da preskocite')
                     ->options(fn (Get $get) => app(AdminReservationService::class)->preview(static::recurringData($get))
@@ -114,7 +116,7 @@ class PhoneReservationForm
 
     private static function recurringData(Get $get): array
     {
-        return collect(['court_id', 'booking_date', 'booking_time', 'duration_minutes', 'repeat_until', 'equipment', 'court_price_override'])
+        return collect(['court_id', 'booking_date', 'booking_time', 'duration_minutes', 'repeat_until', 'equipment', 'court_price_override', 'is_gift'])
             ->mapWithKeys(fn ($field) => [$field => $get($field)])->all();
     }
 
@@ -157,6 +159,6 @@ class PhoneReservationForm
             $price += (float) Equipment::find($item['equipment_id'] ?? null)?->rental_price * (int) ($item['quantity'] ?? 0);
         }
 
-        return $court->name.' · '.$start->format('d.m.Y').' · '.$start->format('H:i').'–'.$end->format('H:i').' · Ukupno: '.number_format($price, 0, ',', '.').' RSD';
+        return $court->name.' · '.$start->format('d.m.Y').' · '.$start->format('H:i').'–'.$end->format('H:i').' · Ukupno: '.number_format($get('is_gift') ? 0 : $price, 0, ',', '.').' RSD'.($get('is_gift') ? ' · Poklon' : '');
     }
 }

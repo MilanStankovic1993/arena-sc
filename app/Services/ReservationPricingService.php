@@ -67,11 +67,7 @@ class ReservationPricingService
             $cursor = $segmentEnd->copy();
         }
 
-        if ($total > 0) {
-            return round($total, 2);
-        }
-
-        throw new RuntimeException('Cenovnik termina nije definisan za izabrani sport, dan, vreme i trajanje.');
+        return round($total, 2);
     }
 
     protected function ruleCoversPeriod(PricingRule $rule, Court $court, CarbonInterface $startsAt, CarbonInterface $endsAt): bool
@@ -122,6 +118,7 @@ class ReservationPricingService
         int $sportId,
         CarbonInterface $startsAt,
         CarbonInterface $endsAt,
+        ?int $ignoreReservationId = null,
     ): Collection {
         $requestedQuantities = collect($equipmentSelections)
             ->filter(fn (array $item): bool => (int) ($item['quantity'] ?? 0) > 0)
@@ -143,6 +140,7 @@ class ReservationPricingService
             ->join('reservations', 'reservations.id', '=', 'reservation_equipment.reservation_id')
             ->whereIn('reservation_equipment.equipment_id', $requestedQuantities->keys())
             ->where('reservations.status', ReservationStatus::Reserved->value)
+            ->when($ignoreReservationId, fn ($query) => $query->where('reservations.id', '<>', $ignoreReservationId))
             ->where('reservations.starts_at', '<', $endsAt)
             ->where('reservations.ends_at', '>', $startsAt)
             ->groupBy('reservation_equipment.equipment_id')

@@ -81,8 +81,11 @@ class MembershipPlanResource extends Resource
                     ->columnSpan(3),
                 TextInput::make('sort_order')
                     ->label('Redosled')
-                    ->numeric()
+                    ->integer()
+                    ->minValue(0)
+                    ->maxValue(4294967295)
                     ->default(0)
+                    ->dehydrateStateUsing(fn ($state) => blank($state) ? 0 : $state)
                     ->columnSpan(2),
                 Toggle::make('is_active')
                     ->label('Aktivna članarina')

@@ -17,11 +17,12 @@ class TopCustomersTable extends TableWidget
         return $table
             ->query(fn (): Builder => User::query()
                 ->where('role', 'customer')
-                ->withSum('participatedReservations as participated_revenue', 'total_price'))
+                ->withCount(['participatedReservations as commercial_reservations_count' => fn (Builder $query) => $query->where('total_price', '>', 0)])
+                ->withSum(['participatedReservations as participated_revenue' => fn (Builder $query) => $query->where('total_price', '>', 0)], 'total_price'))
             ->columns([
                 TextColumn::make('name')->label('Korisnik')->searchable(),
                 TextColumn::make('email')->searchable(),
-                TextColumn::make('total_reservations')->label('Rezervacije')->sortable(),
+                TextColumn::make('commercial_reservations_count')->label('Rezervacije (bez besplatnih)')->sortable(),
                 TextColumn::make('participated_revenue')->label('Potrosnja')->money('RSD', divideBy: 1)->sortable(),
             ])
             ->defaultSort('participated_revenue', 'desc')

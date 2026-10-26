@@ -4,6 +4,7 @@ namespace App\Filament\Resources\Events;
 
 use App\Enums\EventStatus;
 use App\Enums\EventType;
+use App\Filament\Forms\Components\FileUpload;
 use App\Filament\Resources\Events\Pages\ManageEvents;
 use App\Models\Event;
 use App\Services\EventStatisticsService;
@@ -14,7 +15,6 @@ use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Forms\Components\DatePicker;
-use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;

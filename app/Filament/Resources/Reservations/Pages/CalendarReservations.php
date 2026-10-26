@@ -14,7 +14,7 @@ class CalendarReservations extends Page
 
     protected ?string $heading = 'Kalendar rezervacija';
 
-    protected ?string $subheading = 'Pregled termina po danu, nedelji i mesecu. U kalendaru se prikazuje samo naziv korisnika.';
+    protected ?string $subheading = 'Pregled termina po danu, nedelji i mesecu. Uz rezervaciju su prikazani korisnik ili gost, sport i teren.';
 
     protected function getHeaderWidgets(): array
     {

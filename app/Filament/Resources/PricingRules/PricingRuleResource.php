@@ -81,7 +81,7 @@ class PricingRuleResource extends Resource
                 TimePicker::make('end_time')->label('Do')->native(false)->displayFormat('H:i')->seconds(false)->helperText('00:00 oznacava ponoc na kraju dana.')->required()->columnSpan(2),
                 Toggle::make('is_active')->label('Aktivno pravilo')->default(true)->inline(false)->columnSpan(2),
                 DatePicker::make('valid_from')->label('Vazi od')->columnSpan(3),
-                DatePicker::make('valid_to')->label('Vazi do')->columnSpan(3),
+                DatePicker::make('valid_to')->label('Vazi do')->helperText('Prazno = bez isteka. Posle ovog datuma termini nisu dostupni bez novog cenovnika.')->columnSpan(3),
                 TextInput::make('price_60')->label('Cena za 1h')->numeric()->minValue(0)->prefix('RSD')->required()->columnSpan(4),
                 TextInput::make('price_90')->label('Cena za 1,5h')->numeric()->minValue(0)->prefix('RSD')->required()->columnSpan(4),
                 TextInput::make('price_120')->label('Cena za 2h')->numeric()->minValue(0)->prefix('RSD')->required()->columnSpan(4),

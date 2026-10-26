@@ -408,6 +408,30 @@
     background: rgb(244, 63, 94);
 }
 
+/* List events use a neutral surface, unlike the colored month/day cards. */
+.fi-section .ec.ec-list .ec-event {
+    background: rgb(255, 255, 255);
+}
+
+.fi-section .ec.ec-list .ec-event,
+.fi-section .ec.ec-list .ec-event * {
+    color: rgb(30, 41, 59) !important;
+}
+
+.dark .fi-section .ec.ec-list .ec-event {
+    background: rgb(15, 23, 42);
+}
+
+.dark .fi-section .ec.ec-list .ec-event,
+.dark .fi-section .ec.ec-list .ec-event * {
+    color: rgb(241, 245, 249) !important;
+}
+
+.fi-section .ec.ec-list .ec-event-title {
+    white-space: normal;
+    overflow-wrap: anywhere;
+}
+
 .fi-section .ec .ec-today {
     background: rgba(255, 251, 235, 0.7);
 }
@@ -489,6 +513,15 @@
 
 .analytics-card-grid--compact {
     align-items: stretch;
+}
+
+.analytics-card-grid--reservations {
+    grid-template-columns: minmax(0, 1fr);
+    align-items: stretch;
+}
+
+.analytics-card-grid--reservations > .analytics-metric-card {
+    min-width: 0;
 }
 
 .analytics-metric-card {
@@ -705,6 +738,54 @@
     color: rgb(148, 163, 184);
 }
 
+.fi-analytics-court-performance-widget .analytics-list-row,
+.fi-analytics-court-performance-widget .analytics-list-header > div {
+    min-width: 0;
+    max-width: 100%;
+}
+
+.fi-analytics-court-performance-widget .analytics-list-header {
+    flex-wrap: wrap;
+}
+
+.fi-analytics-court-performance-widget .analytics-list-values {
+    flex-wrap: wrap;
+    white-space: normal;
+    gap: 0.4rem 1rem;
+}
+
+.analytics-responsive-table {
+    min-width: 0;
+    max-width: 100%;
+}
+
+.analytics-responsive-table .fi-ta-content-ctn {
+    max-width: 100%;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    -webkit-overflow-scrolling: touch;
+}
+
+@media (max-width: 1023px) {
+    .fi-analytics-duration-distribution-widget .analytics-donut-grid,
+    .fi-analytics-summary-widget .analytics-card-grid--three {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .fi-analytics-court-performance-widget .analytics-list-header {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .fi-analytics-court-performance-widget .analytics-list-values {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr);
+        width: 100%;
+        text-align: left;
+        overflow-wrap: anywhere;
+    }
+}
+
 @media (min-width: 768px) {
     .analytics-card-grid--four {
         grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -719,7 +800,17 @@
     }
 }
 
+@media (min-width: 1024px) {
+    .analytics-card-grid--reservations {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
 @media (min-width: 1280px) {
+    .analytics-card-grid--reservations {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
     .analytics-card-grid--four {
         grid-template-columns: repeat(4, minmax(0, 1fr));
     }
@@ -758,4 +849,60 @@
 
 .fi-modal.fi-modal-slide-over .fi-modal-content {
     min-height: 0;
+}
+/* A selected reservation remains distinct in every calendar view. */
+.reservation-person-groups-table {
+    min-width: 0;
+    max-width: 100%;
+    container-type: inline-size;
+}
+
+.reservation-person-groups-table .fi-ta-content-ctn {
+    max-width: 100%;
+    max-height: 60vh;
+    overflow: auto;
+    scrollbar-gutter: stable;
+    scrollbar-width: auto;
+    scrollbar-color: #9ca3af #f3f4f6;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+}
+
+.reservation-person-groups-table .fi-ta-group-header {
+    position: sticky;
+    left: 0;
+    width: calc(100cqw - 3.5rem);
+    max-width: 100%;
+}
+
+.reservation-person-groups-table .fi-ta-group-header > div {
+    min-width: 0;
+}
+
+.reservation-person-groups-table .fi-ta-group-heading {
+    white-space: normal;
+    overflow-wrap: anywhere;
+}
+
+.reservation-group-summary {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem 1.25rem;
+    margin-top: 0.35rem;
+    white-space: normal;
+}
+
+.reservation-group-amount strong {
+    white-space: nowrap;
+}
+
+.reservation-group-details {
+    flex-basis: 100%;
+    overflow-wrap: anywhere;
+}
+
+.fi-section .ec .ec-event.arena-event-selected {
+    outline: 3px solid #2563eb !important;
+    outline-offset: -3px;
+    box-shadow: inset 0 0 0 3px #2563eb !important;
 }

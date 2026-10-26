@@ -2,6 +2,7 @@
 
 namespace App\Filament\Widgets;
 
+use App\Enums\ReservationStatus;
 use App\Filament\Resources\Reservations\PhoneReservationForm;
 use App\Filament\Resources\Reservations\ReservationResource;
 use App\Models\Court;
@@ -9,6 +10,7 @@ use App\Models\Reservation;
 use App\Models\Sport;
 use Filament\Actions\Action;
 use Filament\Infolists\Components\TextEntry;
+use Filament\Notifications\Notification;
 use Filament\Support\Enums\FontWeight;
 use Filament\Support\Enums\Width;
 use Guava\Calendar\Enums\CalendarViewType;
@@ -17,8 +19,12 @@ use Guava\Calendar\Filament\CalendarWidget;
 use Guava\Calendar\ValueObjects\CalendarEvent;
 use Guava\Calendar\ValueObjects\CalendarResource;
 use Guava\Calendar\ValueObjects\DateClickInfo;
+use Guava\Calendar\ValueObjects\EventClickInfo;
 use Guava\Calendar\ValueObjects\FetchInfo;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
+use Livewire\Attributes\Locked;
 
 class CalendarReservationsWidget extends CalendarWidget
 {
@@ -26,7 +32,14 @@ class CalendarReservationsWidget extends CalendarWidget
 
     protected static ?int $sort = 4;
 
-    protected CalendarViewType $calendarView = CalendarViewType::ListWeek;
+    #[Locked]
+    public CalendarViewType $calendarView = CalendarViewType::ListWeek;
+
+    #[Locked]
+    public bool $selectingReservations = false;
+
+    #[Locked]
+    public array $selectedReservationIds = [];
 
     protected bool $eventClickEnabled = true;
 
@@ -46,24 +59,37 @@ class CalendarReservationsWidget extends CalendarWidget
                     'customer_type' => 'guest',
                 ])
                 ->after(fn () => $this->refreshRecords()),
+            Action::make('select_reservations')
+                ->label(fn (): string => $this->selectingReservations ? 'Završi izbor ('.count($this->selectedReservationIds).')' : 'Izaberi termine')
+                ->color(fn (): string => $this->selectingReservations ? 'primary' : 'gray')
+                ->action(function (): void {
+                    $this->selectingReservations = ! $this->selectingReservations;
+                    $this->selectedReservationIds = [];
+                    $this->refreshRecords();
+                }),
+            $this->reservationMutationAction('cancel_selected', false, true),
+            $this->reservationMutationAction('delete_selected', true, true),
             Action::make('view_day')
                 ->label('Dan')
-                ->color($this->calendarView === CalendarViewType::ResourceTimeGridDay ? 'primary' : 'gray')
+                ->color(fn (): string => $this->calendarView === CalendarViewType::ResourceTimeGridDay ? 'primary' : 'gray')
+                ->extraAttributes(fn (): array => ['aria-pressed' => $this->calendarView === CalendarViewType::ResourceTimeGridDay ? 'true' : 'false'])
                 ->action(fn () => $this->switchView(CalendarViewType::ResourceTimeGridDay)),
             Action::make('view_week')
                 ->label('Nedelja')
-                ->color($this->calendarView === CalendarViewType::ListWeek ? 'primary' : 'gray')
+                ->color(fn (): string => $this->calendarView === CalendarViewType::ListWeek ? 'primary' : 'gray')
+                ->extraAttributes(fn (): array => ['aria-pressed' => $this->calendarView === CalendarViewType::ListWeek ? 'true' : 'false'])
                 ->action(fn () => $this->switchView(CalendarViewType::ListWeek)),
             Action::make('view_month')
                 ->label('Mesec')
-                ->color($this->calendarView === CalendarViewType::DayGridMonth ? 'primary' : 'gray')
+                ->color(fn (): string => $this->calendarView === CalendarViewType::DayGridMonth ? 'primary' : 'gray')
+                ->extraAttributes(fn (): array => ['aria-pressed' => $this->calendarView === CalendarViewType::DayGridMonth ? 'true' : 'false'])
                 ->action(fn () => $this->switchView(CalendarViewType::DayGridMonth)),
         ];
     }
 
     protected function onDateClick(DateClickInfo $info): void
     {
-        if (! ReservationResource::canCreate()) {
+        if ($this->selectingReservations || ! ReservationResource::canCreate()) {
             return;
         }
 
@@ -74,6 +100,76 @@ class CalendarReservationsWidget extends CalendarWidget
             'booking_date' => $info->date->toDateString(),
             'booking_time' => $info->allDay ? null : $info->date->format('H:i'),
         ]);
+    }
+
+    protected function onEventClick(EventClickInfo $info, Model $event, ?string $action = null): void
+    {
+        abort_unless($event instanceof Reservation && ReservationResource::canView($event), 403);
+
+        if ($this->selectingReservations) {
+            $id = (int) $event->getKey();
+            $this->selectedReservationIds = in_array($id, $this->selectedReservationIds, true)
+                ? array_values(array_diff($this->selectedReservationIds, [$id]))
+                : [...$this->selectedReservationIds, $id];
+            $this->refreshRecords();
+
+            return;
+        }
+
+        parent::onEventClick($info, $event, $action);
+    }
+
+    protected function reservationMutationAction(string $name, bool $delete, bool $bulk = false): Action
+    {
+        return Action::make($name)
+            ->label(fn (): string => ($delete ? 'Trajno obriši' : 'Otkaži').($bulk ? ' izabrane ('.count($this->selectedReservationIds).')' : ' termin'))
+            ->color($delete ? 'danger' : 'warning')
+            ->visible(fn (): bool => $bulk ? $this->selectingReservations : ($this->getEventRecord() instanceof Reservation && ($delete
+                ? ReservationResource::canDelete($this->getEventRecord())
+                : ReservationResource::canEdit($this->getEventRecord()) && $this->getEventRecord()->status === ReservationStatus::Reserved)))
+            ->disabled(fn (): bool => $bulk && $this->selectedReservationIds === [])
+            ->requiresConfirmation()
+            ->modalHeading($delete ? 'Trajno brisanje termina' : 'Otkazivanje termina')
+            ->modalDescription(fn (): string => ($bulk ? 'Izabrano termina: '.count($this->selectedReservationIds).'. ' : '')
+                .($delete ? 'Rezervacije i povezane stavke biće trajno obrisane. Ova radnja se ne može poništiti.' : 'Menja se status u „Otkazana“. Podaci ostaju sačuvani, a termin se oslobađa.')
+                .' Ostali termini ponavljajuće serije neće biti promenjeni.')
+            ->modalSubmitActionLabel($delete ? 'Da, trajno obriši' : 'Da, otkaži')
+            ->cancelParentActions()
+            ->action(function () use ($delete, $bulk): void {
+                $ids = $bulk ? $this->selectedReservationIds : [$this->getEventRecord()?->getKey()];
+                abort_if(empty($ids) || in_array(null, $ids, true), 422);
+                $count = DB::transaction(function () use ($ids, $delete): int {
+                    $records = Reservation::query()->whereKey($ids)->orderBy('id')->lockForUpdate()->get();
+                    foreach ($records as $record) {
+                        abort_unless($delete ? ReservationResource::canDelete($record) : ReservationResource::canEdit($record), 403);
+                    }
+                    $count = 0;
+                    foreach ($records as $record) {
+                        if ($delete) {
+                            $record->delete();
+                            $count++;
+                        } elseif ($record->status === ReservationStatus::Reserved) {
+                            $record->update(['status' => ReservationStatus::Cancelled]);
+                            $count++;
+                        }
+                    }
+
+                    return $count;
+                });
+                $this->selectedReservationIds = [];
+                $this->refreshRecords();
+                Notification::make()->title(($delete ? 'Trajno obrisano termina: ' : 'Otkazano termina: ').$count)->success()->send();
+            });
+    }
+
+    public function cancelReservationAction(): Action
+    {
+        return $this->reservationMutationAction('cancelReservation', false);
+    }
+
+    public function deleteReservationAction(): Action
+    {
+        return $this->reservationMutationAction('deleteReservation', true);
     }
 
     public function switchView(CalendarViewType $view): void
@@ -98,13 +194,17 @@ class CalendarReservationsWidget extends CalendarWidget
                 $courtName = $reservation->court?->name;
                 $sportName = $reservation->sport?->name;
                 $title = collect([
+                    $reservation->is_gift ? 'Poklon' : null,
                     $reservation->customer_display_name,
+                    $sportName,
                     $courtName,
                 ])->filter()->implode(' | ');
                 $color = $this->eventColor($reservation);
+                $selected = in_array((int) $reservation->id, $this->selectedReservationIds, true);
 
                 return CalendarEvent::make($reservation)
-                    ->title($title)
+                    ->title(($this->selectingReservations ? ($selected ? '☑ ' : '☐ ') : '').$title)
+                    ->classNames($selected ? ['arena-event-selected'] : [])
                     ->start($reservation->starts_at)
                     ->end($reservation->ends_at)
                     ->resourceId($this->courtResourceId($reservation->court_id))
@@ -189,12 +289,18 @@ class CalendarReservationsWidget extends CalendarWidget
                 TextEntry::make('court.name')
                     ->label('Teren')
                     ->badge(),
+                TextEntry::make('status')->label('Status')
+                    ->state(fn (Reservation $record): string => $record->display_status),
                 TextEntry::make('starts_at')
                     ->label('Termin')
                     ->state(fn (Reservation $record): string => $record->starts_at->format('d.m.Y H:i').' - '.$record->ends_at->format('H:i')),
                 TextEntry::make('total_price')
                     ->label('Ukupna cena')
                     ->state(fn (Reservation $record): string => number_format((float) $record->total_price, 0, ',', '.').' RSD'),
+            ])
+            ->extraModalFooterActions([
+                $this->cancelReservationAction(),
+                $this->deleteReservationAction(),
             ]);
     }
 

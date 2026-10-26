@@ -29,6 +29,11 @@ class ReservationEquipment extends Model
     protected static function booted(): void
     {
         static::saving(function (ReservationEquipment $item): void {
+            if ($item->reservation()->where('is_gift', true)->exists()) {
+                $item->unit_price = 0;
+                $item->line_total = 0;
+            }
+
             $errors = [];
 
             if ((int) $item->quantity < 1) {

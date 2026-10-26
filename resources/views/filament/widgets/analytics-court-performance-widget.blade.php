@@ -1,4 +1,4 @@
-<x-filament-widgets::widget class="fi-analytics-court-performance-widget">
+<x-filament-widgets::widget class="fi-analytics-court-performance-widget" wire:poll.5s>
     <x-filament::section>
         <div class="analytics-section-title">Zauzetost i prihod po terenu</div>
 
@@ -18,7 +18,9 @@
 
                         <div class="analytics-list-values">
                             <span>{{ number_format($court['reservations'], 0, ',', '.') }} {{ $court['reservations'] === 1 ? 'termin' : 'termina' }}</span>
-                            <strong>{{ number_format($court['revenue'], 0, ',', '.') }} RSD</strong>
+                            <strong>Odigrani: {{ number_format($court['revenue'], 0, ',', '.') }} RSD</strong>
+                            <span>Budući: {{ number_format($court['futureValue'], 0, ',', '.') }} RSD</span>
+                            <span>U toku: {{ number_format($court['ongoingValue'], 0, ',', '.') }} RSD</span>
                         </div>
                     </div>
 

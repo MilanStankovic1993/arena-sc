@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Sports;
 
+use App\Filament\Forms\Components\FileUpload;
 use App\Filament\Resources\Sports\Pages\ManageSports;
 use App\Models\Sport;
 use BackedEnum;
@@ -9,7 +10,6 @@ use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
-use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
@@ -57,7 +57,8 @@ class SportResource extends Resource
                     ->imageResizeUpscale(false)
                     ->disk('public')
                     ->directory('sports'),
-                TextInput::make('sort_order')->label('Redosled')->numeric()->default(0),
+                TextInput::make('sort_order')->label('Redosled')->integer()->minValue(0)->maxValue(65535)->default(0)
+                    ->dehydrateStateUsing(fn ($state) => blank($state) ? 0 : $state),
                 Toggle::make('supports_online_booking')->label('Omogucena online rezervacija')->default(true),
                 Toggle::make('is_active')->label('Aktivan sport')->default(true),
             ])->columns(2),

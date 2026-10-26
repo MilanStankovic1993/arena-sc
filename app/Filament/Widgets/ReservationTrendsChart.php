@@ -18,7 +18,7 @@ class ReservationTrendsChart extends ChartWidget
         return [
             'datasets' => [
                 [
-                    'label' => 'Broj rezervacija',
+                    'label' => 'Broj rezervacija (bez besplatnih)',
                     'borderColor' => '#f59e0b',
                     'backgroundColor' => 'rgba(245, 158, 11, 0.18)',
                     'pointBackgroundColor' => '#f59e0b',
@@ -29,6 +29,7 @@ class ReservationTrendsChart extends ChartWidget
                     'tension' => 0.35,
                     'data' => $months
                         ->map(fn (Carbon $month) => Reservation::query()
+                            ->where('total_price', '>', 0)
                             ->whereBetween('starts_at', [$month->copy()->startOfMonth(), $month->copy()->endOfMonth()])
                             ->count())
                         ->all(),

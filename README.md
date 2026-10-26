@@ -1,5 +1,9 @@
 # Sportski centar Arena
 
+Kompletan pregled arhitekture, funkcionalnosti, rezervacionog sistema, baze,
+testiranja, produkcionog deploy-a i odrzavanja nalazi se u
+[`DOKUMENTACIJA-PROJEKTA.md`](DOKUMENTACIJA-PROJEKTA.md).
+
 Laravel + Filament sistem za:
 - javni sajt sportskog centra
 - online rezervacije termina

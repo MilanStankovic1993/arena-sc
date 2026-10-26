@@ -1,4 +1,4 @@
-<x-filament-widgets::widget class="fi-analytics-summary-widget">
+<x-filament-widgets::widget class="fi-analytics-summary-widget" wire:poll.5s>
     <div class="analytics-stack">
         <x-filament::section>
             <div class="analytics-heading-row">
@@ -19,15 +19,23 @@
         <x-filament::section>
             <div class="analytics-section-title">Danas</div>
 
-            <div class="analytics-card-grid analytics-card-grid--four">
+            <div class="analytics-card-grid analytics-card-grid--three">
                 <div class="analytics-metric-card">
                     <span class="analytics-metric-label">Rezervacija danas</span>
                     <strong class="analytics-metric-value">{{ number_format($today['reservations'], 0, ',', '.') }}</strong>
                 </div>
 
                 <div class="analytics-metric-card">
-                    <span class="analytics-metric-label">Prihod danas</span>
+                    <span class="analytics-metric-label">Prihod od odigranih danas</span>
                     <strong class="analytics-metric-value analytics-metric-value--accent">{{ number_format($today['revenue'], 0, ',', '.') }} RSD</strong>
+                </div>
+                <div class="analytics-metric-card">
+                    <span class="analytics-metric-label">Buduće rezervacije danas</span>
+                    <strong class="analytics-metric-value analytics-metric-value--blue">{{ number_format($today['futureValue'], 0, ',', '.') }} RSD</strong>
+                </div>
+                <div class="analytics-metric-card">
+                    <span class="analytics-metric-label">Termini u toku danas</span>
+                    <strong class="analytics-metric-value">{{ number_format($today['ongoingValue'], 0, ',', '.') }} RSD</strong>
                 </div>
 
                 <div class="analytics-metric-card">
@@ -45,36 +53,39 @@
         <x-filament::section>
             <div class="analytics-section-title">Rezervacije - izabrani period</div>
 
-            <div class="analytics-card-grid analytics-card-grid--compact" style="grid-template-columns: repeat(3, minmax(0, 1fr));">
+            <div class="analytics-card-grid analytics-card-grid--reservations">
                 <div class="analytics-metric-card">
                     <span class="analytics-metric-label">Ukupno rezervacija</span>
                     <strong class="analytics-metric-value">{{ number_format($period['total'], 0, ',', '.') }}</strong>
-                </div>
-
-                <div class="analytics-metric-card">
-                    <span class="analytics-metric-label">Rezervisane</span>
-                    <strong class="analytics-metric-value analytics-metric-value--blue">{{ number_format($period['reserved'], 0, ',', '.') }}</strong>
+                    <span class="analytics-metric-meta">Bez otkazanih i besplatnih termina</span>
                 </div>
 
                 <div class="analytics-metric-card">
                     <span class="analytics-metric-label">Otkazanih</span>
                     <strong class="analytics-metric-value analytics-metric-value--danger">{{ number_format($period['cancelled'], 0, ',', '.') }}</strong>
+                    <span class="analytics-metric-meta">Odvojeno od ukupnog broja</span>
                 </div>
 
                 <div class="analytics-metric-card">
-                    <span class="analytics-metric-label">Ucesnickih termina</span>
-                    <strong class="analytics-metric-value analytics-metric-value--blue">{{ number_format($period['participantVisits'], 0, ',', '.') }}</strong>
-                    <span class="analytics-metric-meta">{{ number_format($period['uniqueParticipants'], 0, ',', '.') }} razlicitih korisnika</span>
-                </div>
-
-                <div class="analytics-metric-card analytics-metric-card--wide">
-                    <span class="analytics-metric-label">Ukupan prihod</span>
+                    <span class="analytics-metric-label">Prihod od odigranih termina</span>
                     <strong class="analytics-metric-value analytics-metric-value--accent">{{ number_format($period['revenue'], 0, ',', '.') }} RSD</strong>
+                    <span class="analytics-metric-meta">{{ $period['completed'] }} odigranih termina</span>
+                </div>
+                <div class="analytics-metric-card">
+                    <span class="analytics-metric-label">Vrednost budućih rezervacija</span>
+                    <strong class="analytics-metric-value analytics-metric-value--blue">{{ number_format($period['futureValue'], 0, ',', '.') }} RSD</strong>
+                    <span class="analytics-metric-meta">{{ $period['future'] }} budućih termina</span>
+                </div>
+                <div class="analytics-metric-card">
+                    <span class="analytics-metric-label">Vrednost termina u toku</span>
+                    <strong class="analytics-metric-value">{{ number_format($period['ongoingValue'], 0, ',', '.') }} RSD</strong>
+                    <span class="analytics-metric-meta">{{ $period['ongoing'] }} termina u toku</span>
                 </div>
 
-                <div class="analytics-metric-card analytics-metric-card--wide">
-                    <span class="analytics-metric-label">Prosecna cena po terminu</span>
+                <div class="analytics-metric-card">
+                    <span class="analytics-metric-label">Prosečan prihod po odigranom terminu</span>
                     <strong class="analytics-metric-value">{{ number_format($period['averagePrice'], 0, ',', '.') }} RSD</strong>
+                    <span class="analytics-metric-meta">Bez otkazanih i besplatnih termina</span>
                 </div>
             </div>
         </x-filament::section>

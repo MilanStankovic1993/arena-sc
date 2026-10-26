@@ -21,6 +21,7 @@ class Reservation extends Model
         'sport_id',
         'court_id',
         'status',
+        'is_gift',
         'starts_at',
         'ends_at',
         'duration_minutes',
@@ -38,6 +39,7 @@ class Reservation extends Model
     {
         return [
             'status' => ReservationStatus::class,
+            'is_gift' => 'boolean',
             'starts_at' => 'datetime',
             'ends_at' => 'datetime',
             'court_price' => 'decimal:2',
@@ -50,6 +52,11 @@ class Reservation extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function getDisplayStatusAttribute(): string
+    {
+        return $this->status->label().($this->is_gift ? ' · Poklon' : '');
     }
 
     public function getCustomerDisplayNameAttribute(): string

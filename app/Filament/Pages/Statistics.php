@@ -63,7 +63,7 @@ class Statistics extends BaseDashboard
         return $schema
             ->components([
                 Section::make('Filter statistike')
-                    ->description('Pregledaj metrike po periodu, sportu, terenu i konkretnom korisniku.')
+                    ->description('Statistika termina isključuje besplatne rezervacije (0 RSD), koje ostaju u evidenciji rezervacija. Iznosi važe za izabrani period; za sve buduće rezervacije izaberi Sve vreme. Završeni, neotkazani termini smatraju se plaćenim.')
                     ->columnSpanFull()
                     ->schema([
                         Select::make('preset')
@@ -74,7 +74,7 @@ class Statistics extends BaseDashboard
                                 '90d' => '90 dana',
                                 '365d' => '365 dana',
                                 'year' => 'Tekuca godina',
-                                'all' => 'Sve vreme',
+                                'all' => 'Sve vreme (i buduće rezervacije)',
                                 'custom' => 'Prilagodi',
                             ])
                             ->default('30d')

@@ -26,7 +26,7 @@ class AdminAnalyticsService
             '90d' => [$now->copy()->subDays(89)->startOfDay(), $now->copy()->endOfDay()],
             '365d' => [$now->copy()->subDays(364)->startOfDay(), $now->copy()->endOfDay()],
             'year' => [$now->copy()->startOfYear(), $now->copy()->endOfDay()],
-            'all' => [Carbon::create(2020, 1, 1)->startOfDay(), $now->copy()->endOfDay()],
+            'all' => [Carbon::create(2020, 1, 1)->startOfDay(), $now->copy()->max(Carbon::parse(Reservation::query()->where('is_gift', false)->where('total_price', '>', 0)->max('starts_at') ?? $now))->endOfDay()],
             'custom' => [
                 filled($filters['startDate'] ?? null)
                     ? Carbon::parse($filters['startDate'])->startOfDay()
@@ -77,8 +77,8 @@ class AdminAnalyticsService
         $query = $this->reservationQueryForRange($filters, $start, $end);
 
         return [
+            ...$this->revenueBreakdown($query),
             'reservations' => (clone $query)->count(),
-            'revenue' => (clone $query)->whereIn('status', $this->revenueStatuses())->sum('total_price'),
             'activeCourts' => $this->courtsQuery($filters)->where('is_active', true)->count(),
             'customers' => User::query()->where('role', 'customer')->count(),
         ];
@@ -88,26 +88,23 @@ class AdminAnalyticsService
     {
         $query = $this->reservationQuery($filters);
 
-        $total = (clone $query)->count();
         $reserved = (clone $query)
             ->where('status', ReservationStatus::Reserved->value)
             ->count();
         $cancelled = (clone $query)
             ->whereIn('status', $this->cancelledStatuses())
             ->count();
-        $revenue = (clone $query)
-            ->whereIn('status', $this->revenueStatuses())
-            ->sum('total_price');
+        $financials = $this->revenueBreakdown($query);
         $participantQuery = $this->participantQueryForReservations($query, $filters);
         $participantVisits = (clone $participantQuery)->count();
         $uniqueParticipants = (clone $participantQuery)->distinct('user_id')->count('user_id');
 
         return [
-            'total' => $total,
+            ...$financials,
+            'total' => $reserved,
             'reserved' => $reserved,
             'cancelled' => $cancelled,
-            'revenue' => $revenue,
-            'averagePrice' => $total > 0 ? $revenue / $total : 0,
+            'averagePrice' => $financials['completed'] > 0 ? $financials['revenue'] / $financials['completed'] : 0,
             'participantVisits' => $participantVisits,
             'uniqueParticipants' => $uniqueParticipants,
         ];
@@ -147,29 +144,33 @@ class AdminAnalyticsService
 
     public function monthlyRevenue(array $filters = []): array
     {
-        $months = collect(range(5, 0))
-            ->map(fn (int $offset) => now()->copy()->startOfMonth()->subMonths($offset));
-
-        $data = $months
-            ->map(function (CarbonInterface $month) use ($filters): float {
-                return (float) $this->reservationQueryForRange(
-                    $filters,
-                    $month->copy()->startOfMonth(),
-                    $month->copy()->endOfMonth(),
-                )
-                    ->whereIn('status', $this->revenueStatuses())
-                    ->sum('total_price');
-            })
-            ->all();
+        $resolved = $this->resolveFilters($filters);
+        $range = $this->reservationQuery($filters)->selectRaw('MIN(starts_at) as first_start, MAX(starts_at) as last_start')->first();
+        $first = Carbon::parse($range->first_start ?? $resolved['endDate'])->startOfMonth();
+        $last = Carbon::parse($range->last_start ?? $resolved['endDate'])->startOfMonth();
+        $months = collect();
+        for ($month = $first->copy(); $month->lte($last); $month->addMonth()) {
+            $months->push($month->copy());
+        }
+        $asOf = now();
+        $data = $months->map(fn (CarbonInterface $month): array => $this->revenueBreakdown(
+            $this->reservationQueryForRange($filters,
+                $month->copy()->startOfMonth()->max($resolved['startDate']),
+                $month->copy()->endOfMonth()->min($resolved['endDate']),
+            ), $asOf,
+        ));
 
         return [
-            'labels' => $months->map(fn (CarbonInterface $month) => $month->translatedFormat('M'))->all(),
-            'data' => $data,
+            'labels' => $months->map(fn (CarbonInterface $month) => $month->translatedFormat('M Y'))->all(),
+            'data' => $data->pluck('revenue')->all(),
+            'futureData' => $data->pluck('futureValue')->all(),
+            'ongoingData' => $data->pluck('ongoingValue')->all(),
         ];
     }
 
     public function courtPerformance(array $filters = []): Collection
     {
+        $asOf = now();
         $courts = $this->courtsQuery($filters)
             ->with('sport')
             ->orderBy('name')
@@ -179,9 +180,11 @@ class AdminAnalyticsService
             ->select('court_id')
             ->selectRaw('COUNT(*) as reservations_count')
             ->selectRaw(
-                'SUM(CASE WHEN status = ? THEN total_price ELSE 0 END) as revenue',
-                [ReservationStatus::Reserved->value],
+                'SUM(CASE WHEN status = ? AND ends_at <= ? THEN total_price ELSE 0 END) as revenue',
+                [ReservationStatus::Reserved->value, $asOf],
             )
+            ->selectRaw('SUM(CASE WHEN status = ? AND starts_at >= ? THEN total_price ELSE 0 END) as future_value', [ReservationStatus::Reserved->value, $asOf])
+            ->selectRaw('SUM(CASE WHEN status = ? AND starts_at < ? AND ends_at > ? THEN total_price ELSE 0 END) as ongoing_value', [ReservationStatus::Reserved->value, $asOf, $asOf])
             ->groupBy('court_id')
             ->get()
             ->keyBy('court_id');
@@ -199,6 +202,8 @@ class AdminAnalyticsService
                 'is_active' => (bool) $court->is_active,
                 'reservations' => $count,
                 'revenue' => $revenue,
+                'futureValue' => (float) ($courtStatistics?->future_value ?? 0),
+                'ongoingValue' => (float) ($courtStatistics?->ongoing_value ?? 0),
                 'progress' => min(100, round(($count / $maxCount) * 100, 1)),
             ];
         });
@@ -337,6 +342,9 @@ class AdminAnalyticsService
         $endDate ??= $resolved['endDate'];
 
         return $query
+            // Gift/free/promotional bookings remain in the ledger, not commercial statistics.
+            ->where('is_gift', false)
+            ->where('total_price', '>', 0)
             ->when($resolved['sportId'], fn (Builder $builder, int $sportId) => $builder->where('sport_id', $sportId))
             ->when($resolved['courtId'], fn (Builder $builder, int $courtId) => $builder->where('court_id', $courtId))
             ->when($applyUserFilter && $resolved['userId'], fn (Builder $builder) => $builder->whereHas('participants', fn (Builder $participants) => $participants->whereKey($resolved['userId'])))
@@ -362,6 +370,41 @@ class AdminAnalyticsService
     {
         return [
             ReservationStatus::Reserved->value,
+        ];
+    }
+
+    public function constrainRevenueQuery(Builder $query, string $bucket = 'completed', ?CarbonInterface $asOf = null): Builder
+    {
+        $asOf ??= now();
+        $query->where('total_price', '>', 0)->whereIn('status', $this->revenueStatuses());
+
+        return match ($bucket) {
+            'completed' => $query->where('ends_at', '<=', $asOf),
+            'future' => $query->where('starts_at', '>=', $asOf),
+            'ongoing' => $query->where('starts_at', '<', $asOf)->where('ends_at', '>', $asOf),
+            default => throw new \InvalidArgumentException('Unknown revenue bucket.'),
+        };
+    }
+
+    public function revenueBreakdown(Builder $query, ?CarbonInterface $asOf = null): array
+    {
+        $asOf ??= now();
+        $totals = (clone $query)->where('total_price', '>', 0)->whereIn('status', $this->revenueStatuses())
+            ->selectRaw('COALESCE(SUM(CASE WHEN ends_at <= ? THEN total_price ELSE 0 END), 0) as revenue', [$asOf])
+            ->selectRaw('COALESCE(SUM(CASE WHEN starts_at >= ? THEN total_price ELSE 0 END), 0) as future_value', [$asOf])
+            ->selectRaw('COALESCE(SUM(CASE WHEN starts_at < ? AND ends_at > ? THEN total_price ELSE 0 END), 0) as ongoing_value', [$asOf, $asOf])
+            ->selectRaw('COALESCE(SUM(CASE WHEN ends_at <= ? THEN 1 ELSE 0 END), 0) as completed_count', [$asOf])
+            ->selectRaw('COALESCE(SUM(CASE WHEN starts_at >= ? THEN 1 ELSE 0 END), 0) as future_count', [$asOf])
+            ->selectRaw('COALESCE(SUM(CASE WHEN starts_at < ? AND ends_at > ? THEN 1 ELSE 0 END), 0) as ongoing_count', [$asOf, $asOf])
+            ->first();
+
+        return [
+            'revenue' => (float) $totals->revenue,
+            'futureValue' => (float) $totals->future_value,
+            'ongoingValue' => (float) $totals->ongoing_value,
+            'completed' => (int) $totals->completed_count,
+            'future' => (int) $totals->future_count,
+            'ongoing' => (int) $totals->ongoing_count,
         ];
     }
 

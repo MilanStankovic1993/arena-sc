@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\EmailCampaigns;
 
+use App\Filament\Forms\Components\FileUpload;
 use App\Filament\Resources\EmailCampaigns\Pages\ManageEmailCampaigns;
 use App\Models\EmailCampaign;
 use App\Services\EmailCampaignService;
@@ -11,7 +12,6 @@ use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
-use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;

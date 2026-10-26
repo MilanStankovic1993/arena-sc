@@ -12,7 +12,7 @@ class AnalyticsRevenueChart extends ChartWidget
 
     protected static bool $isDiscovered = false;
 
-    protected ?string $heading = 'Mesecni prihod - poslednjih 6 meseci';
+    protected ?string $heading = 'Prihod i rezervacije po mesecima - izabrani period';
 
     protected int|string|array $columnSpan = 'full';
 
@@ -27,12 +27,22 @@ class AnalyticsRevenueChart extends ChartWidget
         return [
             'datasets' => [
                 [
-                    'label' => 'Prihod',
+                    'label' => 'Prihod od odigranih termina',
                     'borderWidth' => 0,
-                    'backgroundColor' => '#3b82f6',
+                    'backgroundColor' => '#10b981',
                     'borderRadius' => 10,
                     'maxBarThickness' => 44,
                     'data' => $series['data'],
+                ],
+                [
+                    'label' => 'Vrednost budućih rezervacija',
+                    'backgroundColor' => '#3b82f6',
+                    'data' => $series['futureData'],
+                ],
+                [
+                    'label' => 'Vrednost termina u toku',
+                    'backgroundColor' => '#f59e0b',
+                    'data' => $series['ongoingData'],
                 ],
             ],
             'labels' => $series['labels'],
@@ -44,7 +54,8 @@ class AnalyticsRevenueChart extends ChartWidget
         return [
             'plugins' => [
                 'legend' => [
-                    'display' => false,
+                    'display' => true,
+                    'position' => 'bottom',
                 ],
             ],
             'scales' => [

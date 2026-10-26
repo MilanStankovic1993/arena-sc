@@ -4,11 +4,15 @@ namespace App\Filament\Resources\Reservations;
 
 use App\Enums\ReservationStatus;
 use App\Filament\Resources\Reservations\Pages\ManageReservations;
+use App\Models\Court;
 use App\Models\Reservation;
 use App\Models\User;
 use App\Services\AdminReservationService;
+use App\Services\ReservationListService;
 use App\Services\ReservationParticipantService;
+use App\Services\ReservationPricingService;
 use BackedEnum;
+use Carbon\Carbon;
 use Filament\Actions\Action;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
@@ -20,6 +24,7 @@ use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Toggle;
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Schemas\Components\Section;
@@ -29,7 +34,11 @@ use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\SelectFilter;
+use Filament\Tables\Grouping\Group;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Validation\ValidationException;
+use RuntimeException;
 use UnitEnum;
 
 class ReservationResource extends Resource
@@ -63,9 +72,8 @@ class ReservationResource extends Resource
                     ->maxLength(255)
                     ->required(fn ($get): bool => blank($get('user_id'))),
                 TextInput::make('guest_phone')
-                    ->label('Telefon gosta')
-                    ->maxLength(50)
-                    ->required(fn ($get): bool => blank($get('user_id'))),
+                    ->label('Telefon gosta (opciono)')
+                    ->maxLength(50),
                 TextInput::make('guest_email')
                     ->label('Email gosta')
                     ->email()
@@ -84,9 +92,18 @@ class ReservationResource extends Resource
                     90 => '90 minuta',
                     120 => '120 minuta',
                 ])->default(60)->required(),
-                TextInput::make('court_price')->label('Cena terena')->numeric()->minValue(0)->prefix('RSD')->required(),
-                TextInput::make('equipment_price')->label('Cena opreme')->numeric()->minValue(0)->prefix('RSD')->required(),
-                TextInput::make('total_price')->label('Ukupno')->numeric()->minValue(0)->prefix('RSD')->required(),
+                TextInput::make('court_price')->label('Cena terena')->numeric()->minValue(0)->prefix('RSD')->required()->readOnly(fn ($get): bool => (bool) $get('is_gift')),
+                TextInput::make('equipment_price')->label('Cena opreme')->numeric()->minValue(0)->prefix('RSD')->required()->readOnly(fn ($get): bool => (bool) $get('is_gift')),
+                TextInput::make('total_price')->label('Ukupno')->numeric()->minValue(0)->prefix('RSD')->required()->readOnly(fn ($get): bool => (bool) $get('is_gift')),
+                Toggle::make('is_gift')->label('Poklon — cena 0 RSD')->live()
+                    ->afterStateUpdated(function ($state, $set): void {
+                        if ($state) {
+                            foreach (['court_price', 'equipment_price', 'total_price'] as $field) {
+                                $set($field, 0);
+                            }
+                        }
+                    })
+                    ->helperText('Poklon ne ulazi u komercijalnu statistiku. Ako uklonite oznaku, ručno unesite cenu pre čuvanja.'),
                 Textarea::make('customer_note')->label('Napomena korisnika')->rows(3)->columnSpanFull(),
                 Textarea::make('admin_note')->label('Interna napomena')->rows(3)->columnSpanFull(),
                 Textarea::make('cancellation_reason')
@@ -102,7 +119,7 @@ class ReservationResource extends Resource
                     ->addActionLabel('Dodaj stavku opreme')
                     ->schema([
                         Select::make('equipment_id')->relationship('equipment', 'name')->required()->searchable()->preload(),
-                        TextInput::make('quantity')->label('Kolicina')->numeric()->minValue(1)->default(1)->required(),
+                        TextInput::make('quantity')->label('Kolicina')->integer()->minValue(1)->default(1)->required(),
                         TextInput::make('unit_price')->label('Cena po komadu')->numeric()->minValue(0)->prefix('RSD')->required(),
                         TextInput::make('line_total')->label('Ukupno')->numeric()->minValue(0)->prefix('RSD')->required(),
                     ])
@@ -114,14 +131,39 @@ class ReservationResource extends Resource
 
     public static function table(Table $table): Table
     {
+        $list = app(ReservationListService::class);
+
         return $table
             ->recordTitleAttribute('id')
+            ->extraAttributes(['class' => 'reservation-person-groups-table'])
+            ->modifyQueryUsing(fn (Builder $query): Builder => $list->query($query))
+            ->description('Pretraži ime, telefon ili mejl. Klikni na ime da otvoriš termine. Za sva polja pomeri tabelu levo/desno; za ostale termine skroluj unutar tabele. Zbirovi važe za izabrani pregled. Broj po stranici odnosi se na grupe osoba. Bez kontakta se koristi tačno uneto ime.')
+            ->searchPlaceholder('Ime, telefon ili mejl...')
+            ->searchDebounce('350ms')
+            ->groups([
+                Group::make('reservation_customer_group')
+                    ->label('Osoba')
+                    ->titlePrefixedWithLabel(false)
+                    ->getTitleFromRecordUsing(fn (Reservation $record): string => $list->groupTitle($record))
+                    ->getDescriptionFromRecordUsing(fn (Reservation $record) => $list->groupDescription($record))
+                    ->orderQueryUsing(fn (Builder $query, string $direction): Builder => $query->orderByRaw('LOWER('.$list->nameExpression().') '.$direction)->orderByRaw($list->keyExpression().' '.$direction))
+                    ->scopeQueryByKeyUsing(fn (Builder $query, string $key): Builder => $query->whereRaw($list->keyExpression().' = ?', [$key]))
+                    ->groupQueryUsing(fn ($query) => $query->groupByRaw($list->keyExpression()))
+                    ->collapsible(),
+            ])
+            ->defaultGroup('reservation_customer_group')
+            ->collapsedGroupsByDefault()
+            ->groupingSettingsHidden()
+            ->paginated([10, 25, 50])
+            ->defaultPaginationPageOption(10)
+            ->pluralModelLabel('grupa osoba')
             ->defaultSort('starts_at', 'desc')
             ->columns([
                 TextColumn::make('id')->label('#')->sortable(),
                 TextColumn::make('customer_display_name')
                     ->label('Korisnik/gost')
-                    ->state(fn (Reservation $record): string => $record->customer_display_name),
+                    ->state(fn (Reservation $record): string => $record->customer_display_name)
+                    ->searchable(query: fn (Builder $query, string $search): Builder => $list->search($query, $search)),
                 TextColumn::make('customer_display_phone')
                     ->label('Telefon')
                     ->state(fn (Reservation $record): ?string => $record->customer_display_phone)
@@ -131,7 +173,7 @@ class ReservationResource extends Resource
                 TextColumn::make('status')
                     ->label('Status')
                     ->badge()
-                    ->formatStateUsing(fn (ReservationStatus|string|null $state): string => $state instanceof ReservationStatus ? $state->label() : (ReservationStatus::tryFrom((string) $state)?->label() ?? (string) $state)),
+                    ->formatStateUsing(fn (Reservation $record): string => $record->display_status),
                 TextColumn::make('starts_at')->label('Pocetak')->dateTime('d.m.Y H:i')->sortable(),
                 TextColumn::make('ends_at')->label('Kraj')->dateTime('d.m.Y H:i'),
                 TextColumn::make('participants_count')->counts('participants')->label('Ucesnika'),
@@ -139,9 +181,24 @@ class ReservationResource extends Resource
                 TextColumn::make('series_id')->label('Ponavljanje')->formatStateUsing(fn ($state) => filled($state) ? 'Nedeljna serija' : '')->badge()->toggleable(),
             ])
             ->filters([
-                SelectFilter::make('status')->options(collect(ReservationStatus::cases())->mapWithKeys(fn (ReservationStatus $status) => [$status->value => $status->label()])->all()),
-                SelectFilter::make('court')->relationship('court', 'name'),
+                SelectFilter::make('status')->label('Status')->options(collect(ReservationStatus::cases())->mapWithKeys(fn (ReservationStatus $status) => [$status->value => $status->label()])->all()),
+                SelectFilter::make('is_gift')->label('Poklon')->options(['yes' => 'Poklonjeni termini', 'no' => 'Ostali termini'])
+                    ->query(fn (Builder $query, array $data): Builder => match ($data['value'] ?? null) {
+                        'yes' => $query->where('is_gift', true),
+                        'no' => $query->where('is_gift', false),
+                        default => $query,
+                    }),
+                SelectFilter::make('sport')->label('Sport')->relationship('sport', 'name')->searchable()->preload(),
+                SelectFilter::make('time_state')->label('Vreme termina')
+                    ->options(['future' => 'Budući termini', 'ongoing' => 'U toku', 'completed' => 'Odigrani termini'])
+                    ->query(fn (Builder $query, array $data): Builder => match ($data['value'] ?? null) {
+                        'future' => $query->where('status', ReservationStatus::Reserved->value)->where('starts_at', '>=', now()),
+                        'ongoing' => $query->where('status', ReservationStatus::Reserved->value)->where('starts_at', '<', now())->where('ends_at', '>', now()),
+                        'completed' => $query->where('status', ReservationStatus::Reserved->value)->where('ends_at', '<=', now()),
+                        default => $query,
+                    }),
                 Filter::make('period')
+                    ->label('Period')
                     ->schema([
                         DatePicker::make('from')->label('Od'),
                         DatePicker::make('until')->label('Do'),
@@ -176,7 +233,43 @@ class ReservationResource extends Resource
                             ->success()
                             ->send();
                     }),
-                EditAction::make()->modalWidth(Width::Screen),
+                EditAction::make()->modalWidth(Width::Screen)
+                    ->databaseTransaction()
+                    ->before(function (Reservation $record, array $data, $livewire): void {
+                        if (($data['status'] ?? null) !== ReservationStatus::Reserved->value) {
+                            return;
+                        }
+
+                        $court = Court::query()->lockForUpdate()->findOrFail($data['court_id']);
+                        $schema = $livewire->{$livewire->getMountedActionSchemaName()};
+                        $items = array_values($schema->getRawState()['equipmentItems'] ?? []);
+                        try {
+                            app(ReservationPricingService::class)->hydrateEquipmentPricing(
+                                $items,
+                                $court->sport_id,
+                                Carbon::parse($data['starts_at']),
+                                Carbon::parse($data['ends_at']),
+                                $record->id,
+                            );
+                        } catch (RuntimeException $exception) {
+                            throw ValidationException::withMessages([
+                                $schema->getStatePath().'.equipmentItems' => $exception->getMessage(),
+                            ]);
+                        }
+                    }),
+                Action::make('gift')->label('Pokloni termin')->icon(Heroicon::OutlinedGift)->color('info')
+                    ->visible(fn (Reservation $record): bool => ! $record->is_gift && $record->status === ReservationStatus::Reserved && static::canEdit($record))
+                    ->requiresConfirmation()->modalHeading('Pokloniti ovaj termin?')
+                    ->modalDescription('Cena ove rezervacije sa opremom postaje 0 RSD i uklanja se iz komercijalne statistike. Termin ostaje zauzet. Ostali termini iz serije se ne menjaju.')
+                    ->databaseTransaction()
+                    ->action(function (Reservation $record): void {
+                        $record = Reservation::query()->lockForUpdate()->findOrFail($record->id);
+                        if ($record->status !== ReservationStatus::Reserved) {
+                            throw ValidationException::withMessages(['is_gift' => 'Otkazan termin nije moguće pokloniti. Osvežite listu rezervacija.']);
+                        }
+                        $record->update(['is_gift' => true]);
+                        Notification::make()->title('Termin je označen kao poklon — 0 RSD.')->success()->send();
+                    }),
                 Action::make('cancel_one')->label('Otkazi termin')->icon(Heroicon::OutlinedXMark)->color('danger')
                     ->visible(fn (Reservation $record) => $record->status === ReservationStatus::Reserved && static::canEdit($record))
                     ->requiresConfirmation()->modalHeading('Otkazati samo ovaj termin?')

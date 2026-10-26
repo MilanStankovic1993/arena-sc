@@ -80,9 +80,10 @@ class AdminReservationService
                 'series_id' => $seriesId,
                 'user_id' => $registered ? $data['user_id'] : null,
                 'guest_name' => $registered ? null : $data['guest_name'],
-                'guest_phone' => $registered ? null : $data['guest_phone'],
+                'guest_phone' => $registered ? null : ($data['guest_phone'] ?? null),
                 'guest_email' => $registered ? null : ($data['guest_email'] ?? null),
                 'status' => 'reserved', 'starts_at' => $start, 'ends_at' => $end,
+                'is_gift' => (bool) ($data['is_gift'] ?? false),
                 'duration_minutes' => $duration, 'court_price' => $courtPrice,
                 'equipment_price' => $equipmentPrice, 'total_price' => $courtPrice + $equipmentPrice,
                 'customer_note' => $data['customer_note'] ?? null,
@@ -149,7 +150,7 @@ class AdminReservationService
                 }
             }
 
-            return ['date' => $date, 'time' => $start->format('H:i').'–'.$end->format('H:i'), 'reason' => $reason, 'price' => $price];
+            return ['date' => $date, 'time' => $start->format('H:i').'–'.$end->format('H:i'), 'reason' => $reason, 'price' => ! empty($data['is_gift']) ? 0.0 : $price];
         });
     }
 

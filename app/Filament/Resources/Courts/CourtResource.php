@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Courts;
 
+use App\Filament\Forms\Components\FileUpload;
 use App\Filament\Resources\Courts\Pages\ManageCourts;
 use App\Models\Court;
 use BackedEnum;
@@ -9,7 +10,6 @@ use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
-use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;

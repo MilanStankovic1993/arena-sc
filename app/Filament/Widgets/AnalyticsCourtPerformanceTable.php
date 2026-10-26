@@ -31,14 +31,18 @@ class AnalyticsCourtPerformanceTable extends TableWidget
         $service = app(AdminAnalyticsService::class);
         $filters = $this->pageFilters ?? [];
         $resolved = $service->resolveFilters($filters);
+        $asOf = now();
 
         return $table
+            ->extraAttributes(['class' => 'analytics-responsive-table'])
+            ->description('Prevucite tabelu levo/desno da vidite sve kolone.')
             ->query(
                 Court::query()
                     ->with('sport')
                     ->when($resolved['sportId'], fn (Builder $query, int $sportId) => $query->where('sport_id', $sportId))
                     ->when($resolved['courtId'], fn (Builder $query, int $courtId) => $query->whereKey($courtId))
                     ->withCount([
+                        'reservations as filtered_completed_count' => fn (Builder $query) => $service->constrainRevenueQuery($service->constrainReservationQuery($query, $filters), 'completed', $asOf),
                         'reservations as filtered_reservations_count' => fn (Builder $query) => $service->constrainReservationQuery($query, $filters),
                         'reservations as filtered_reserved_count' => fn (Builder $query) => $service
                             ->constrainReservationQuery($query, $filters)
@@ -48,9 +52,9 @@ class AnalyticsCourtPerformanceTable extends TableWidget
                             ->where('status', ReservationStatus::Cancelled->value),
                     ])
                     ->withSum([
-                        'reservations as filtered_revenue' => fn (Builder $query) => $service
-                            ->constrainReservationQuery($query, $filters)
-                            ->whereIn('status', $service->revenueStatuses()),
+                        'reservations as filtered_revenue' => fn (Builder $query) => $service->constrainRevenueQuery($service->constrainReservationQuery($query, $filters), 'completed', $asOf),
+                        'reservations as filtered_future_value' => fn (Builder $query) => $service->constrainRevenueQuery($service->constrainReservationQuery($query, $filters), 'future', $asOf),
+                        'reservations as filtered_ongoing_value' => fn (Builder $query) => $service->constrainRevenueQuery($service->constrainReservationQuery($query, $filters), 'ongoing', $asOf),
                     ], 'total_price')
                     ->withSum([
                         'reservations as filtered_duration_minutes' => fn (Builder $query) => $service
@@ -84,17 +88,29 @@ class AnalyticsCourtPerformanceTable extends TableWidget
                     ->formatStateUsing(fn (int|string|null $state): string => number_format(((int) $state) / 60, 1, ',', '.').' h')
                     ->sortable(),
                 TextColumn::make('filtered_revenue')
-                    ->label('Prihod')
+                    ->label('Prihod od odigranih')
+                    ->default(0)
+                    ->money('RSD', divideBy: 1)
+                    ->sortable(),
+                TextColumn::make('filtered_future_value')
+                    ->label('Buduće rezervacije')
+                    ->default(0)
+                    ->money('RSD', divideBy: 1)
+                    ->sortable(),
+                TextColumn::make('filtered_ongoing_value')
+                    ->label('Termini u toku')
+                    ->default(0)
                     ->money('RSD', divideBy: 1)
                     ->sortable(),
                 TextColumn::make('filtered_average_value')
-                    ->label('Prosek')
-                    ->state(fn (Court $record): float => ((int) $record->filtered_reservations_count) > 0
-                        ? ((float) $record->filtered_revenue / (int) $record->filtered_reservations_count)
+                    ->label('Prosek odigranih')
+                    ->state(fn (Court $record): float => ((int) $record->filtered_completed_count) > 0
+                        ? ((float) $record->filtered_revenue / (int) $record->filtered_completed_count)
                         : 0)
                     ->money('RSD', divideBy: 1),
             ])
             ->defaultSort('filtered_reservations_count', 'desc')
-            ->paginated([5, 10, 25]);
+            ->paginated([5, 10, 25])
+            ->poll('5s');
     }
 }

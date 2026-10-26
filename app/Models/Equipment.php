@@ -46,6 +46,12 @@ class Equipment extends Model
     protected static function booted(): void
     {
         static::saving(function (Equipment $equipment): void {
+            foreach (['rental_price', 'sale_price', 'stock_quantity'] as $field) {
+                if (blank($equipment->{$field})) {
+                    $equipment->{$field} = 0;
+                }
+            }
+
             if (filled($equipment->name)) {
                 $baseSlug = Str::slug($equipment->name);
                 $slug = $baseSlug;

@@ -27,6 +27,12 @@ class ReservationObserver
 
     public function saving(Reservation $reservation): void
     {
+        if ($reservation->is_gift) {
+            $reservation->court_price = 0;
+            $reservation->equipment_price = 0;
+            $reservation->total_price = 0;
+        }
+
         $priceErrors = [];
 
         foreach (['court_price', 'equipment_price', 'total_price'] as $priceField) {
@@ -58,6 +64,10 @@ class ReservationObserver
 
     public function saved(Reservation $reservation): void
     {
+        if ($reservation->is_gift) {
+            $reservation->equipmentItems()->update(['unit_price' => 0, 'line_total' => 0]);
+        }
+
         $reservation->loadMissing(['user', 'sport', 'court']);
 
         $cacheKeys = $this->availabilityCacheKeys($reservation);
