@@ -2,6 +2,8 @@
 
 namespace App\Console\Commands;
 
+use App\Models\Reservation;
+use App\Services\ReservationAuditService;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -19,6 +21,7 @@ class ApplyOpeningPromotion extends Command
         return DB::transaction(function (): int {
             // Match the date of play, not the date when the booking was entered.
             $records = DB::table('reservations')
+                ->whereNull('deleted_at')
                 ->where('starts_at', '>=', '2026-10-16 00:00:00')
                 ->where('starts_at', '<', '2026-10-19 00:00:00')
                 ->orderBy('id')->lockForUpdate()
@@ -49,6 +52,14 @@ class ApplyOpeningPromotion extends Command
             // Query updates deliberately avoid reservation observers, notifications and schedule validation.
             DB::table('reservation_equipment')->whereIn('reservation_id', $changedIds)->update(['unit_price' => 0, 'line_total' => 0]);
             DB::table('reservations')->whereIn('id', $changedIds)->update(['court_price' => 0, 'equipment_price' => 0, 'total_price' => 0]);
+            foreach (Reservation::query()->whereKey($changedIds)->get() as $reservation) {
+                $before = (array) $records->firstWhere('id', $reservation->id);
+                app(ReservationAuditService::class)->record($reservation, 'updated', [
+                    'court_price' => $before['court_price'], 'equipment_price' => $before['equipment_price'], 'total_price' => $before['total_price'],
+                    'equipment' => $items->where('reservation_id', $reservation->id)->values()->toArray(),
+                ], ['court_price' => 0, 'equipment_price' => 0, 'total_price' => 0,
+                    'equipment' => DB::table('reservation_equipment')->where('reservation_id', $reservation->id)->get()->toArray()]);
+            }
             $this->info('Korigovano: '.$changedIds->count().'; rezervna kopija: '.Storage::disk('local')->path($backup));
 
             return self::SUCCESS;

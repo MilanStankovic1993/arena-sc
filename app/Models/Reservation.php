@@ -7,10 +7,65 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 
 class Reservation extends Model
 {
+    use SoftDeletes {
+        restore as protected restoreSoftDeleted;
+    }
+
+    public function save(array $options = [])
+    {
+        return DB::transaction(fn () => parent::save($options));
+    }
+
+    public function delete()
+    {
+        return DB::transaction(function () {
+            $current = static::withTrashed()->whereKey($this->getKey())->lockForUpdate()->first();
+            if (! $current || $current->trashed()) {
+                return false;
+            }
+            $this->setRawAttributes($current->getAttributes(), true);
+            $this->unsetRelations();
+
+            return parent::delete();
+        });
+    }
+
+    public function restore()
+    {
+        return DB::transaction(function () {
+            $current = static::withTrashed()->whereKey($this->getKey())->lockForUpdate()->first();
+            if (! $current?->trashed()) {
+                return false;
+            }
+            $this->setRawAttributes($current->getAttributes(), true);
+            $this->unsetRelations();
+            $this->restoringReservation = true;
+            try {
+                return $this->restoreSoftDeleted();
+            } finally {
+                $this->restoringReservation = false;
+            }
+        });
+    }
+
+    public function forceDelete()
+    {
+        throw ValidationException::withMessages(['reservation' => 'Trajno brisanje rezervacija nije dozvoljeno. Koristite prikaz obrisanih termina.']);
+    }
+
+    public function audits(): HasMany
+    {
+        return $this->hasMany(ReservationAudit::class)->latest('id');
+    }
     public bool $suppressNotification = false;
+    public bool $notifyReservationCreated = false;
+    public bool $restoringReservation = false;
 
     protected $fillable = [
         'user_id',
@@ -56,7 +111,7 @@ class Reservation extends Model
 
     public function getDisplayStatusAttribute(): string
     {
-        return $this->status->label().($this->is_gift ? ' · Poklon' : '');
+        return ($this->trashed() ? 'Obrisana · ' : '').$this->status->label().($this->is_gift ? ' · Poklon' : '');
     }
 
     public function getCustomerDisplayNameAttribute(): string

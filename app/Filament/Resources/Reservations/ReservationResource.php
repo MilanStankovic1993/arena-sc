@@ -37,6 +37,9 @@ use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Grouping\Group;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 use RuntimeException;
 use UnitEnum;
@@ -56,6 +59,26 @@ class ReservationResource extends Resource
     protected static ?string $pluralModelLabel = 'Rezervacije';
 
     protected static ?string $recordTitleAttribute = 'id';
+
+    public static function getEloquentQuery(): Builder
+    {
+        return parent::getEloquentQuery()->withoutGlobalScopes([SoftDeletingScope::class]);
+    }
+
+    public static function canEdit(Model $record): bool
+    {
+        return ! $record->trashed() && parent::canEdit($record);
+    }
+
+    public static function canDelete(Model $record): bool
+    {
+        return ! $record->trashed() && parent::canDelete($record);
+    }
+
+    public static function canForceDelete(Model $record): bool
+    {
+        return false;
+    }
 
     public static function form(Schema $schema): Schema
     {
@@ -181,6 +204,14 @@ class ReservationResource extends Resource
                 TextColumn::make('series_id')->label('Ponavljanje')->formatStateUsing(fn ($state) => filled($state) ? 'Nedeljna serija' : '')->badge()->toggleable(),
             ])
             ->filters([
+                SelectFilter::make('record_state')->label('Evidencija')
+                    ->options(['active' => 'Postojeće rezervacije', 'deleted' => 'Obrisane rezervacije', 'all' => 'Sve, uključujući obrisane'])
+                    ->default('active')
+                    ->query(fn (Builder $query, array $data): Builder => match ($data['value'] ?? 'active') {
+                        'deleted' => $query->whereNotNull('reservations.deleted_at'),
+                        'all' => $query,
+                        default => $query->whereNull('reservations.deleted_at'),
+                    }),
                 SelectFilter::make('status')->label('Status')->options(collect(ReservationStatus::cases())->mapWithKeys(fn (ReservationStatus $status) => [$status->value => $status->label()])->all()),
                 SelectFilter::make('is_gift')->label('Poklon')->options(['yes' => 'Poklonjeni termini', 'no' => 'Ostali termini'])
                     ->query(fn (Builder $query, array $data): Builder => match ($data['value'] ?? null) {
@@ -210,10 +241,32 @@ class ReservationResource extends Resource
                     }),
             ])
             ->recordActions([
+                Action::make('history')->label('Istorija')->icon(Heroicon::OutlinedClock)
+                    ->modalHeading(fn (Reservation $record): string => 'Istorija rezervacije #'.$record->id)
+                    ->modalWidth(Width::FiveExtraLarge)->modalSubmitAction(false)->modalCancelActionLabel('Zatvori')
+                    ->modalContent(fn (Reservation $record) => view('filament.reservations.history', ['audits' => $record->audits()->get()])),
+                Action::make('restore')->label('Vrati rezervaciju')->icon(Heroicon::OutlinedArrowUturnLeft)->color('success')
+                    ->visible(fn (Reservation $record): bool => $record->trashed() && static::canRestore($record))
+                    ->requiresConfirmation()->modalHeading('Vratiti obrisanu rezervaciju?')
+                    ->modalDescription('Vraća se sačuvana rezervacija sa istom cenom i opremom. Vraćanje rezervisanog termina nije moguće ako je teren zauzet ili oprema nije dostupna.')
+                    ->schema([TextInput::make('reservation')->label('Termin')->disabled()
+                        ->default(fn (Reservation $record): string => '#'.$record->id.' · '.$record->customer_display_name.' · '.$record->starts_at->format('d.m.Y H:i'))])
+                    ->action(function (Reservation $record, $livewire): void {
+                        try {
+                            DB::transaction(function () use ($record): void {
+                                Reservation::withTrashed()->lockForUpdate()->findOrFail($record->id)->restore();
+                            });
+                        } catch (ValidationException $exception) {
+                            $path = $livewire->{$livewire->getMountedActionSchemaName()}->getStatePath();
+                            throw ValidationException::withMessages([$path.'.reservation' => collect($exception->errors())->flatten()->implode(' ')]);
+                        }
+                        Notification::make()->title('Rezervacija je vraćena.')->success()->send();
+                    }),
                 Action::make('ucesnici')
                     ->label('Ucesnici')
                     ->icon(Heroicon::OutlinedUsers)
                     ->color('info')
+                    ->visible(fn (Reservation $record): bool => static::canEdit($record))
                     ->modalWidth(Width::Large)
                     ->schema([
                         Select::make('participant_ids')
@@ -286,7 +339,9 @@ class ReservationResource extends Resource
                         $count = app(AdminReservationService::class)->cancelRemaining($record);
                         Notification::make()->title("Otkazano termina: {$count}")->success()->send();
                     }),
-                DeleteAction::make(),
+                DeleteAction::make()->label('Obriši')->databaseTransaction()
+                    ->modalHeading('Obrisati rezervaciju?')
+                    ->modalDescription('Termin će biti oslobođen, a rezervacija sačuvana u obrisanim terminima za kasnije vraćanje. Šalje se mejl obaveštenje o brisanju.'),
             ])
             ->headerActions([
                 Action::make('calendar_view')
@@ -297,7 +352,8 @@ class ReservationResource extends Resource
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
-                    DeleteBulkAction::make(),
+                    DeleteBulkAction::make()->databaseTransaction()
+                        ->modalDescription('Izabrane rezervacije prelaze u obrisane termine i mogu da se vrate. Za svaku se šalje mejl obaveštenje o brisanju.'),
                 ]),
             ]);
     }

@@ -2,12 +2,24 @@
 
 namespace App\Models;
 
+use App\Services\ReservationAuditService;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Validation\ValidationException;
+use Illuminate\Support\Facades\DB;
 
 class ReservationEquipment extends Model
 {
+    public function save(array $options = [])
+    {
+        return DB::transaction(fn () => parent::save($options));
+    }
+
+    public function delete()
+    {
+        return DB::transaction(fn () => parent::delete());
+    }
+
     protected $table = 'reservation_equipment';
 
     protected $fillable = [
@@ -28,6 +40,18 @@ class ReservationEquipment extends Model
 
     protected static function booted(): void
     {
+        foreach (['created' => 'equipment_added', 'updated' => 'equipment_updated', 'deleted' => 'equipment_deleted'] as $event => $label) {
+            static::registerModelEvent($event, function (ReservationEquipment $item) use ($event, $label): void {
+                $reservation = $item->reservation;
+                if (! $reservation) {
+                    return;
+                }
+                $new = $event === 'deleted' ? [] : $item->getAttributes();
+                $old = $event === 'created' ? [] : $item->getRawOriginal();
+                app(ReservationAuditService::class)->record($reservation, $label, ['equipment' => $old], ['equipment' => $new]);
+            });
+        }
+
         static::saving(function (ReservationEquipment $item): void {
             if ($item->reservation()->where('is_gift', true)->exists()) {
                 $item->unit_price = 0;
@@ -56,7 +80,7 @@ class ReservationEquipment extends Model
 
     public function reservation(): BelongsTo
     {
-        return $this->belongsTo(Reservation::class);
+        return $this->belongsTo(Reservation::class)->withTrashed();
     }
 
     public function equipment(): BelongsTo

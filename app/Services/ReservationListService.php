@@ -70,8 +70,8 @@ class ReservationListService
         $asOf = now();
         $groups = (clone $query)->reorder()->setEagerLoads([])->select([])
             ->selectRaw("{$key} as customer_key, MIN(".$this->nameExpression().') as customer_name, COUNT(*) as reservation_count')
-            ->selectRaw("COALESCE(SUM(CASE WHEN reservations.is_gift = 0 AND reservations.status = 'reserved' AND reservations.total_price > 0 AND reservations.ends_at <= ? THEN reservations.total_price ELSE 0 END), 0) as completed_revenue", [$asOf])
-            ->selectRaw("COALESCE(SUM(CASE WHEN reservations.is_gift = 0 AND reservations.status = 'reserved' AND reservations.total_price > 0 AND reservations.starts_at >= ? THEN reservations.total_price ELSE 0 END), 0) as future_value", [$asOf])
+            ->selectRaw("COALESCE(SUM(CASE WHEN reservations.deleted_at IS NULL AND reservations.is_gift = 0 AND reservations.status = 'reserved' AND reservations.total_price > 0 AND reservations.ends_at <= ? THEN reservations.total_price ELSE 0 END), 0) as completed_revenue", [$asOf])
+            ->selectRaw("COALESCE(SUM(CASE WHEN reservations.deleted_at IS NULL AND reservations.is_gift = 0 AND reservations.status = 'reserved' AND reservations.total_price > 0 AND reservations.starts_at >= ? THEN reservations.total_price ELSE 0 END), 0) as future_value", [$asOf])
             ->groupByRaw($key)->toBase();
         $total = DB::query()->fromSub(clone $groups, 'customer_groups')->count();
         $selectedGroups = DB::query()->fromSub(clone $groups, 'customer_groups')->orderByDesc('reservation_count')->orderByRaw('LOWER(customer_name)')->orderBy('customer_key')

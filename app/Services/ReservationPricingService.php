@@ -140,6 +140,7 @@ class ReservationPricingService
             ->join('reservations', 'reservations.id', '=', 'reservation_equipment.reservation_id')
             ->whereIn('reservation_equipment.equipment_id', $requestedQuantities->keys())
             ->where('reservations.status', ReservationStatus::Reserved->value)
+            ->whereNull('reservations.deleted_at')
             ->when($ignoreReservationId, fn ($query) => $query->where('reservations.id', '<>', $ignoreReservationId))
             ->where('reservations.starts_at', '<', $endsAt)
             ->where('reservations.ends_at', '>', $startsAt)

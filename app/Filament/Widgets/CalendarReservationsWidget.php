@@ -122,18 +122,18 @@ class CalendarReservationsWidget extends CalendarWidget
     protected function reservationMutationAction(string $name, bool $delete, bool $bulk = false): Action
     {
         return Action::make($name)
-            ->label(fn (): string => ($delete ? 'Trajno obriši' : 'Otkaži').($bulk ? ' izabrane ('.count($this->selectedReservationIds).')' : ' termin'))
+            ->label(fn (): string => ($delete ? 'Obriši' : 'Otkaži').($bulk ? ' izabrane ('.count($this->selectedReservationIds).')' : ' termin'))
             ->color($delete ? 'danger' : 'warning')
             ->visible(fn (): bool => $bulk ? $this->selectingReservations : ($this->getEventRecord() instanceof Reservation && ($delete
                 ? ReservationResource::canDelete($this->getEventRecord())
                 : ReservationResource::canEdit($this->getEventRecord()) && $this->getEventRecord()->status === ReservationStatus::Reserved)))
             ->disabled(fn (): bool => $bulk && $this->selectedReservationIds === [])
             ->requiresConfirmation()
-            ->modalHeading($delete ? 'Trajno brisanje termina' : 'Otkazivanje termina')
+            ->modalHeading($delete ? 'Brisanje termina uz mogućnost vraćanja' : 'Otkazivanje termina')
             ->modalDescription(fn (): string => ($bulk ? 'Izabrano termina: '.count($this->selectedReservationIds).'. ' : '')
-                .($delete ? 'Rezervacije i povezane stavke biće trajno obrisane. Ova radnja se ne može poništiti.' : 'Menja se status u „Otkazana“. Podaci ostaju sačuvani, a termin se oslobađa.')
+                .($delete ? 'Termin se oslobađa. Rezervacija i oprema ostaju u evidenciji obrisanih termina i mogu da se vrate. Šalje se mejl obaveštenje o brisanju.' : 'Menja se status u „Otkazana“. Podaci ostaju sačuvani, a termin se oslobađa.')
                 .' Ostali termini ponavljajuće serije neće biti promenjeni.')
-            ->modalSubmitActionLabel($delete ? 'Da, trajno obriši' : 'Da, otkaži')
+            ->modalSubmitActionLabel($delete ? 'Da, obriši' : 'Da, otkaži')
             ->cancelParentActions()
             ->action(function () use ($delete, $bulk): void {
                 $ids = $bulk ? $this->selectedReservationIds : [$this->getEventRecord()?->getKey()];
@@ -158,7 +158,7 @@ class CalendarReservationsWidget extends CalendarWidget
                 });
                 $this->selectedReservationIds = [];
                 $this->refreshRecords();
-                Notification::make()->title(($delete ? 'Trajno obrisano termina: ' : 'Otkazano termina: ').$count)->success()->send();
+                Notification::make()->title(($delete ? 'Premešteno u obrisane termine: ' : 'Otkazano termina: ').$count)->success()->send();
             });
     }
 

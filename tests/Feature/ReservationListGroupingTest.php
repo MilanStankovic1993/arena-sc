@@ -99,7 +99,7 @@ class ReservationListGroupingTest extends TestCase
         $email = Livewire::test(ManageReservations::class)->searchTable('promo@example.test')->instance()->getTableRecords();
         $this->assertSame($free->id, $email->first()->id);
         $filters = Livewire::test(ManageReservations::class)->instance()->getTable()->getFilters();
-        $this->assertSame(['status', 'is_gift', 'sport', 'time_state', 'period'], array_keys($filters));
+        $this->assertSame(['record_state', 'status', 'is_gift', 'sport', 'time_state', 'period'], array_keys($filters));
         $future = Livewire::test(ManageReservations::class)->filterTable('time_state', 'future')->instance()->getTableRecords();
         $this->assertCount(1, $future->items());
         $this->assertSame($paid->id, $future->first()->id);

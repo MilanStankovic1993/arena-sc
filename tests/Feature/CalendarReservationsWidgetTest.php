@@ -78,8 +78,8 @@ class CalendarReservationsWidgetTest extends TestCase
         Livewire::test(CalendarReservationsWidget::class)->callAction('select_reservations')
             ->call('onEventClickJs', $this->clickData($first))
             ->callAction('delete_selected')->assertSet('selectedReservationIds', []);
-        $this->assertDatabaseMissing('reservations', ['id' => $first->id]);
-        $this->assertDatabaseMissing('reservation_participants', ['reservation_id' => $first->id]);
+        $this->assertSoftDeleted('reservations', ['id' => $first->id]);
+        $this->assertDatabaseHas('reservation_participants', ['reservation_id' => $first->id]);
         $this->assertDatabaseHas('users', ['id' => $participant->id]);
         $this->assertDatabaseHas('reservations', ['id' => $other->id]);
     }
@@ -109,7 +109,7 @@ class CalendarReservationsWidgetTest extends TestCase
         Livewire::test(CalendarReservationsWidget::class)
             ->call('onEventClickJs', $this->clickData($record->fresh()))
             ->callAction('deleteReservation');
-        $this->assertDatabaseMissing('reservations', ['id' => $record->id]);
+        $this->assertSoftDeleted('reservations', ['id' => $record->id]);
     }
 
     public function test_selected_view_and_button_state_survive_subsequent_livewire_requests(): void

@@ -6,10 +6,13 @@ use App\Enums\ReservationStatus;
 use App\Mail\AdminReservationNotificationMail;
 use App\Mail\ReservationCancelledMail;
 use App\Mail\ReservationConfirmedMail;
+use App\Mail\ReservationDeletedMail;
 use App\Models\Court;
 use App\Models\Reservation;
 use App\Services\ReservationAvailabilityService;
 use App\Services\ReservationScheduleService;
+use App\Services\ReservationAuditService;
+use App\Services\ReservationPricingService;
 use App\Services\UserReservationStatsService;
 use Carbon\Carbon;
 use Carbon\CarbonInterface;
@@ -25,8 +28,23 @@ class ReservationObserver
 {
     protected array $deletingParticipantIds = [];
 
+    public function created(Reservation $reservation): void
+    {
+        $reservation->notifyReservationCreated = true;
+        app(ReservationAuditService::class)->record($reservation, 'created', [], $reservation->getAttributes());
+    }
+
+    public function updated(Reservation $reservation): void
+    {
+        app(ReservationAuditService::class)->saved($reservation);
+    }
+
     public function saving(Reservation $reservation): void
     {
+        if ($reservation->exists && ! $reservation->restoringReservation
+            && Reservation::withTrashed()->whereKey($reservation->id)->lockForUpdate()->first()?->trashed()) {
+            throw ValidationException::withMessages(['reservation' => 'Obrisana rezervacija ne može da se menja. Prvo je vratite iz evidencije obrisanih termina.']);
+        }
         if ($reservation->is_gift) {
             $reservation->court_price = 0;
             $reservation->equipment_price = 0;
@@ -65,14 +83,17 @@ class ReservationObserver
     public function saved(Reservation $reservation): void
     {
         if ($reservation->is_gift) {
-            $reservation->equipmentItems()->update(['unit_price' => 0, 'line_total' => 0]);
+            foreach ($reservation->equipmentItems()->get() as $item) {
+                $item->update(['unit_price' => 0, 'line_total' => 0]);
+            }
         }
 
         $reservation->loadMissing(['user', 'sport', 'court']);
 
         $cacheKeys = $this->availabilityCacheKeys($reservation);
         $reservationId = $reservation->getKey();
-        $wasCreated = $reservation->wasRecentlyCreated && $reservation->status === ReservationStatus::Reserved;
+        $wasCreated = $reservation->notifyReservationCreated && $reservation->status === ReservationStatus::Reserved;
+        $reservation->notifyReservationCreated = false;
         $wasCancelled = $reservation->wasChanged('status') && $reservation->status === ReservationStatus::Cancelled;
         $suppressNotification = $reservation->suppressNotification || ($wasCreated && filled($reservation->series_id));
 
@@ -124,11 +145,60 @@ class ReservationObserver
     {
         $cacheKeys = $this->availabilityCacheKeys($reservation);
 
+        $audit = app(ReservationAuditService::class)->record($reservation, 'deleted', $reservation->getAttributes(), []);
+        $reservation->load(['user', 'sport', 'court']);
+        $snapshot = [
+            'id' => $reservation->id, 'customer' => $reservation->customer_display_name,
+            'phone' => $reservation->customer_display_phone, 'sport' => $reservation->sport?->name,
+            'court' => $reservation->court?->name, 'starts_at' => $reservation->starts_at->format('d.m.Y H:i'),
+            'ends_at' => $reservation->ends_at->format('d.m.Y H:i'), 'total_price' => $reservation->total_price,
+            'actor' => $audit->actor_name, 'deleted_at' => $audit->created_at->format('d.m.Y H:i:s'),
+        ];
+        $recipients = collect([config('arena.contact.email'), $reservation->customer_display_email])->filter()->unique()->all();
+        DB::afterCommit(function () use ($recipients, $snapshot, $reservation): void {
+            foreach ($recipients as $recipient) {
+                $this->sendReservationMail($recipient, new ReservationDeletedMail($snapshot), $reservation);
+            }
+        });
+
         DB::afterCommit(fn () => $this->clearAvailabilityCache($cacheKeys));
 
         app(UserReservationStatsService::class)->recalculateMany($this->deletingParticipantIds[$reservation->id] ?? [$reservation->user_id]);
 
         unset($this->deletingParticipantIds[$reservation->id]);
+    }
+
+    public function restoring(Reservation $reservation): void
+    {
+        if ($reservation->status !== ReservationStatus::Reserved) {
+            return;
+        }
+
+        $court = Court::query()->with('sport')->lockForUpdate()->find($reservation->court_id);
+        if (! $court?->is_active || ! $court->sport?->is_active) {
+            throw ValidationException::withMessages(['reservation' => 'Teren ili sport više nije aktivan. Rezervacija nije vraćena.']);
+        }
+        try {
+            $this->validateReservedSchedule($reservation);
+        } catch (ValidationException $exception) {
+            throw ValidationException::withMessages(['reservation' => collect($exception->errors())->flatten()->implode(' ')]);
+        }
+        try {
+            app(ReservationPricingService::class)->hydrateEquipmentPricing(
+                $reservation->equipmentItems()->get(['equipment_id', 'quantity'])->toArray(),
+                $reservation->sport_id, $reservation->starts_at, $reservation->ends_at, $reservation->id,
+            );
+        } catch (\RuntimeException $exception) {
+            throw ValidationException::withMessages(['reservation' => $exception->getMessage()]);
+        }
+    }
+
+    public function restored(Reservation $reservation): void
+    {
+        app(ReservationAuditService::class)->record($reservation, 'restored', [], $reservation->getAttributes());
+        app(UserReservationStatsService::class)->recalculateMany($this->affectedUserIds($reservation));
+        $keys = $this->availabilityCacheKeys($reservation);
+        DB::afterCommit(fn () => $this->clearAvailabilityCache($keys));
     }
 
     protected function affectedUserIds(Reservation $reservation): Collection
