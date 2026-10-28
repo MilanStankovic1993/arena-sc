@@ -11,6 +11,7 @@ use App\Services\AdminReservationService;
 use App\Services\ReservationListService;
 use App\Services\ReservationParticipantService;
 use App\Services\ReservationPricingService;
+use App\Services\ReservationEditPricingService;
 use BackedEnum;
 use Carbon\Carbon;
 use Filament\Actions\Action;
@@ -25,10 +26,13 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
+use Filament\Forms\Components\Hidden;
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
+use Filament\Schemas\Components\Utilities\Get;
+use Filament\Schemas\Components\Utilities\Set;
 use Filament\Support\Enums\Width;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
@@ -83,6 +87,9 @@ class ReservationResource extends Resource
     public static function form(Schema $schema): Schema
     {
         return $schema->components([
+            Hidden::make('court_price_manually_changed')->default(false),
+            Hidden::make('pricing_error')->dehydrated(false),
+            Hidden::make('equipment_price_before_gift')->dehydrated(false),
             Section::make('Termin')->schema([
                 Select::make('user_id')
                     ->label('Korisnik')
@@ -101,32 +108,55 @@ class ReservationResource extends Resource
                     ->label('Email gosta')
                     ->email()
                     ->maxLength(255),
-                Select::make('sport_id')->label('Sport')->relationship('sport', 'name')->required()->searchable()->preload(),
-                Select::make('court_id')->label('Teren')->relationship('court', 'name')->required()->searchable()->preload(),
+                Select::make('sport_id')->label('Sport')->relationship('sport', 'name')->required()->searchable()->preload()->live()
+                    ->afterStateUpdated(function (Get $get, Set $set): void {
+                        if ((int) Court::find($get('court_id'))?->sport_id !== (int) $get('sport_id')) {
+                            $set('court_id', null);
+                        }
+                        static::refreshEditPrice($get, $set, 'sport_id');
+                    }),
+                Select::make('court_id')->label('Teren')->relationship('court', 'name', modifyQueryUsing: fn (Builder $query, Get $get) => $query->when($get('sport_id'), fn (Builder $q, $sport) => $q->where('sport_id', $sport)))
+                    ->required()->searchable()->preload()->live()
+                    ->afterStateUpdated(function (Get $get, Set $set): void {
+                        if ($court = Court::find($get('court_id'))) {
+                            $set('sport_id', $court->sport_id);
+                        }
+                        static::refreshEditPrice($get, $set, 'court_id');
+                    }),
                 Select::make('status')
                     ->label('Status')
                     ->options(collect(ReservationStatus::cases())->mapWithKeys(fn (ReservationStatus $status) => [$status->value => $status->label()])->all())
                     ->required()
                     ->default(ReservationStatus::Reserved->value),
-                DateTimePicker::make('starts_at')->label('Pocetak')->native(false)->displayFormat('d.m.Y H:i')->seconds(false)->required(),
-                DateTimePicker::make('ends_at')->label('Kraj')->native(false)->displayFormat('d.m.Y H:i')->seconds(false)->required(),
+                DateTimePicker::make('starts_at')->label('Pocetak')->native(false)->displayFormat('d.m.Y H:i')->seconds(false)->required()->live()
+                    ->afterStateUpdated(fn (Get $get, Set $set) => static::refreshEditPrice($get, $set, 'starts_at')),
+                DateTimePicker::make('ends_at')->label('Kraj')->native(false)->displayFormat('d.m.Y H:i')->seconds(false)->required()->live()
+                    ->afterStateUpdated(fn (Get $get, Set $set) => static::refreshEditPrice($get, $set, 'ends_at')),
                 Select::make('duration_minutes')->label('Trajanje')->options([
                     60 => '60 minuta',
                     90 => '90 minuta',
                     120 => '120 minuta',
-                ])->default(60)->required(),
-                TextInput::make('court_price')->label('Cena terena')->numeric()->minValue(0)->prefix('RSD')->required()->readOnly(fn ($get): bool => (bool) $get('is_gift')),
-                TextInput::make('equipment_price')->label('Cena opreme')->numeric()->minValue(0)->prefix('RSD')->required()->readOnly(fn ($get): bool => (bool) $get('is_gift')),
-                TextInput::make('total_price')->label('Ukupno')->numeric()->minValue(0)->prefix('RSD')->required()->readOnly(fn ($get): bool => (bool) $get('is_gift')),
+                ])->default(60)->required()->live()
+                    ->afterStateUpdated(fn (Get $get, Set $set) => static::refreshEditPrice($get, $set, 'duration_minutes')),
+                TextInput::make('court_price')->label('Cena terena')->numeric()->minValue(0)->prefix('RSD')->required()->readOnly(fn ($get): bool => (bool) $get('is_gift'))
+                    ->live(onBlur: true)->helperText(fn (Get $get): string => $get('pricing_error') ?: 'Automatski iz cenovnika pri promeni termina. Cenu možete ručno korigovati.')
+                    ->afterStateUpdated(function (Get $get, Set $set): void {
+                        $set('court_price_manually_changed', true);
+                        static::refreshEditTotal($get, $set);
+                    }),
+                TextInput::make('equipment_price')->label('Cena opreme')->numeric()->minValue(0)->prefix('RSD')->required()->readOnly(fn ($get): bool => (bool) $get('is_gift'))
+                    ->live(onBlur: true)->afterStateUpdated(fn (Get $get, Set $set) => static::refreshEditTotal($get, $set)),
+                TextInput::make('total_price')->label('Ukupno')->numeric()->minValue(0)->prefix('RSD')->required()->readOnly(),
                 Toggle::make('is_gift')->label('Poklon — cena 0 RSD')->live()
-                    ->afterStateUpdated(function ($state, $set): void {
-                        if ($state) {
-                            foreach (['court_price', 'equipment_price', 'total_price'] as $field) {
-                                $set($field, 0);
-                            }
+                    ->afterStateUpdated(function (Get $get, Set $set): void {
+                        if ($get('is_gift')) {
+                            $set('equipment_price_before_gift', $get('equipment_price'));
+                        } elseif ($get('equipment_price_before_gift') !== null) {
+                            $set('equipment_price', $get('equipment_price_before_gift'));
                         }
+                        static::refreshEditPrice($get, $set, 'is_gift');
                     })
-                    ->helperText('Poklon ne ulazi u komercijalnu statistiku. Ako uklonite oznaku, ručno unesite cenu pre čuvanja.'),
+                    ->helperText('Poklon ne ulazi u komercijalnu statistiku. Kada uklonite oznaku, povlači se cena iz cenovnika.'),
                 Textarea::make('customer_note')->label('Napomena korisnika')->rows(3)->columnSpanFull(),
                 Textarea::make('admin_note')->label('Interna napomena')->rows(3)->columnSpanFull(),
                 Textarea::make('cancellation_reason')
@@ -150,6 +180,35 @@ class ReservationResource extends Resource
                     ->defaultItems(0),
             ]),
         ]);
+    }
+
+    public static function refreshEditPrice(Get $get, Set $set, string $changed): void
+    {
+        $fields = ['sport_id', 'court_id', 'starts_at', 'ends_at', 'duration_minutes', 'is_gift'];
+        $data = collect($fields)->mapWithKeys(fn ($field) => [$field => $get($field)])->all();
+        $set('court_price_manually_changed', false);
+        try {
+            $service = app(ReservationEditPricingService::class);
+            $data = $service->synchronizeTimes($data, $changed);
+            foreach (['ends_at', 'duration_minutes'] as $field) {
+                $set($field, $data[$field]);
+            }
+            $set('court_price', $service->courtPrice($data));
+            $set('pricing_error', null);
+            if ($get('is_gift')) {
+                $set('equipment_price', 0);
+            }
+            static::refreshEditTotal($get, $set);
+        } catch (RuntimeException $exception) {
+            $set('pricing_error', $exception->getMessage());
+            $set('court_price', null);
+            $set('total_price', null);
+        }
+    }
+
+    public static function refreshEditTotal(Get $get, Set $set): void
+    {
+        $set('total_price', $get('is_gift') ? 0 : round((float) $get('court_price') + (float) $get('equipment_price'), 2));
     }
 
     public static function table(Table $table): Table
@@ -288,6 +347,14 @@ class ReservationResource extends Resource
                     }),
                 EditAction::make()->modalWidth(Width::Screen)
                     ->databaseTransaction()
+                    ->mutateDataUsing(function (array $data, Reservation $record, $livewire): array {
+                        try {
+                            return app(ReservationEditPricingService::class)->prepareForSave($data, $record);
+                        } catch (RuntimeException $exception) {
+                            $path = $livewire->{$livewire->getMountedActionSchemaName()}->getStatePath();
+                            throw ValidationException::withMessages([$path.'.court_price' => $exception->getMessage()]);
+                        }
+                    })
                     ->before(function (Reservation $record, array $data, $livewire): void {
                         if (($data['status'] ?? null) !== ReservationStatus::Reserved->value) {
                             return;

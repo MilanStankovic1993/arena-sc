@@ -259,4 +259,37 @@ class ReservationHistoryTest extends TestCase
         $this->assertNull($audit->actor_id);
         $this->assertSame('Javni gost', $audit->actor_name);
     }
+
+    public function test_delete_and_restore_recalculate_dashboard_and_all_time_statistics_for_every_time_bucket(): void
+    {
+        $records = [
+            ['record' => $this->booking(['booking_date' => '2026-10-29', 'court_price_override' => 4321]), 'now' => '2026-10-29 11:00', 'count' => 'future', 'value' => 'futureValue', 'dashboardCount' => 'Budući termini', 'dashboardValue' => 'Vrednost budućih rezervacija'],
+            ['record' => $this->booking(['booking_date' => '2026-10-30', 'court_price_override' => 4500]), 'now' => '2026-10-30 12:30', 'count' => 'ongoing', 'value' => 'ongoingValue', 'dashboardCount' => 'Termini u toku', 'dashboardValue' => 'Vrednost termina u toku'],
+            ['record' => $this->booking(['booking_date' => '2026-10-31', 'court_price_override' => 6000]), 'now' => '2026-10-31 14:00', 'count' => 'completed', 'value' => 'revenue', 'dashboardCount' => 'Odigrani termini', 'dashboardValue' => 'Prihod od odigranih termina'],
+        ];
+        $dashboard = fn (): array => (new class extends OperationsOverview {
+            public function values(): array
+            {
+                return collect($this->getStats())->mapWithKeys(fn ($stat) => [$stat->getLabel() => $stat->getValue()])->all();
+            }
+        })->values();
+        $service = app(AdminAnalyticsService::class);
+        foreach ($records as $case) {
+            $this->travelTo(Carbon::parse($case['now']));
+            $beforeStats = $service->periodSnapshot(['preset' => 'all']);
+            $beforeDashboard = $dashboard();
+            $case['record']->delete();
+            $afterStats = $service->periodSnapshot(['preset' => 'all']);
+            $afterDashboard = $dashboard();
+            $this->assertSame($beforeStats['total'] - 1, $afterStats['total']);
+            $this->assertSame($beforeStats[$case['count']] - 1, $afterStats[$case['count']]);
+            $this->assertSame($beforeStats[$case['value']] - (float) $case['record']->total_price, $afterStats[$case['value']]);
+            $this->assertSame((string) ((int) $beforeDashboard[$case['dashboardCount']] - 1), $afterDashboard[$case['dashboardCount']]);
+            $this->assertSame(number_format($afterStats[$case['value']], 0, ',', '.').' RSD', $afterDashboard[$case['dashboardValue']]);
+            $this->assertSame($afterStats['completed'] > 0 ? $afterStats['revenue'] / $afterStats['completed'] : 0, $afterStats['averagePrice']);
+            $case['record']->restore();
+            $this->assertSame($beforeStats, $service->periodSnapshot(['preset' => 'all']));
+            $this->assertSame($beforeDashboard, $dashboard());
+        }
+    }
 }
