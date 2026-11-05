@@ -8,7 +8,7 @@
 @push('head')
     <link rel="preload" as="image" href="{{ asset('media/home/hero-exterior.webp') }}" fetchpriority="high">
     <link rel="stylesheet" href="{{ asset('css/home-hero-playlist.css') }}">
-    <script src="{{ asset('js/home-hero-playlist.js') }}" defer></script>
+    <script src="{{ asset('js/home-hero-playlist.js') }}?v=2" defer></script>
 @endpush
 
 @section('content')

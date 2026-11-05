@@ -8,9 +8,12 @@
     const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
     const supportsHdr = tour.canPlayType('video/mp4; codecs="hvc1.2.4.L120.B0"');
     const preloadLeadSeconds = 12;
+    const returnLeadSeconds = 1.5;
     let current = tour;
     let requested = tour;
     let playing = false;
+    let tourPrimed = false;
+    let tourWarmup = null;
 
     function prepare(video) {
         if (video.hasAttribute('src')) return;
@@ -25,12 +28,40 @@
         videos.forEach((video) => video.pause());
     }
 
+    function show(video) {
+        video.classList.add('is-current');
+        if (current === video) return;
+
+        current.classList.remove('is-current');
+        current.currentTime = 0;
+        current = video;
+        tourPrimed = false;
+    }
+
+    function primeTour() {
+        if (tourPrimed || tourWarmup || tour.error) return;
+
+        // Start the decoder, then hold the first frame until padel finishes.
+        tourWarmup = tour.play().then(() => {
+            if (playing && requested === padel) {
+                tour.pause();
+                tourPrimed = true;
+            }
+        }).catch(() => {}).finally(() => {
+            tourWarmup = null;
+        });
+    }
+
     function play(video) {
         prepare(video);
         if (video.error) video.load();
         requested = video;
         playing = true;
         control.textContent = 'Pauziraj video';
+
+        if (video === tour && tourPrimed && !tour.seeking && tour.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA) {
+            show(tour);
+        }
 
         const source = video.getAttribute('src');
         video.play().catch((error) => {
@@ -42,9 +73,11 @@
 
     for (const [video, next] of [[tour, padel], [padel, tour]]) {
         video.addEventListener('timeupdate', () => {
-            if (playing && video === current && video.duration - video.currentTime <= preloadLeadSeconds) {
-                prepare(next);
-            }
+            if (!playing || video !== current) return;
+
+            const remaining = video.duration - video.currentTime;
+            if (remaining <= preloadLeadSeconds) prepare(next);
+            if (video === padel && remaining <= returnLeadSeconds) primeTour();
         });
 
         video.addEventListener('ended', () => {
@@ -55,18 +88,12 @@
         });
 
         video.addEventListener('playing', () => {
-            if (!playing || requested !== video) return;
-
-            video.classList.add('is-current');
-            if (current !== video) {
-                current.classList.remove('is-current');
-                current.currentTime = 0;
-                current = video;
-            }
+            if (playing && requested === video) show(video);
         });
 
         video.addEventListener('error', () => {
             if (video === tour && video.getAttribute('src') === tour.dataset.hdrSrc) {
+                tourPrimed = false;
                 video.src = tour.dataset.src;
                 if (playing && requested === video) play(video);
             } else if (playing && requested === video) {
