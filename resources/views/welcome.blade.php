@@ -7,8 +7,8 @@
 
 @push('head')
     <link rel="preload" as="image" href="{{ asset('media/home/hero-exterior.webp') }}" fetchpriority="high">
-    <link rel="stylesheet" href="{{ asset('css/home-hero-hd.css') }}">
-    <script src="{{ asset('js/home-hero-hd.js') }}" defer></script>
+    <link rel="stylesheet" href="{{ asset('css/home-hero-playlist.css') }}">
+    <script src="{{ asset('js/home-hero-playlist.js') }}" defer></script>
 @endpush
 
 @section('content')
@@ -22,18 +22,25 @@
     <div class="page-stack home-page-stack">
         <section class="home-hero home-hero--video" style="background-image: url('{{ asset('media/home/hero-exterior.webp') }}');">
             <video
-                id="home-hero-video"
+                id="home-hero-tour"
                 class="home-hero__video"
-                data-tour-hdr="{{ asset('media/home/arena-tour-hdr.mp4') }}"
-                data-tour="{{ asset('media/home/arena-tour.mp4') }}"
-                data-padel="{{ asset('media/home/arena-padel.mp4') }}"
-                poster="{{ asset('media/home/hero-exterior.webp') }}"
+                data-hdr-src="{{ asset('media/home/arena-tour-hdr.mp4') }}"
+                data-src="{{ asset('media/home/arena-tour.mp4') }}"
                 preload="none"
                 muted
                 playsinline
                 aria-hidden="true"
             ></video>
-            <button type="button" class="home-hero__video-control" aria-controls="home-hero-video" hidden>Pokreni video</button>
+            <video
+                id="home-hero-padel"
+                class="home-hero__video"
+                data-src="{{ asset('media/home/arena-padel.mp4') }}"
+                preload="none"
+                muted
+                playsinline
+                aria-hidden="true"
+            ></video>
+            <button type="button" class="home-hero__video-control" aria-controls="home-hero-tour home-hero-padel" hidden>Pokreni video</button>
             <div class="site-grid home-hero__inner">
                 <div class="home-hero__content">
                     <span class="dark-eyebrow-chip">Sportski centar Arena</span>

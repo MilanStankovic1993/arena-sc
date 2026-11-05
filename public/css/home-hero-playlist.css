@@ -8,7 +8,12 @@
     width: 100%;
     height: 100%;
     object-fit: cover;
+    opacity: 0;
     pointer-events: none;
+}
+
+.home-hero__video.is-current {
+    opacity: 1;
 }
 
 .home-hero--video .home-hero__inner {
