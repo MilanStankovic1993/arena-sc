@@ -7,8 +7,8 @@
 
 @push('head')
     <link rel="preload" as="image" href="{{ asset('media/home/hero-exterior.webp') }}" fetchpriority="high">
-    <link rel="stylesheet" href="{{ asset('css/home-hero-video.css') }}">
-    <script src="{{ asset('js/home-hero-video.js') }}" defer></script>
+    <link rel="stylesheet" href="{{ asset('css/home-hero-hd.css') }}">
+    <script src="{{ asset('js/home-hero-hd.js') }}" defer></script>
 @endpush
 
 @section('content')
@@ -24,12 +24,13 @@
             <video
                 id="home-hero-video"
                 class="home-hero__video"
-                data-src="{{ asset('media/home/arena-hero-loop.mp4') }}"
+                data-tour-hdr="{{ asset('media/home/arena-tour-hdr.mp4') }}"
+                data-tour="{{ asset('media/home/arena-tour.mp4') }}"
+                data-padel="{{ asset('media/home/arena-padel.mp4') }}"
                 poster="{{ asset('media/home/hero-exterior.webp') }}"
                 preload="none"
                 muted
                 playsinline
-                loop
                 aria-hidden="true"
             ></video>
             <button type="button" class="home-hero__video-control" aria-controls="home-hero-video" hidden>Pokreni video</button>

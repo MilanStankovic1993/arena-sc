@@ -4,13 +4,19 @@
     if (!video || !control) return;
 
     const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const { tourHdr, tour, padel } = video.dataset;
+    const supportsHdrClip = video.canPlayType('video/mp4; codecs="hvc1.2.4.L120.B0"');
+    const clips = [supportsHdrClip ? tourHdr : tour, padel];
+    let currentClip = 0;
 
     function play() {
         video.hidden = false;
         video.muted = true;
-        if (!video.hasAttribute('src')) video.src = video.dataset.src;
-        video.play().catch(() => {
-            control.textContent = 'Pokreni video';
+        if (video.getAttribute('src') !== clips[currentClip]) video.src = clips[currentClip];
+        video.play().catch((error) => {
+            if (error.name !== 'AbortError' && video.paused) {
+                control.textContent = 'Pokreni video';
+            }
         });
     }
 
@@ -20,7 +26,16 @@
     video.addEventListener('pause', () => {
         control.textContent = 'Pokreni video';
     });
+    video.addEventListener('ended', () => {
+        currentClip = (currentClip + 1) % clips.length;
+        play();
+    });
     video.addEventListener('error', () => {
+        if (currentClip === 0 && clips[0] === tourHdr) {
+            clips[0] = tour;
+            play();
+            return;
+        }
         video.hidden = true;
         control.hidden = true;
     });
