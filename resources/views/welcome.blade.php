@@ -7,6 +7,8 @@
 
 @push('head')
     <link rel="preload" as="image" href="{{ asset('media/home/hero-exterior.webp') }}" fetchpriority="high">
+    <link rel="stylesheet" href="{{ asset('css/home-hero-video.css') }}">
+    <script src="{{ asset('js/home-hero-video.js') }}" defer></script>
 @endpush
 
 @section('content')
@@ -18,7 +20,19 @@
     @endphp
 
     <div class="page-stack home-page-stack">
-        <section class="home-hero" style="background-image: linear-gradient(90deg, rgba(7, 16, 13, 0.74) 0%, rgba(7, 16, 13, 0.42) 44%, rgba(7, 16, 13, 0.72) 100%), url('{{ asset('media/home/hero-exterior.webp') }}');">
+        <section class="home-hero home-hero--video" style="background-image: url('{{ asset('media/home/hero-exterior.webp') }}');">
+            <video
+                id="home-hero-video"
+                class="home-hero__video"
+                data-src="{{ asset('media/home/arena-hero-loop.mp4') }}"
+                poster="{{ asset('media/home/hero-exterior.webp') }}"
+                preload="none"
+                muted
+                playsinline
+                loop
+                aria-hidden="true"
+            ></video>
+            <button type="button" class="home-hero__video-control" aria-controls="home-hero-video" hidden>Pokreni video</button>
             <div class="site-grid home-hero__inner">
                 <div class="home-hero__content">
                     <span class="dark-eyebrow-chip">Sportski centar Arena</span>
