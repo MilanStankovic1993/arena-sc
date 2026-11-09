@@ -1,5 +1,11 @@
+@php
+    $groupMatchMode = $groupMatchMode ?? false;
+@endphp
 @extends('layouts.site', [
-    'title' => 'Rezervisi termin | Padel i Basket 3x3 | Arena Kraljevo',
+    'title' => $groupMatchMode ? 'Kreiraj novi grupni termin | Sportski centar Arena' : 'Rezervisi termin | Padel i Basket 3x3 | Arena Kraljevo',
+    'metaRobots' => $groupMatchMode ? 'noindex,follow' : null,
+    'showQuickActions' => !$groupMatchMode,
+    'showFlashDialog' => !$groupMatchMode,
     'metaDescription' => 'Online rezervacija termina za padel i basket 3x3 u Sportski centar Arena Kraljevo. Proverite slobodne slotove i cene termina.',
     'metaKeywords' => 'rezervisi termin, online rezervacija, padel kraljevo, basket 3x3 kraljevo, sportski centar arena',
     'metaImage' => asset('media/home/hero-exterior.webp'),
@@ -24,6 +30,7 @@
         data-sports='@json($sportsPayload)'
         data-initial='@json($initialState)'
         data-availability-url="{{ route('booking.availability') }}"
+        @if ($groupMatchMode) data-group-create-url="{{ route('group-matches.create') }}" @endif
         data-authenticated="{{ auth()->check() ? '1' : '0' }}"
         data-contact-phone="{{ config('arena.contact.phone') }}"
         data-contact-email="{{ config('arena.contact.email') }}"
@@ -31,17 +38,22 @@
         <div class="page-stack booking-page-stack">
             <div class="booking-intro-card">
                 <div>
-                    <span class="dark-eyebrow-chip">Rezervisi termin</span>
-                    <h1 class="hero-title-dark booking-intro-card__title">IZABERI SPORT, DAN I VREME. BRZO I JASNO.</h1>
+                    <span class="dark-eyebrow-chip">{{ $groupMatchMode ? 'Grupni termini' : 'Rezervisi termin' }}</span>
+                    <h1 class="hero-title-dark booking-intro-card__title">{{ $groupMatchMode ? 'Kreiraj novi grupni termin' : 'IZABERI SPORT, DAN I VREME. BRZO I JASNO.' }}</h1>
                 </div>
 
                 <div class="booking-intro-card__chips">
                     <span class="info-chip-soft-dark">Padel</span>
                     <span class="info-chip-soft-dark">Basket 3x3</span>
-                    <span class="info-chip-soft-dark">Oprema uz termin</span>
+                    @if ($groupMatchMode)
+                        <a class="arena-button-secondary" href="{{ route('group-matches.index') }}">Svi grupni termini</a>
+                    @else
+                        <span class="info-chip-soft-dark">Oprema uz termin</span>
+                    @endif
                 </div>
             </div>
 
+            @unless ($groupMatchMode)
             <a class="group-match-entry" href="{{ route('group-matches.index') }}" aria-label="Pronađi ekipu">
                 <span class="group-match-entry-icon" aria-hidden="true">
                     <svg viewBox="0 0 28 28" fill="none" stroke="currentColor" stroke-width="1.6">
@@ -54,23 +66,31 @@
                 </span>
                 <span class="group-match-entry-action">Pogledaj grupne termine <span aria-hidden="true">→</span></span>
             </a>
+            @endunless
 
             <div class="booking-summary-grid booking-summary-grid--single">
                 <div class="booking-stage">
                     <div class="booking-panel">
                         <div class="mb-6 flex flex-wrap items-end justify-between gap-4">
                             <div>
-                                <span class="eyebrow-chip">Rezervacija</span>
-                                <h2 class="mt-4 text-[2rem] font-semibold leading-none text-[color:var(--arena-forest)] sm:text-[2.8rem]">Rezervisi termin.</h2>
+                                <span class="eyebrow-chip">{{ $groupMatchMode ? 'Grupni termin' : 'Rezervacija' }}</span>
+                                <h2 class="mt-4 text-[2rem] font-semibold leading-none text-[color:var(--arena-forest)] sm:text-[2.8rem]">{{ $groupMatchMode ? 'Izaberi termin.' : 'Rezervisi termin.' }}</h2>
                             </div>
 
                             <div class="booking-compact-field min-w-[15rem] max-w-[22rem] flex-1 sm:flex-none">
-                                <label class="text-sm font-semibold text-slate-700">Sport</label>
-                                <select class="booking-select" data-booking-sport>
+                                <label for="booking-sport" class="text-sm font-semibold text-slate-700">Sport</label>
+                                <select id="booking-sport" class="booking-select" data-booking-sport>
                                     <option value="">Izaberi sport</option>
                                 </select>
                             </div>
                         </div>
+
+                        @if ($groupMatchMode)
+                            @if ($errors->any())
+                                <p class="group-match-notice group-match-error mb-4" role="alert">{{ $errors->first() }}</p>
+                            @endif
+                            <p class="group-match-help mb-4">Prikazani su slobodni termini koji počinju za više od 30 minuta. Teren se rezerviše kada se ekipa popuni.</p>
+                        @endif
 
                         <div class="booking-day-strip" data-day-strip>
                             <button type="button" class="booking-nav-button self-center" data-window-prev aria-label="Prethodni dani">
@@ -108,6 +128,7 @@
                 </div>
 
                 <aside class="booking-sidebar">
+                    @unless ($groupMatchMode)
                     <div class="premium-card p-6 sm:p-7 booking-section" data-contact-card hidden>
                         <div class="space-y-5">
                             <div>
@@ -156,11 +177,12 @@
                             </form>
                         </div>
                     </div>
+                    @endunless
 
                     <div class="booking-modal" data-booking-modal hidden>
                         <button type="button" class="booking-modal__shade" data-booking-modal-close aria-label="Zatvori detalje termina"></button>
 
-                        <div class="premium-card p-6 sm:p-7 booking-section booking-modal__panel" data-summary-box hidden role="dialog" aria-modal="true" aria-label="Potvrda rezervacije">
+                        <div class="premium-card p-6 sm:p-7 booking-section booking-modal__panel" data-summary-box hidden role="dialog" aria-modal="true" aria-label="{{ $groupMatchMode ? 'Izbor trajanja grupnog termina' : 'Potvrda rezervacije' }}">
                         <button type="button" class="booking-modal__close" data-booking-modal-close aria-label="Zatvori">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="m6 6 12 12M18 6 6 18" />
@@ -169,6 +191,7 @@
 
                         <div class="booking-option-list booking-option-list--modal" data-option-list hidden></div>
 
+                        @unless ($groupMatchMode)
                         <div class="booking-confirm-stack" data-booking-confirm hidden>
                             <div class="booking-confirm-topline">
                                 <button type="button" class="booking-back-button" data-booking-back-to-options>
@@ -274,6 +297,9 @@
                                 </div>
                             </form>
                         </div>
+                        @else
+                            <div data-summary-card hidden></div>
+                        @endunless
                         </div>
                     </div>
 
@@ -302,6 +328,7 @@
             const sports = JSON.parse(app.dataset.sports ?? '[]');
             const initial = JSON.parse(app.dataset.initial ?? '{}');
             const availabilityUrl = app.dataset.availabilityUrl;
+            const groupCreateUrl = app.dataset.groupCreateUrl;
             const contactPhone = app.dataset.contactPhone;
             const contactEmail = app.dataset.contactEmail;
 
@@ -344,13 +371,14 @@
             const contactEmailLink = app.querySelector('[data-contact-email-link]');
             const contactMessage = app.querySelector('[data-contact-message]');
 
-            const today = new Date();
+            const today = initial.today ? new Date(`${initial.today}T00:00:00`) : new Date();
             today.setHours(0, 0, 0, 0);
 
             const initialDate = initial.date ? new Date(`${initial.date}T00:00:00`) : new Date(today);
             initialDate.setHours(0, 0, 0, 0);
 
             let availabilityPayload = null;
+            let availabilityRequest = null;
             let windowStart = initialDate < today ? new Date(today) : initialDate;
             let selectedDayIndex = 0;
             let selectedDay = null;
@@ -623,11 +651,30 @@
                 header.innerHTML = `
                     <div>
                         <p class="text-xs font-extrabold uppercase tracking-[0.26em] text-[color:var(--arena-forest-glow)]">${escapeHtml(selectedDay.full_label)} | ${escapeHtml(selectedTime.time)}</p>
-                        <p class="mt-1 text-sm text-[color:var(--arena-muted)]">Izaberi teren, pa trajanje termina.</p>
+                        <p class="mt-1 text-sm text-[color:var(--arena-muted)]">${groupCreateUrl ? 'Izaberi trajanje grupnog termina.' : 'Izaberi teren, pa trajanje termina.'}</p>
                     </div>
-                    <span class="info-chip-soft">Slobodni tereni</span>
+                    <span class="info-chip-soft">${groupCreateUrl ? 'Cena za ceo teren' : 'Slobodni tereni'}</span>
                 `;
                 optionList.appendChild(header);
+
+                if (groupCreateUrl) {
+                    const durations = document.createElement('div');
+                    durations.className = 'booking-duration-choice-grid';
+                    normalizeList(selectedTime.durations).forEach((duration) => {
+                        const url = new URL(groupCreateUrl, window.location.origin);
+                        url.searchParams.set('sport_id', availabilityPayload.sport.id);
+                        url.searchParams.set('starts_at', `${selectedDay.date}T${selectedTime.time}`);
+                        url.searchParams.set('duration_minutes', duration.minutes);
+
+                        const option = document.createElement('a');
+                        option.className = 'booking-duration-choice';
+                        option.href = url.href;
+                        option.innerHTML = `<span>${escapeHtml(duration.label)}</span><strong>${formatMoney(duration.price_from)}</strong>`;
+                        durations.appendChild(option);
+                    });
+                    optionList.appendChild(durations);
+                    return;
+                }
 
                 const grid = document.createElement('div');
                 grid.className = 'booking-court-option-grid';
@@ -818,6 +865,7 @@
             };
 
             const loadAvailability = async () => {
+                availabilityRequest?.abort();
                 const sport = sportSelect.value;
                 selectedSportMeta = sports.find((item) => item.slug === sport) ?? null;
 
@@ -842,13 +890,17 @@
                 renderDateShell();
                 setFeedback('Ucitavamo slobodne termine...', 'info');
                 pricingCard.hidden = true;
+                const request = new AbortController();
+                availabilityRequest = request;
 
                 try {
                     const url = new URL(availabilityUrl, window.location.origin);
                     url.searchParams.set('sport', sport);
                     url.searchParams.set('date', toIsoDate(windowStart));
+                    if (groupCreateUrl) url.searchParams.set('group', '1');
 
                     const response = await fetch(url.toString(), {
+                        signal: request.signal,
                         headers: {
                             'X-Requested-With': 'XMLHttpRequest',
                             'Accept': 'application/json',
@@ -859,7 +911,9 @@
                         throw new Error('Ne mozemo trenutno da ucitamo slobodne termine.');
                     }
 
-                    availabilityPayload = await response.json();
+                    const payload = await response.json();
+                    if (request.signal.aborted) return;
+                    availabilityPayload = payload;
 
                     if (availabilityPayload.contact_only) {
                         showContactMode(availabilityPayload.sport, availabilityPayload.contact_message);
@@ -869,11 +923,15 @@
                     renderPricing(availabilityPayload.pricingRules ?? []);
                     renderDays(availabilityPayload.days ?? []);
                 } catch (error) {
-                    setFeedback(error.message || 'Doslo je do greske pri ucitavanju termina.', 'error');
+                    if (!request.signal.aborted) {
+                        setFeedback(error.message || 'Doslo je do greske pri ucitavanju termina.', 'error');
+                    }
                 } finally {
-                    updateWindowLabel();
-                    prevWindowButton.disabled = windowStart <= today;
-                    nextWindowButton.disabled = false;
+                    if (availabilityRequest === request) {
+                        updateWindowLabel();
+                        prevWindowButton.disabled = windowStart <= today;
+                        nextWindowButton.disabled = false;
+                    }
                 }
             };
 
@@ -881,6 +939,7 @@
             updateWindowLabel();
 
             sportSelect.addEventListener('change', () => {
+                availabilityRequest?.abort();
                 availabilityPayload = null;
                 pricingCard.hidden = true;
                 clearFlow();

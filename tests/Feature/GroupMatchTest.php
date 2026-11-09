@@ -40,7 +40,7 @@ class GroupMatchTest extends TestCase
         $sport = Sport::query()->where('slug', 'padel')->firstOrFail();
         $slot = ['sport_id' => $sport->id, 'starts_at' => '2026-11-06T18:00', 'duration_minutes' => 60];
         $this->get(route('booking.index'))->assertOk()->assertSee('Pronađi ekipu');
-        $this->get(route('group-matches.create', $slot))->assertOk()->assertSee('Proveri dostupnost i cenu')
+        $this->get(route('group-matches.create', $slot))->assertOk()->assertSee('Promeni termin')
             ->assertSee('Nivo igre')->assertSee('3.500,00 RSD za ceo teren');
         $this->post(route('group-matches.store'), $slot + $this->player('organizer') + ['quoted_price' => 3500, 'has_team' => 1])
             ->assertRedirectToRoute('group-matches.index');
@@ -86,6 +86,32 @@ class GroupMatchTest extends TestCase
         $this->get(route('group-matches.show', $match))->assertOk()->assertSee($reservation->court->name)
             ->assertDontSee('organizer@example.test')->assertDontSee('opponent-one@example.test');
         $this->get($organizer->signedUrl())->assertOk()->assertSee('3.500,00 RSD za ceo teren');
+    }
+
+    public function test_group_picker_shows_only_slots_that_fit_the_group_and_confirmation_deadline(): void
+    {
+        $basket = Sport::query()->where('slug', 'basket-3x3')->sole();
+        $date = now()->toDateString();
+        $base = ['sport' => $basket->slug, 'date' => $date];
+        $this->get(route('group-matches.create', $base))->assertOk()
+            ->assertSee('data-day-list', false)->assertSee('data-time-list', false)
+            ->assertDontSee('datetime-local')->assertDontSee(route('reservations.store'));
+
+        $regular = collect($this->getJson(route('booking.availability', $base))->assertOk()->json('days.0.times'));
+        $group = collect($this->getJson(route('booking.availability', $base + ['group' => 1]))->assertOk()->json('days.0.times'));
+        $this->assertTrue($regular->contains('time', '15:30'));
+        $this->assertFalse($group->contains('time', '15:30'));
+        $this->assertTrue($group->contains('time', '16:00'));
+        $this->assertEquals([60], array_column($group->firstWhere('time', '23:00')['durations'], 'minutes'));
+
+        $invalidQuote = route('group-matches.create', ['sport_id' => $basket->id, 'starts_at' => $date.'T15:30', 'duration_minutes' => 60]);
+        $this->followingRedirects()->get($invalidQuote)->assertOk()
+            ->assertSee('Izaberi termin koji počinje za više od 30 minuta.')
+            ->assertDontSee('data-flash-dialog role=', false);
+
+        Court::query()->whereBelongsTo($basket)->update(['capacity' => 5]);
+        $this->getJson(route('booking.availability', $base + ['group' => 1]))->assertOk()->assertJsonPath('days.0.times', []);
+        $this->assertNotEmpty($this->getJson(route('booking.availability', $base))->assertOk()->json('days.0.times'));
     }
 
     public function test_basket_shows_the_court_price_and_survives_withdrawal_of_a_waiting_player(): void

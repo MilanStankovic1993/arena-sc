@@ -2,6 +2,7 @@
     'title' => $title.' | Sportski centar Arena',
     'metaRobots' => 'noindex,follow',
     'showQuickActions' => false,
+    'showFlashDialog' => false,
 ])
 
 @push('head')

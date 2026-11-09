@@ -105,7 +105,9 @@
 
             @include('layouts.partials.site-header')
 
-            @include('layouts.partials.flash-dialog')
+            @if ($showFlashDialog ?? true)
+                @include('layouts.partials.flash-dialog')
+            @endif
 
             <main>
                 @yield('content')

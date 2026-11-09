@@ -37,7 +37,6 @@ class GroupMatchController extends Controller
     public function create(Request $request, GroupMatchService $service): View|RedirectResponse
     {
         $sports = $this->sports()->get();
-        $slot = $sport = $price = $account = null;
         if ($request->filled('starts_at')) {
             try {
                 [$slot, $sport, $start] = $this->slot($request->query());
@@ -45,13 +44,30 @@ class GroupMatchController extends Controller
                 if ($price === null) {
                     throw ValidationException::withMessages(['starts_at' => 'Za izabrano vreme nema slobodnog terena sa definisanom cenom.']);
                 }
-                $account = $this->playerAccount($request, $sport);
+                return view('group-matches.create', [
+                    'slot' => $slot,
+                    'sport' => $sport,
+                    'price' => $price,
+                    'account' => $this->playerAccount($request, $sport),
+                ]);
             } catch (ValidationException $exception) {
                 return redirect()->route('group-matches.create')->withErrors($exception->errors())->withInput();
             }
         }
 
-        return view('group-matches.create', compact('sports', 'slot', 'sport', 'price', 'account'));
+        $sport = $sports->firstWhere('slug', $request->query('sport'))
+            ?? $sports->firstWhere('id', old('sport_id'));
+        $date = $request->query('date') ?? (is_string(old('starts_at')) ? substr(old('starts_at'), 0, 10) : null);
+        $today = now()->toDateString();
+        if (! Validator::make(['date' => $date], ['date' => ['required', 'date_format:Y-m-d', 'after_or_equal:today']])->passes()) {
+            $date = $today;
+        }
+
+        return view('booking.index', [
+            'sports' => $sports,
+            'groupMatchMode' => true,
+            'initialState' => ['sport' => $sport?->slug, 'date' => $date, 'today' => $today],
+        ]);
     }
 
     public function store(Request $request, GroupMatchService $service): RedirectResponse
@@ -154,10 +170,11 @@ class GroupMatchController extends Controller
         }
         $start = Carbon::createFromFormat('!Y-m-d\TH:i', $slot['starts_at']);
         $end = $start->copy()->addMinutes((int) $slot['duration_minutes']);
-        if (! in_array($start->minute, [0, 30], true)
-            || $start->lte(now()->addMinutes(GroupMatchService::ClosingMinutes))
-            || ! app(ReservationScheduleService::class)->isWithinOperatingHours($start, $end)) {
-            throw ValidationException::withMessages(['starts_at' => 'Izaberi vreme na pun sat ili pola sata, u radnom vremenu i više od 30 minuta unapred.']);
+        if ($start->lte(now()->addMinutes(GroupMatchService::ClosingMinutes))) {
+            throw ValidationException::withMessages(['starts_at' => 'Izaberi termin koji počinje za više od 30 minuta.']);
+        }
+        if (! in_array($start->minute, [0, 30], true) || ! app(ReservationScheduleService::class)->isWithinOperatingHours($start, $end)) {
+            throw ValidationException::withMessages(['starts_at' => 'Izaberi slobodno vreme sa liste termina.']);
         }
 
         return [$slot, $sport, $start];

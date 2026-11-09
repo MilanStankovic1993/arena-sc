@@ -7,6 +7,8 @@ use App\Models\CourtClosure;
 use App\Models\Equipment;
 use App\Models\Reservation;
 use App\Models\Sport;
+use App\Services\GroupMatchQuestionnaire;
+use App\Services\GroupMatchService;
 use App\Services\ReservationPricingService;
 use App\Services\ReservationScheduleService;
 use Carbon\Carbon;
@@ -48,6 +50,10 @@ class BookingController extends Controller
             ->first();
 
         abort_unless($sport, 404);
+
+        $group = $request->boolean('group');
+        $teamSize = GroupMatchQuestionnaire::TeamSizes[$sport->slug] ?? null;
+        abort_if($group && (! $teamSize || ! $sport->supports_online_booking || ! config('arena.booking.is_open')), 404);
 
         $request->validate([
             'date' => ['nullable', 'date_format:Y-m-d', 'after_or_equal:today'],
@@ -247,9 +253,42 @@ class BookingController extends Controller
             ];
         });
 
+        if ($group) {
+            $eligibleCourts = $courts->filter(fn (Court $court): bool => $court->capacity >= 2 * $teamSize)->modelKeys();
+
+            return response()->json([
+                'sport' => $payload['sport'],
+                'days' => $this->groupDays($payload['days'], $eligibleCourts),
+            ])->header('Cache-Control', 'no-store');
+        }
+
         return response()
             ->json($payload)
             ->header('Cache-Control', 'private, max-age=10, stale-while-revalidate=20');
+    }
+
+    private function groupDays(array $days, array $eligibleCourts): array
+    {
+        $cutoff = now()->addMinutes(GroupMatchService::ClosingMinutes)->format('Y-m-d H:i:s');
+
+        foreach ($days as &$day) {
+            $day['times'] = collect($day['times'])->where('starts_at', '>', $cutoff)
+                ->map(function (array $time) use ($eligibleCourts): array {
+                    $time['durations'] = collect($time['durations'])->map(function (array $duration) use ($eligibleCourts): ?array {
+                        $courts = collect($duration['courts'])->whereIn('id', $eligibleCourts);
+
+                        return $courts->isEmpty() ? null : [
+                            'minutes' => $duration['minutes'],
+                            'label' => $duration['label'],
+                            'price_from' => $courts->min('price'),
+                        ];
+                    })->filter()->values()->all();
+
+                    return $time;
+                })->filter(fn (array $time): bool => $time['durations'] !== [])->values()->all();
+        }
+
+        return $days;
     }
 
     protected function courtIsAvailableFromLoadedData(
