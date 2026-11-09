@@ -27,6 +27,7 @@
                     </div>
                     <div class="mt-6">
                         <a href="{{ route('booking.index') }}" class="arena-button-primary">Nova rezervacija</a>
+                        <a href="{{ route('player-profiles.index') }}" class="arena-button-secondary">Igrači i rezultati</a>
                     </div>
                 </div>
 

@@ -6,7 +6,9 @@ use App\Http\Controllers\ContactMessageController;
 use App\Http\Controllers\CourtController;
 use App\Http\Controllers\EquipmentController;
 use App\Http\Controllers\EventController;
+use App\Http\Controllers\GroupMatchController;
 use App\Http\Controllers\LandingPageController;
+use App\Http\Controllers\PlayerProfileController;
 use App\Http\Controllers\PriceListController;
 use App\Http\Controllers\PublicStorageController;
 use App\Http\Controllers\ReservationController;
@@ -37,9 +39,28 @@ Route::post('/rezervacije', [ReservationController::class, 'store'])
     ->middleware('throttle:10,1')
     ->name('reservations.store');
 
+Route::prefix('pronadji-ekipu')->name('group-matches.')->group(function () {
+    Route::get('/', [GroupMatchController::class, 'index'])->name('index');
+    Route::get('/novi', [GroupMatchController::class, 'create'])->name('create');
+    Route::post('/novi', [GroupMatchController::class, 'store'])->middleware('throttle:5,1,group-match-create')->name('store');
+    Route::get('/prijava/{player}', [GroupMatchController::class, 'player'])->middleware('signed')->name('player');
+    Route::post('/prijava/{player}', [GroupMatchController::class, 'updatePlayer'])->middleware(['signed', 'throttle:20,1,group-match-confirm']);
+    Route::get('/{match}', [GroupMatchController::class, 'show'])->whereUuid('match')->name('show');
+    Route::post('/{match}', [GroupMatchController::class, 'join'])->whereUuid('match')->middleware('throttle:12,1,group-match-join')->name('join');
+});
+
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/dashboard', [ReservationController::class, 'index'])->name('dashboard');
     Route::post('/rezervacije/{reservation}/otkazi', [ReservationController::class, 'cancel'])->name('reservations.cancel');
+
+    Route::prefix('igraci')->name('player-profiles.')->group(function () {
+        Route::get('/', [PlayerProfileController::class, 'index'])->name('index');
+        Route::post('/sport/{sport:slug}', [PlayerProfileController::class, 'save'])->name('save');
+        Route::post('/profil/{profile}/oceni', [PlayerProfileController::class, 'rate'])->middleware('throttle:30,1,player-rate')->name('rate');
+        Route::post('/termin/{match}/rezultat', [PlayerProfileController::class, 'result'])->whereUuid('match')->name('result');
+        Route::post('/profil/{profile}/pozovi', [PlayerProfileController::class, 'invite'])->middleware('throttle:15,1,player-invite')->name('invite');
+        Route::post('/poziv/{invitation}', [PlayerProfileController::class, 'respond'])->name('respond');
+    });
 });
 
 require __DIR__.'/auth.php';

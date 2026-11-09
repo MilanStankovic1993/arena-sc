@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
@@ -147,5 +148,10 @@ class Reservation extends Model
     public function participants(): BelongsToMany
     {
         return $this->belongsToMany(User::class, 'reservation_participants')->withTimestamps();
+    }
+
+    public function groupMatch(): HasOne
+    {
+        return $this->hasOne(GroupMatch::class);
     }
 }

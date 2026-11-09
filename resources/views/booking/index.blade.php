@@ -5,6 +5,10 @@
     'metaImage' => asset('media/home/hero-exterior.webp'),
 ])
 
+@push('head')
+    <link rel="stylesheet" href="{{ asset('css/group-matches.css') }}?v=2">
+@endpush
+
 @section('content')
     @php
         $sportsPayload = $sports->map(fn ($sport) => [
@@ -37,6 +41,19 @@
                     <span class="info-chip-soft-dark">Oprema uz termin</span>
                 </div>
             </div>
+
+            <a class="group-match-entry" href="{{ route('group-matches.index') }}" aria-label="Pronađi ekipu">
+                <span class="group-match-entry-icon" aria-hidden="true">
+                    <svg viewBox="0 0 28 28" fill="none" stroke="currentColor" stroke-width="1.6">
+                        <rect x="2" y="5" width="24" height="18" rx="3"/><path d="M14 5v18M7 14h4m-2-2v4m8-2h4m-2-2v4"/>
+                    </svg>
+                </span>
+                <span class="group-match-entry-copy">
+                    <strong>Pronađi ekipu</strong>
+                    <span>Pridruži se grupnom terminu za padel ili basket, ili okupi svoju ekipu.</span>
+                </span>
+                <span class="group-match-entry-action">Pogledaj grupne termine <span aria-hidden="true">→</span></span>
+            </a>
 
             <div class="booking-summary-grid booking-summary-grid--single">
                 <div class="booking-stage">

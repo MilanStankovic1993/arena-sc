@@ -4,6 +4,7 @@ namespace App\Observers;
 
 use App\Enums\ReservationStatus;
 use App\Mail\AdminReservationNotificationMail;
+use App\Mail\GroupMatchMail;
 use App\Mail\ReservationCancelledMail;
 use App\Mail\ReservationConfirmedMail;
 use App\Mail\ReservationDeletedMail;
@@ -127,7 +128,11 @@ class ReservationObserver
             }
 
             if ($wasCancelled) {
-                if ($reservation->customer_display_email) {
+                if ($match = $reservation->groupMatch) {
+                    foreach ($match->confirmedPlayers()->get() as $player) {
+                        $this->sendReservationMail($player->email, new GroupMatchMail($player, 'cancelled'), $reservation);
+                    }
+                } elseif ($reservation->customer_display_email) {
                     $this->sendReservationMail($reservation->customer_display_email, new ReservationCancelledMail($reservation), $reservation);
                 }
 
@@ -154,7 +159,9 @@ class ReservationObserver
             'ends_at' => $reservation->ends_at->format('d.m.Y H:i'), 'total_price' => $reservation->total_price,
             'actor' => $audit->actor_name, 'deleted_at' => $audit->created_at->format('d.m.Y H:i:s'),
         ];
-        $recipients = collect([config('arena.contact.email'), $reservation->customer_display_email])->filter()->unique()->all();
+        $recipients = collect([config('arena.contact.email'), $reservation->customer_display_email])
+            ->merge($reservation->groupMatch?->confirmedPlayers()->pluck('email') ?? [])
+            ->filter()->unique()->all();
         DB::afterCommit(function () use ($recipients, $snapshot, $reservation): void {
             foreach ($recipients as $recipient) {
                 $this->sendReservationMail($recipient, new ReservationDeletedMail($snapshot), $reservation);

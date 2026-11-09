@@ -111,7 +111,9 @@
                 @yield('content')
             </main>
 
-            @include('layouts.partials.quick-actions')
+            @if ($showQuickActions ?? true)
+                @include('layouts.partials.quick-actions')
+            @endif
 
             <footer class="site-grid pb-12 pt-16 sm:pt-20">
                 <div class="premium-footer-shell">
