@@ -10,7 +10,7 @@
                         color="gray"
                         :disabled="$target === null"
                         wire:loading.attr="disabled"
-                        wire:click="$set(@js($timePath), @js($target))"
+                        wire:click="$set('{{ $timePath }}', '{{ $target }}')"
                     >
                         {{ $hours < 0 ? '−' : '+' }}{{ abs($hours) }} {{ abs($hours) === 1 ? 'sat' : 'sata' }}
                     </x-filament::button>
@@ -33,7 +33,7 @@
                         :aria-label="$start.($slot['available'] ? '' : ', zauzeto')"
                         :aria-pressed="$start === $time ? 'true' : 'false'"
                         wire:loading.attr="disabled"
-                        wire:click="$set(@js($timePath), @js($start))"
+                        wire:click="$set('{{ $timePath }}', '{{ $start }}')"
                     >
                         {{ $start }}
                     </x-filament::button>

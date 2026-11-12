@@ -145,10 +145,15 @@ class CalendarReservationsWidgetTest extends TestCase
             ->assertSet('mountedActions.1.data.booking_date', $record->starts_at->toDateString())
             ->assertSet('mountedActions.1.data.booking_time', $record->starts_at->format('H:i'));
 
-        $choices = $component->instance()->getSchema('mountedActionSchema1')->getComponent('reservation_time_choices')->getViewData();
+        $choiceView = $component->instance()->getSchema('mountedActionSchema1')->getComponent('reservation_time_choices');
+        $choices = $choiceView->getViewData();
         $this->assertSame([-2 => '11:00', -1 => '12:00', 1 => '14:00', 2 => '15:00'], $choices['shifts']);
         $this->assertSame('mountedActions.1.data.booking_time', $choices['timePath']);
         $this->assertTrue($choices['slots']->first(fn ($slot) => $slot['starts_at']->format('H:i') === '13:00')['available']);
+        $this->assertStringContainsString(
+            '$set(\'mountedActions.1.data.booking_time\', \'14:00\')',
+            html_entity_decode($choiceView->toHtml()),
+        );
 
         $component->set('mountedActions.1.data.booking_time', $start->format('H:i'))
             ->set('mountedActions.1.data.duration_minutes', 90);
