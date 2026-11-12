@@ -8,11 +8,19 @@ use App\Filament\Resources\Reservations\ReservationResource;
 use App\Models\Court;
 use App\Models\Reservation;
 use App\Models\Sport;
+use App\Services\GroupMatchService;
+use App\Services\ReservationEditPricingService;
+use App\Services\ReservationPricingService;
+use Carbon\Carbon;
 use Filament\Actions\Action;
+use Filament\Forms\Components\DateTimePicker;
+use Filament\Forms\Components\Select;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Notifications\Notification;
+use Filament\Schemas\Components\Utilities\Get;
 use Filament\Support\Enums\FontWeight;
 use Filament\Support\Enums\Width;
+use Filament\Support\Icons\Heroicon;
 use Guava\Calendar\Enums\CalendarViewType;
 use Guava\Calendar\Filament\Actions\ViewAction;
 use Guava\Calendar\Filament\CalendarWidget;
@@ -22,9 +30,12 @@ use Guava\Calendar\ValueObjects\DateClickInfo;
 use Guava\Calendar\ValueObjects\EventClickInfo;
 use Guava\Calendar\ValueObjects\FetchInfo;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\QueryException;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Locked;
+use RuntimeException;
 
 class CalendarReservationsWidget extends CalendarWidget
 {
@@ -172,6 +183,120 @@ class CalendarReservationsWidget extends CalendarWidget
         return $this->reservationMutationAction('deleteReservation', true);
     }
 
+    public function rescheduleReservationAction(): Action
+    {
+        return Action::make('rescheduleReservation')
+            ->label('Izmeni vreme')
+            ->icon(Heroicon::OutlinedClock)
+            ->record(fn () => $this->getEventRecord())
+            ->visible(fn (?Model $record): bool => $record instanceof Reservation
+                && $record->status === ReservationStatus::Reserved
+                && ReservationResource::canEdit($record))
+            ->modalHeading('Izmeni vreme termina')
+            ->modalWidth(Width::Large)
+            ->modalSubmitActionLabel('Sačuvaj vreme')
+            ->fillForm(fn (Reservation $record): array => [
+                'starts_at' => $record->starts_at,
+                'duration_minutes' => $record->duration_minutes,
+            ])
+            ->schema([
+                DateTimePicker::make('starts_at')->label('Početak')->native(false)
+                    ->displayFormat('d.m.Y. H:i')->seconds(false)->required()->live(),
+                Select::make('duration_minutes')->label('Trajanje')->options([
+                    60 => '60 minuta',
+                    90 => '90 minuta',
+                    120 => '120 minuta',
+                ])->required()->live(),
+                TextEntry::make('schedule_preview')->label('Završetak i ukupna cena')
+                    ->state(function (Get $get, Reservation $record): ?string {
+                        if (blank($get('starts_at')) || blank($get('duration_minutes'))) {
+                            return null;
+                        }
+
+                        try {
+                            $schedule = $this->rescheduleData($record, $get('starts_at'), (int) $get('duration_minutes'));
+                            $data = app(ReservationEditPricingService::class)->prepareForSave($schedule, $record);
+                        } catch (QueryException $exception) {
+                            throw $exception;
+                        } catch (RuntimeException $exception) {
+                            return $exception->getMessage();
+                        }
+
+                        return Carbon::parse($data['ends_at'])->format('d.m.Y. H:i')
+                            .' · '.number_format((float) $data['total_price'], 2, ',', '.').' RSD';
+                    }),
+            ])
+            ->cancelParentActions()
+            ->action(function (Reservation $record, array $data): void {
+                $this->saveReservationTime($record, $data);
+                $this->refreshRecords();
+                Notification::make()->title('Vreme termina je sačuvano.')->success()->send();
+            });
+    }
+
+    private function rescheduleData(Reservation $record, mixed $start, int $duration): array
+    {
+        return app(ReservationEditPricingService::class)->synchronizeTimes([
+            'sport_id' => $record->sport_id,
+            'court_id' => $record->court_id,
+            'starts_at' => $start,
+            'ends_at' => $record->ends_at,
+            'duration_minutes' => $duration,
+            'is_gift' => $record->is_gift,
+            'court_price' => $record->court_price,
+            'equipment_price' => $record->equipment_price,
+            'total_price' => $record->total_price,
+        ], 'duration_minutes');
+    }
+
+    private function saveReservationTime(Reservation $record, array $data): void
+    {
+        $path = $this->getMountedActionSchema()->getStatePath();
+
+        DB::transaction(function () use ($record, $data, $path): void {
+            Court::query()->lockForUpdate()->findOrFail($record->court_id);
+            $current = Reservation::withTrashed()->lockForUpdate()->findOrFail($record->getKey());
+            abort_unless(ReservationResource::canEdit($current), 403);
+
+            if ($current->court_id !== $record->court_id || $current->status !== ReservationStatus::Reserved) {
+                throw ValidationException::withMessages([
+                    $path.'.starts_at' => 'Rezervacija je u međuvremenu promenjena. Ponovo otvorite detalje termina.',
+                ]);
+            }
+
+            try {
+                $schedule = $this->rescheduleData($current, $data['starts_at'], (int) $data['duration_minutes']);
+                $start = Carbon::parse($schedule['starts_at']);
+                $end = Carbon::parse($schedule['ends_at']);
+                if ($start->equalTo($current->starts_at) && $end->equalTo($current->ends_at)
+                    && $schedule['duration_minutes'] === (int) $current->duration_minutes) {
+                    return;
+                }
+
+                app(ReservationPricingService::class)->hydrateEquipmentPricing(
+                    $current->equipmentItems()->lockForUpdate()->get(['equipment_id', 'quantity'])->toArray(),
+                    $current->sport_id, $start, $end, $current->id,
+                );
+                $current->update(app(ReservationEditPricingService::class)->prepareForSave($schedule, $current));
+            } catch (ValidationException $exception) {
+                throw ValidationException::withMessages([
+                    $path.'.starts_at' => collect($exception->errors())->flatten()->all(),
+                ]);
+            } catch (QueryException $exception) {
+                throw $exception;
+            } catch (RuntimeException $exception) {
+                throw ValidationException::withMessages([$path.'.starts_at' => $exception->getMessage()]);
+            }
+
+            $current->groupMatch?->update([
+                'starts_at' => $current->starts_at,
+                'ends_at' => $current->ends_at,
+                'closes_at' => $current->starts_at->copy()->subMinutes(GroupMatchService::ClosingMinutes),
+                'duration_minutes' => $current->duration_minutes,
+            ]);
+        }, attempts: 3);
+    }
+
     public function switchView(CalendarViewType $view): void
     {
         $this->calendarView = $view;
@@ -299,6 +424,7 @@ class CalendarReservationsWidget extends CalendarWidget
                     ->state(fn (Reservation $record): string => number_format((float) $record->total_price, 0, ',', '.').' RSD'),
             ])
             ->extraModalFooterActions([
+                $this->rescheduleReservationAction(),
                 $this->cancelReservationAction(),
                 $this->deleteReservationAction(),
             ]);

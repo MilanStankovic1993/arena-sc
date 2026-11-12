@@ -5,6 +5,9 @@ namespace Tests\Feature;
 use App\Enums\UserRole;
 use App\Filament\Widgets\CalendarReservationsWidget;
 use App\Models\Court;
+use App\Models\Equipment;
+use App\Models\GroupMatch;
+use App\Models\PricingRule;
 use App\Models\Reservation;
 use App\Models\Sport;
 use App\Models\User;
@@ -20,8 +23,8 @@ class CalendarReservationsWidgetTest extends TestCase
 
     private function reservationForSelection(string $name, int $day): Reservation
     {
-        $sport = Sport::firstOrCreate(['slug' => 'selection-test'], ['name' => 'Padel', 'is_active' => true]);
-        $court = Court::firstOrCreate(['slug' => 'selection-test'], ['sport_id' => $sport->id, 'name' => 'Teren', 'is_active' => true]);
+        $sport = Sport::firstOrCreate(['name' => 'Padel'], ['is_active' => true]);
+        $court = $sport->courts()->firstOrCreate(['name' => 'Teren'], ['is_active' => true]);
         $start = now()->addDays($day)->setTime(13, 0);
 
         return Reservation::withoutEvents(fn () => Reservation::create([
@@ -110,6 +113,99 @@ class CalendarReservationsWidgetTest extends TestCase
             ->call('onEventClickJs', $this->clickData($record->fresh()))
             ->callAction('deleteReservation');
         $this->assertSoftDeleted('reservations', ['id' => $record->id]);
+    }
+
+    public function test_admin_can_reschedule_from_details_and_calendar_refreshes(): void
+    {
+        $this->travelTo(now()->setDate(2026, 11, 12));
+        Filament::setCurrentPanel(Filament::getPanel('admin'));
+        $admin = User::factory()->create(['role' => UserRole::SuperAdmin]);
+        $this->actingAs($admin);
+        $record = $this->reservationForSelection('Promena vremena', 1);
+        $other = $this->reservationForSelection('Drugi termin iz serije', 2);
+        $match = GroupMatch::create([
+            'sport_id' => $record->sport_id, 'reservation_id' => $record->id, 'status' => GroupMatch::Booked,
+            'starts_at' => $record->starts_at, 'ends_at' => $record->ends_at,
+            'closes_at' => $record->starts_at->copy()->subMinutes(30), 'duration_minutes' => 60,
+            'team_size' => 2, 'quoted_price' => 1000,
+        ]);
+        $this->addRescheduleTariff($record);
+        $start = $record->starts_at->copy()->setTime(17, 30);
+        $end = $start->copy()->addMinutes(90);
+
+        $component = Livewire::test(CalendarReservationsWidget::class)
+            ->call('onEventClickJs', $this->clickData($record))
+            ->assertActionMounted('view');
+        $action = $component->instance()->getMountedAction()->getModalAction('rescheduleReservation');
+        $this->assertTrue($action->isVisible());
+        $this->assertSame('Izmeni vreme', $action->getLabel());
+
+        $component->mountAction('rescheduleReservation')
+            ->assertActionMounted('rescheduleReservation')
+            ->assertSet('mountedActions.1.data.starts_at', $record->starts_at->toDateTimeString())
+            ->set('mountedActions.1.data.starts_at', $start->toDateTimeString())
+            ->set('mountedActions.1.data.duration_minutes', 90);
+        $preview = $component->instance()->getSchema('mountedActionSchema1')->getComponent('schedule_preview');
+        $this->assertSame($end->format('d.m.Y. H:i').' · 4.500,00 RSD', $preview->getState());
+
+        $component->callMountedAction()
+            ->assertHasNoActionErrors()
+            ->assertDispatched('calendar--refresh');
+
+        $this->assertDatabaseHas('reservations', [
+            'id' => $record->id, 'starts_at' => $start, 'ends_at' => $end,
+            'duration_minutes' => 90, 'court_price' => 4500, 'total_price' => 4500,
+        ]);
+        $this->assertDatabaseHas('reservations', ['id' => $other->id, 'starts_at' => $other->starts_at]);
+        $this->assertDatabaseHas('reservation_audits', ['reservation_id' => $record->id, 'actor_id' => $admin->id, 'event' => 'updated']);
+        $this->assertDatabaseHas('group_matches', ['id' => $match->id, 'starts_at' => $start, 'ends_at' => $end, 'duration_minutes' => 90]);
+    }
+
+    public function test_calendar_rescheduling_rejects_a_busy_court_or_unavailable_equipment(): void
+    {
+        $this->travelTo(now()->setDate(2026, 11, 12));
+        Filament::setCurrentPanel(Filament::getPanel('admin'));
+        $this->actingAs(User::factory()->create(['role' => UserRole::SuperAdmin]));
+        $record = $this->reservationForSelection('Promena vremena', 1);
+        $busy = $this->reservationForSelection('Zauzet termin', 2);
+        $this->addRescheduleTariff($record);
+
+        Livewire::test(CalendarReservationsWidget::class)
+            ->call('onEventClickJs', $this->clickData($record))
+            ->mountAction('rescheduleReservation')
+            ->assertActionMounted('rescheduleReservation')
+            ->set('mountedActions.1.data.starts_at', $busy->starts_at->toDateTimeString())
+            ->callMountedAction()
+            ->assertHasErrors(['mountedActions.1.data.starts_at' => 'Izabrani termin nije dostupan za ovaj teren.']);
+
+        $equipment = Equipment::create([
+            'name' => 'Reket', 'is_active' => true, 'is_rentable' => true, 'rental_price' => 100, 'stock_quantity' => 1,
+        ]);
+        foreach ([$record, $busy] as $reservation) {
+            $reservation->equipmentItems()->create([
+                'equipment_id' => $equipment->id, 'quantity' => 1, 'unit_price' => 100, 'line_total' => 100,
+            ]);
+        }
+        $otherCourt = Court::create(['sport_id' => $busy->sport_id, 'name' => 'Drugi teren', 'is_active' => true]);
+        $busy->update(['court_id' => $otherCourt->id]);
+
+        Livewire::test(CalendarReservationsWidget::class)
+            ->call('onEventClickJs', $this->clickData($record))
+            ->mountAction('rescheduleReservation')
+            ->set('mountedActions.1.data.starts_at', $busy->starts_at->toDateTimeString())
+            ->callMountedAction()
+            ->assertHasErrors(['mountedActions.1.data.starts_at' => 'Oprema Reket nije dostupna u trazenoj kolicini.']);
+        $this->assertDatabaseHas('reservations', [
+            'id' => $record->id, 'starts_at' => $record->starts_at, 'total_price' => 1000,
+        ]);
+    }
+
+    private function addRescheduleTariff(Reservation $record): void
+    {
+        PricingRule::create([
+            'sport_id' => $record->sport_id, 'name' => 'Test cenovnik', 'start_time' => '08:00', 'end_time' => '00:00',
+            'price_60' => 3000, 'price_90' => 4500, 'price_120' => 6000, 'is_active' => true,
+        ]);
     }
 
     public function test_selected_view_and_button_state_survive_subsequent_livewire_requests(): void
