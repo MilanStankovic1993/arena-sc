@@ -16,7 +16,7 @@ use App\Services\ReservationScheduleService;
 use Carbon\Carbon;
 use Filament\Actions\Action;
 use Filament\Forms\Components\DatePicker;
-use Filament\Forms\Components\TimePicker;
+use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\ToggleButtons;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Notifications\Notification;
@@ -210,35 +210,15 @@ class CalendarReservationsWidget extends CalendarWidget
             ->schema([
                 Grid::make(['default' => 1, 'sm' => 2])->schema([
                     DatePicker::make('booking_date')->label('Datum')->native()->required()->live(),
-                    TimePicker::make('booking_time')->label('Početak')->native()->format('H:i')->seconds(false)
-                        ->rule('date_format:H:i')->required()->live(),
+                    TextInput::make('booking_time')->label('Početak')->placeholder('HH:MM')->mask('99:99')
+                        ->rule('date_format:H:i')->required()->live(onBlur: true),
                 ]),
-                ToggleButtons::make('duration_minutes')->label('Trajanje')
-                    ->options([60 => '60 min', 90 => '90 min', 120 => '120 min'])->inline()->required()->live(),
-                TextEntry::make('schedule_preview')->label('Završetak i ukupna cena')
-                    ->state(function (Get $get, Reservation $record): ?string {
-                        if (blank($get('booking_date')) || blank($get('booking_time')) || blank($get('duration_minutes'))) {
-                            return null;
-                        }
-
-                        try {
-                            $schedule = $this->rescheduleData($record, $get('booking_date').' '.$get('booking_time'), (int) $get('duration_minutes'));
-                            $data = app(ReservationEditPricingService::class)->prepareForSave($schedule, $record);
-                        } catch (QueryException $exception) {
-                            throw $exception;
-                        } catch (RuntimeException $exception) {
-                            return $exception->getMessage();
-                        }
-
-                        $end = Carbon::parse($data['ends_at']);
-                        $available = app(ReservationAvailabilityService::class)->isAvailable(
-                            $record->court, Carbon::parse($data['starts_at']), $end, $record->id,
-                        );
-
-                        return $end->format('d.m.Y. H:i')
-                            .' · '.number_format((float) $data['total_price'], 2, ',', '.').' RSD'
-                            .($available ? '' : ' · Teren je zauzet');
-                    }),
+                Grid::make(['default' => 1, 'sm' => 2])->schema([
+                    ToggleButtons::make('duration_minutes')->label('Trajanje')
+                        ->options([60 => '60 min', 90 => '90 min', 120 => '120 min'])->inline()->required()->live(),
+                    TextEntry::make('schedule_preview')->label('Završetak i ukupna cena')
+                        ->state(fn (Get $get, Reservation $record): ?string => $this->reservationTimePreview($record, $get)),
+                ]),
                 View::make('filament.reservation-time-choices')
                     ->key('reservation_time_choices')
                     ->viewData(fn (Get $get, Reservation $record, View $component): array => [
@@ -252,6 +232,34 @@ class CalendarReservationsWidget extends CalendarWidget
                 $this->refreshRecords();
                 Notification::make()->title('Vreme termina je sačuvano.')->success()->send();
             });
+    }
+
+    private function reservationTimePreview(Reservation $record, Get $get): ?string
+    {
+        $date = $get('booking_date');
+        $time = $get('booking_time');
+        $duration = (int) $get('duration_minutes');
+        if (blank($date) || ! Carbon::hasFormat($time ?? '', 'H:i') || ! in_array($duration, [60, 90, 120], true)) {
+            return null;
+        }
+
+        try {
+            $schedule = $this->rescheduleData($record, $date.' '.$time, $duration);
+            $data = app(ReservationEditPricingService::class)->prepareForSave($schedule, $record);
+        } catch (QueryException $exception) {
+            throw $exception;
+        } catch (RuntimeException $exception) {
+            return $exception->getMessage();
+        }
+
+        $end = Carbon::parse($data['ends_at']);
+        $available = app(ReservationAvailabilityService::class)->isAvailable(
+            $record->court, Carbon::parse($data['starts_at']), $end, $record->id,
+        );
+
+        return $end->format('d.m.Y. H:i')
+            .' · '.number_format((float) $data['total_price'], 2, ',', '.').' RSD'
+            .($available ? '' : ' · Teren je zauzet');
     }
 
     private function reservationTimeChoices(Reservation $record, Get $get): array
@@ -269,7 +277,7 @@ class CalendarReservationsWidget extends CalendarWidget
         $slots = $schedule->buildDailySchedule($record->court, $day, $duration);
         $result['slots'] = app(ReservationAvailabilityService::class)->markAvailableSlots($record->court, $slots, $record->id);
 
-        if (filled($time)) {
+        if (Carbon::hasFormat($time ?? '', 'H:i')) {
             $start = Carbon::parse($date.' '.$time);
             foreach ([-2, -1, 1, 2] as $hours) {
                 $target = $start->copy()->addHours($hours);
