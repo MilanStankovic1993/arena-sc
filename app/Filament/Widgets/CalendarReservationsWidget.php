@@ -9,15 +9,20 @@ use App\Models\Court;
 use App\Models\Reservation;
 use App\Models\Sport;
 use App\Services\GroupMatchService;
+use App\Services\ReservationAvailabilityService;
 use App\Services\ReservationEditPricingService;
 use App\Services\ReservationPricingService;
+use App\Services\ReservationScheduleService;
 use Carbon\Carbon;
 use Filament\Actions\Action;
-use Filament\Forms\Components\DateTimePicker;
-use Filament\Forms\Components\Select;
+use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\TimePicker;
+use Filament\Forms\Components\ToggleButtons;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Notifications\Notification;
+use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Utilities\Get;
+use Filament\Schemas\Components\View;
 use Filament\Support\Enums\FontWeight;
 use Filament\Support\Enums\Width;
 use Filament\Support\Icons\Heroicon;
@@ -193,28 +198,31 @@ class CalendarReservationsWidget extends CalendarWidget
                 && $record->status === ReservationStatus::Reserved
                 && ReservationResource::canEdit($record))
             ->modalHeading('Izmeni vreme termina')
-            ->modalWidth(Width::Large)
+            ->modalWidth(Width::TwoExtraLarge)
+            ->stickyModalFooter()
+            ->modalAutofocus(false)
             ->modalSubmitActionLabel('Sačuvaj vreme')
             ->fillForm(fn (Reservation $record): array => [
-                'starts_at' => $record->starts_at,
+                'booking_date' => $record->starts_at->toDateString(),
+                'booking_time' => $record->starts_at->format('H:i'),
                 'duration_minutes' => $record->duration_minutes,
             ])
             ->schema([
-                DateTimePicker::make('starts_at')->label('Početak')->native(false)
-                    ->displayFormat('d.m.Y. H:i')->seconds(false)->required()->live(),
-                Select::make('duration_minutes')->label('Trajanje')->options([
-                    60 => '60 minuta',
-                    90 => '90 minuta',
-                    120 => '120 minuta',
-                ])->required()->live(),
+                Grid::make(['default' => 1, 'sm' => 2])->schema([
+                    DatePicker::make('booking_date')->label('Datum')->native()->required()->live(),
+                    TimePicker::make('booking_time')->label('Početak')->native()->format('H:i')->seconds(false)
+                        ->rule('date_format:H:i')->required()->live(),
+                ]),
+                ToggleButtons::make('duration_minutes')->label('Trajanje')
+                    ->options([60 => '60 min', 90 => '90 min', 120 => '120 min'])->inline()->required()->live(),
                 TextEntry::make('schedule_preview')->label('Završetak i ukupna cena')
                     ->state(function (Get $get, Reservation $record): ?string {
-                        if (blank($get('starts_at')) || blank($get('duration_minutes'))) {
+                        if (blank($get('booking_date')) || blank($get('booking_time')) || blank($get('duration_minutes'))) {
                             return null;
                         }
 
                         try {
-                            $schedule = $this->rescheduleData($record, $get('starts_at'), (int) $get('duration_minutes'));
+                            $schedule = $this->rescheduleData($record, $get('booking_date').' '.$get('booking_time'), (int) $get('duration_minutes'));
                             $data = app(ReservationEditPricingService::class)->prepareForSave($schedule, $record);
                         } catch (QueryException $exception) {
                             throw $exception;
@@ -222,9 +230,21 @@ class CalendarReservationsWidget extends CalendarWidget
                             return $exception->getMessage();
                         }
 
-                        return Carbon::parse($data['ends_at'])->format('d.m.Y. H:i')
-                            .' · '.number_format((float) $data['total_price'], 2, ',', '.').' RSD';
+                        $end = Carbon::parse($data['ends_at']);
+                        $available = app(ReservationAvailabilityService::class)->isAvailable(
+                            $record->court, Carbon::parse($data['starts_at']), $end, $record->id,
+                        );
+
+                        return $end->format('d.m.Y. H:i')
+                            .' · '.number_format((float) $data['total_price'], 2, ',', '.').' RSD'
+                            .($available ? '' : ' · Teren je zauzet');
                     }),
+                View::make('filament.reservation-time-choices')
+                    ->key('reservation_time_choices')
+                    ->viewData(fn (Get $get, Reservation $record, View $component): array => [
+                        ...$this->reservationTimeChoices($record, $get),
+                        'timePath' => $component->getContainer()->getStatePath().'.booking_time',
+                    ]),
             ])
             ->cancelParentActions()
             ->action(function (Reservation $record, array $data): void {
@@ -234,8 +254,40 @@ class CalendarReservationsWidget extends CalendarWidget
             });
     }
 
+    private function reservationTimeChoices(Reservation $record, Get $get): array
+    {
+        $duration = (int) $get('duration_minutes');
+        $date = $get('booking_date');
+        $time = $get('booking_time');
+        $result = ['slots' => collect(), 'shifts' => [], 'time' => $time];
+        if (blank($date) || ! in_array($duration, [60, 90, 120], true)) {
+            return $result;
+        }
+
+        $schedule = app(ReservationScheduleService::class);
+        $day = Carbon::parse($date);
+        $slots = $schedule->buildDailySchedule($record->court, $day, $duration);
+        $result['slots'] = app(ReservationAvailabilityService::class)->markAvailableSlots($record->court, $slots, $record->id);
+
+        if (filled($time)) {
+            $start = Carbon::parse($date.' '.$time);
+            foreach ([-2, -1, 1, 2] as $hours) {
+                $target = $start->copy()->addHours($hours);
+                $result['shifts'][$hours] = $target->isSameDay($day)
+                    && $schedule->isWithinOperatingHours($target, $target->copy()->addMinutes($duration))
+                    ? $target->format('H:i') : null;
+            }
+        }
+
+        return $result;
+    }
+
     private function rescheduleData(Reservation $record, mixed $start, int $duration): array
     {
+        if ($start === $record->starts_at->format('Y-m-d H:i')) {
+            $start = $record->starts_at;
+        }
+
         return app(ReservationEditPricingService::class)->synchronizeTimes([
             'sport_id' => $record->sport_id,
             'court_id' => $record->court_id,
@@ -260,12 +312,12 @@ class CalendarReservationsWidget extends CalendarWidget
 
             if ($current->court_id !== $record->court_id || $current->status !== ReservationStatus::Reserved) {
                 throw ValidationException::withMessages([
-                    $path.'.starts_at' => 'Rezervacija je u međuvremenu promenjena. Ponovo otvorite detalje termina.',
+                    $path.'.booking_time' => 'Rezervacija je u međuvremenu promenjena. Ponovo otvorite detalje termina.',
                 ]);
             }
 
             try {
-                $schedule = $this->rescheduleData($current, $data['starts_at'], (int) $data['duration_minutes']);
+                $schedule = $this->rescheduleData($current, $data['booking_date'].' '.$data['booking_time'], (int) $data['duration_minutes']);
                 $start = Carbon::parse($schedule['starts_at']);
                 $end = Carbon::parse($schedule['ends_at']);
                 if ($start->equalTo($current->starts_at) && $end->equalTo($current->ends_at)
@@ -280,12 +332,12 @@ class CalendarReservationsWidget extends CalendarWidget
                 $current->update(app(ReservationEditPricingService::class)->prepareForSave($schedule, $current));
             } catch (ValidationException $exception) {
                 throw ValidationException::withMessages([
-                    $path.'.starts_at' => collect($exception->errors())->flatten()->all(),
+                    $path.'.booking_time' => collect($exception->errors())->flatten()->all(),
                 ]);
             } catch (QueryException $exception) {
                 throw $exception;
             } catch (RuntimeException $exception) {
-                throw ValidationException::withMessages([$path.'.starts_at' => $exception->getMessage()]);
+                throw ValidationException::withMessages([$path.'.booking_time' => $exception->getMessage()]);
             }
 
             $current->groupMatch?->update([

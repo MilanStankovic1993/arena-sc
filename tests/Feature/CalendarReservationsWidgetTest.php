@@ -142,8 +142,15 @@ class CalendarReservationsWidgetTest extends TestCase
 
         $component->mountAction('rescheduleReservation')
             ->assertActionMounted('rescheduleReservation')
-            ->assertSet('mountedActions.1.data.starts_at', $record->starts_at->toDateTimeString())
-            ->set('mountedActions.1.data.starts_at', $start->toDateTimeString())
+            ->assertSet('mountedActions.1.data.booking_date', $record->starts_at->toDateString())
+            ->assertSet('mountedActions.1.data.booking_time', $record->starts_at->format('H:i'));
+
+        $choices = $component->instance()->getSchema('mountedActionSchema1')->getComponent('reservation_time_choices')->getViewData();
+        $this->assertSame([-2 => '11:00', -1 => '12:00', 1 => '14:00', 2 => '15:00'], $choices['shifts']);
+        $this->assertSame('mountedActions.1.data.booking_time', $choices['timePath']);
+        $this->assertTrue($choices['slots']->first(fn ($slot) => $slot['starts_at']->format('H:i') === '13:00')['available']);
+
+        $component->set('mountedActions.1.data.booking_time', $start->format('H:i'))
             ->set('mountedActions.1.data.duration_minutes', 90);
         $preview = $component->instance()->getSchema('mountedActionSchema1')->getComponent('schedule_preview');
         $this->assertSame($end->format('d.m.Y. H:i').' · 4.500,00 RSD', $preview->getState());
@@ -170,13 +177,19 @@ class CalendarReservationsWidgetTest extends TestCase
         $busy = $this->reservationForSelection('Zauzet termin', 2);
         $this->addRescheduleTariff($record);
 
-        Livewire::test(CalendarReservationsWidget::class)
+        $component = Livewire::test(CalendarReservationsWidget::class)
             ->call('onEventClickJs', $this->clickData($record))
             ->mountAction('rescheduleReservation')
             ->assertActionMounted('rescheduleReservation')
-            ->set('mountedActions.1.data.starts_at', $busy->starts_at->toDateTimeString())
-            ->callMountedAction()
-            ->assertHasErrors(['mountedActions.1.data.starts_at' => 'Izabrani termin nije dostupan za ovaj teren.']);
+            ->set('mountedActions.1.data.booking_date', $busy->starts_at->toDateString())
+            ->set('mountedActions.1.data.booking_time', $busy->starts_at->format('H:i'));
+
+        $slots = $component->instance()->getSchema('mountedActionSchema1')->getComponent('reservation_time_choices')->getViewData()['slots'];
+        $this->assertFalse($slots->first(fn ($slot) => $slot['starts_at']->format('H:i') === '13:00')['available']);
+        $this->assertTrue($slots->first(fn ($slot) => $slot['starts_at']->format('H:i') === '14:00')['available']);
+
+        $component->callMountedAction()
+            ->assertHasErrors(['mountedActions.1.data.booking_time' => 'Izabrani termin nije dostupan za ovaj teren.']);
 
         $equipment = Equipment::create([
             'name' => 'Reket', 'is_active' => true, 'is_rentable' => true, 'rental_price' => 100, 'stock_quantity' => 1,
@@ -192,9 +205,10 @@ class CalendarReservationsWidgetTest extends TestCase
         Livewire::test(CalendarReservationsWidget::class)
             ->call('onEventClickJs', $this->clickData($record))
             ->mountAction('rescheduleReservation')
-            ->set('mountedActions.1.data.starts_at', $busy->starts_at->toDateTimeString())
+            ->set('mountedActions.1.data.booking_date', $busy->starts_at->toDateString())
+            ->set('mountedActions.1.data.booking_time', $busy->starts_at->format('H:i'))
             ->callMountedAction()
-            ->assertHasErrors(['mountedActions.1.data.starts_at' => 'Oprema Reket nije dostupna u trazenoj kolicini.']);
+            ->assertHasErrors(['mountedActions.1.data.booking_time' => 'Oprema Reket nije dostupna u trazenoj kolicini.']);
         $this->assertDatabaseHas('reservations', [
             'id' => $record->id, 'starts_at' => $record->starts_at, 'total_price' => 1000,
         ]);
